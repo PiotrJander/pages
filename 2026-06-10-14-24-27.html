@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Situation Report — Hormuz Escalation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,900&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0d12;
+    --bg-elev: #11141b;
+    --bg-card: #141822;
+    --bg-nest: #0e1118;
+    --ink: #e7e9ee;
+    --ink-soft: #aab0bd;
+    --ink-faint: #6b7280;
+    --line: #232936;
+    --line-soft: #1b212c;
+    --signal: #e8a33d;
+    --signal-dim: #b9842f;
+    --alert: #e5484d;
+    --cool: #5ea0c4;
+    --radius: 14px;
+    --maxw: 880px;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background:
+      radial-gradient(1100px 600px at 80% -10%, rgba(232,163,61,0.07), transparent 60%),
+      radial-gradient(900px 500px at -10% 10%, rgba(94,160,196,0.06), transparent 55%),
+      var(--bg);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", system-ui, sans-serif;
+    line-height: 1.6;
+    font-size: 17px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+    mix-blend-mode: overlay;
+  }
+
+  .wrap { position: relative; z-index: 2; max-width: var(--maxw); margin: 0 auto; padding: 0 22px; }
+
+  /* ---------- Masthead ---------- */
+  header.masthead {
+    padding: 72px 0 40px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 8px;
+  }
+  .kicker {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--signal);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 22px;
+  }
+  .kicker::before {
+    content: "";
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    background: var(--alert);
+    box-shadow: 0 0 0 0 rgba(229,72,77,0.6);
+    animation: pulse 2.2s infinite;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(229,72,77,0.55); }
+    70% { box-shadow: 0 0 0 12px rgba(229,72,77,0); }
+    100% { box-shadow: 0 0 0 0 rgba(229,72,77,0); }
+  }
+  h1.title {
+    font-family: "Fraunces", serif;
+    font-weight: 900;
+    font-size: clamp(2.6rem, 7vw, 4.6rem);
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    margin: 0 0 20px;
+  }
+  h1.title em { color: var(--signal); font-style: italic; }
+  .standfirst {
+    font-size: 1.15rem;
+    color: var(--ink-soft);
+    max-width: 64ch;
+    margin: 0 0 28px;
+  }
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 22px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .meta-row b { color: var(--ink-soft); font-weight: 600; }
+
+  /* ---------- Index / TOC ---------- */
+  nav.toc {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1px;
+    background: var(--line-soft);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin: 36px 0 8px;
+  }
+  nav.toc a {
+    background: var(--bg-elev);
+    padding: 18px 18px;
+    text-decoration: none;
+    color: var(--ink);
+    transition: background 0.2s, color 0.2s;
+    display: block;
+  }
+  nav.toc a:hover { background: var(--bg-card); }
+  nav.toc .n {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    color: var(--signal);
+    letter-spacing: 0.2em;
+    display: block;
+    margin-bottom: 6px;
+  }
+  nav.toc .t { font-weight: 600; font-size: 0.95rem; line-height: 1.3; }
+
+  /* ---------- Theme section ---------- */
+  section.theme { padding: 56px 0 12px; border-top: 1px solid var(--line); margin-top: 40px; }
+  section.theme:first-of-type { border-top: none; }
+  .theme-head { margin-bottom: 28px; }
+  .theme-num {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 13px;
+    color: var(--signal);
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+  }
+  .theme-num.live::after {
+    content: "● LIVE";
+    color: var(--alert);
+    margin-left: 14px;
+    letter-spacing: 0.15em;
+    font-size: 11px;
+  }
+  h2.theme-title {
+    font-family: "Fraunces", serif;
+    font-weight: 600;
+    font-size: clamp(1.8rem, 4.5vw, 2.7rem);
+    line-height: 1.08;
+    letter-spacing: -0.015em;
+    margin: 10px 0 16px;
+  }
+  .theme-intro { color: var(--ink-soft); max-width: 66ch; font-size: 1.04rem; }
+
+  /* ---------- Tweet card ---------- */
+  article.tweet {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 22px 24px;
+    margin: 20px 0;
+    position: relative;
+    overflow: hidden;
+  }
+  article.tweet::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: linear-gradient(var(--signal), var(--signal-dim));
+    opacity: 0.85;
+  }
+
+  .tw-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; margin-bottom: 4px; }
+  .tw-author { font-weight: 700; font-size: 1.02rem; color: var(--ink); }
+  .tw-handle { color: var(--cool); font-family: "IBM Plex Mono", monospace; font-size: 0.85rem; }
+  .tw-meta {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11.5px;
+    color: var(--ink-faint);
+    margin-bottom: 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    align-items: center;
+  }
+  .tw-meta a { color: var(--signal); text-decoration: none; border-bottom: 1px dotted var(--signal-dim); }
+  .tw-meta a:hover { color: #fff; border-bottom-color: #fff; }
+  .tw-id { opacity: 0.7; }
+  .tw-text { font-size: 1.05rem; color: var(--ink); }
+  .tw-text p { margin: 0 0 0.7em; }
+  .tw-text p:last-child { margin-bottom: 0; }
+  .rtl { direction: rtl; text-align: right; font-size: 1.08rem; }
+
+  .relabel {
+    display: inline-block;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    border: 1px solid var(--line);
+    border-radius: 100px;
+    padding: 2px 10px;
+    margin: 16px 0 10px;
+  }
+
+  /* ---------- Nested (reposted / quoted) ---------- */
+  .nest {
+    background: var(--bg-nest);
+    border: 1px solid var(--line-soft);
+    border-left: 2px solid var(--cool);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-top: 8px;
+  }
+  .nest .nest {
+    border-left-color: var(--signal-dim);
+    background: #0a0c11;
+    margin-top: 12px;
+  }
+  .nest .tw-author { font-size: 0.95rem; }
+  .nest .tw-text { font-size: 0.98rem; color: var(--ink-soft); }
+  .nest .tw-meta { font-size: 11px; }
+
+  /* ---------- Images ---------- */
+  figure.media { margin: 16px 0 4px; }
+  figure.media img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    margin: 0 auto;
+  }
+  figure.media.single img { max-height: 460px; width: auto; }
+  figure.media.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 10px;
+  }
+  figure.media.grid img { width: 100%; height: 100%; object-fit: cover; aspect-ratio: 4 / 3; }
+
+  /* ---------- Analytical context ---------- */
+  .context {
+    margin: 30px 0 8px;
+    background: linear-gradient(180deg, rgba(232,163,61,0.06), rgba(232,163,61,0.015));
+    border: 1px solid rgba(232,163,61,0.28);
+    border-radius: var(--radius);
+    padding: 24px 26px;
+  }
+  .context h3 {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--signal);
+    margin: 0 0 12px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .context h3::before { content: "◆"; color: var(--signal); }
+  .context p { margin: 0 0 0.8em; color: var(--ink-soft); font-size: 1rem; }
+  .context p:last-child { margin-bottom: 0; }
+  .context strong { color: var(--ink); font-weight: 600; }
+
+  .summary-note {
+    border-left: 2px solid var(--line);
+    padding: 4px 0 4px 18px;
+    margin: 22px 0;
+    color: var(--ink-soft);
+    font-size: 1rem;
+  }
+  .summary-note .lead {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  footer.foot {
+    margin: 60px 0 40px;
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    color: var(--ink-faint);
+    line-height: 1.8;
+  }
+  footer.foot a { color: var(--signal); text-decoration: none; }
+
+  @media (max-width: 600px) {
+    body { font-size: 16px; }
+    article.tweet { padding: 18px 16px; }
+    .nest { padding: 14px 14px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker">Situation Report · OSINT Timeline</div>
+    <h1 class="title">Hormuz Once Again<br>Descends Into <em>Fighting</em></h1>
+    <p class="standfirst">A reconstructed intelligence picture of the June 7–10, 2026 escalation between the United States, Iran, and Israel — from the first ballistic-missile barrages to the downing of a U.S. Army Apache and the American retaliatory strikes that followed.</p>
+    <div class="meta-row">
+      <span><b>Source feed</b> · @NicoleGrajewski</span>
+      <span><b>Window</b> · 07 Jun – 10 Jun 2026 (UTC)</span>
+      <span><b>Entries parsed</b> · 57</span>
+      <span><b>Themes</b> · 04</span>
+    </div>
+
+    <nav class="toc">
+      <a href="#t1"><span class="n">01 / LIVE</span><span class="t">The Apache & American Retaliation</span></a>
+      <a href="#t2"><span class="n">02 / LIVE</span><span class="t">Iran's Barrage & the Regional War</span></a>
+      <a href="#t3"><span class="n">03</span><span class="t">Deterrence & Strategic Doctrine</span></a>
+      <a href="#t4"><span class="n">04</span><span class="t">The Wider Geopolitical Field</span></a>
+    </nav>
+  </header>
+
+  <!-- ============================ THEME 1 ============================ -->
+  <section class="theme" id="t1">
+    <div class="theme-head">
+      <div class="theme-num live">Theme 01</div>
+      <h2 class="theme-title">The Apache & American Retaliation</h2>
+      <p class="theme-intro">The conflict's center of gravity: a U.S. AH-64 Apache goes down near the Strait of Hormuz, Trump publicly attributes it to Iran and vows to respond, and within hours CENTCOM launches multiple waves of "self-defense" strikes. Shown chronologically as it developed.</p>
+    </div>
+
+    <!-- Trump Truth Social via Barak Ravid -->
+    <article class="tweet">
+      <div class="tw-head"><span class="tw-author">Nicole Grajewski</span><span class="tw-handle">@NicoleGrajewski</span></div>
+      <div class="tw-meta"><a href="https://x.com/NicoleGrajewski/status/2064394794365796417">2026-06-09 17:10 UTC</a><span class="tw-id">ID 2064394794365796417</span></div>
+      <div class="tw-text"><p>RT @BarakRavid: A U.S. official told me the investigation determined that an Iranian drone hit the U.S. helicopter and got it to crash.</p></div>
+      <span class="relabel">↻ Reposted</span>
+      <div class="nest">
+        <div class="tw-head"><span class="tw-author">Barak Ravid</span><span class="tw-handle">@BarakRavid</span></div>
+        <div class="tw-meta"><a href="https://x.com/BarakRavid/status/2064392995118411871">2026-06-09 17:03 UTC</a><span class="tw-id">ID 2064392995118411871</span></div>
+        <div class="tw-text"><p>A U.S. official told me the investigation determined that an Iranian drone hit the U.S. helicopter and got it to crash. The U.S. official said the investigation still hasn't determined if it was intentional or not.</p></div>
+        <span class="relabel">❝ Quoted</span>
+        <div class="nest">
+          <div class="tw-head"><span class="tw-author">Barak Ravid</span><span class="tw-handle">@BarakRavid</span></div>
+          <div class="tw-meta"><a href="https://x.com/BarakRavid/status/2064387123570962844">2026-06-09 16:40 UTC</a><span class="tw-id">ID 2064387123570962844</span></div>
+          <div class="tw-text"><p>🚨🚨Trump on Truth Social: I have just been informed by our Great Military that last night the Iranians shot down one of our highly sophisticated Apache Helicopters while patrolling over the Strait of Hormuz. There were two pilots involved, both are safe and uninjured.</p></div>
+        </div>
+      </div>
+    </article>
+
+    <!-- OSINTdefender: Trump vows retaliation -->
+    <article class="tweet">
+      <div class="tw-head"><span class="tw-author">Nicole Grajewski</span><span class="tw-handle">@NicoleGrajewski</span></div>
+      <div class="tw-meta"><a href="https://x.com/NicoleGrajewski/status/2064394759989264623">2026-06-09 17:10 UTC</a><span class="tw-id">ID 2064394759989264623</span></div>
+      <div class="tw-text"><p>RT @sentdefender: Following the downing of a U.S. Army AH-64 Apache helicopter near the Strait of Hormuz, U.S. President Donald J. Trump has said the Apache was shot down…</p></div>
+      <span class="relabel">↻ Reposted</span>
+      <div class="nest">
+        <div class="tw-head"><span class="tw-author">OSINTdefender</span><span class="tw-handle">@sentdefender</span></div>
+        <div class="tw-meta"><a href="https://x.com/sentdefender/status/2064388408739258534">2026-06-09 16:45 UTC</a><span class="tw-id">ID 2064388408739258534</span></div>
+        <div class="tw-text"><p>Following the downing of a U.S. Army AH-64 Apache helicopter near the Strait of Hormuz, U.S. President Donald J. Trump has said that the Apache was in fact shot down while patrolling over the strait. Additionally, President Trump vowed to retaliate for the attack.</p></div>
+        <figure class="media single"><img src="following-the-downing-of-a-u-s-army-ah-64-apache-helicopter-near-the-strait-of-hormuz-u-s-president-donald-j-trump.jpg" alt="Statement following the downing of the AH-64 Apache helicopter"></figure>
+      </div>
+    </article>
+
+    <!-- fab_hinz analysis + CNN Shahed quote -->
+    <article class="tweet">
+      <div class="tw-head"><span class="tw-author">Nicole Grajewski</span><span class="tw-handle">@NicoleGrajewski</span></div>
+      <div class="tw-meta"><a href="https://x.com/NicoleGrajewski/status/2064418773638271324">2026-06-09 18:46 UTC</a><span class="tw-id">ID 2064418773638271324</span></div>
+      <div class="tw-text"><p>RT @fab_hinz: Assuming the reporting is correct, this could have been a freak accident, a failed shoot-down attempt, or an intentional attack…</p></div>
+      <span class="relabel">↻ Reposted</span>
+      <div class="nest">
+        <div class="tw-head"><span class="tw-author">Fabian Hinz</span><span class="tw-handle">@fab_hinz</span></div>
+        <div class="tw-meta"><a href="https://x.com/fab_hinz/status/2064403164112056526">2026-06-09 17:44 UTC</a><span class="tw-id">ID 2064403164112056526</span></div>
+        <div class="tw-text"><p>Assuming the reporting is correct, this could have been a freak accident, a failed shoot-down attempt, or an intentional attack.</p><p>Worth noting that Iran previously marketed an interceptor variant of the jet-powered Shahed for export.</p></div>
+        <figure class="media single"><img src="assuming-the-reporting-is-correct-this-could-have-been-a-freak-accident-a-failed-shoot-down-attempt-or-an-intentional-attack.jpg" alt="Interceptor variant of the jet-powered Shahed"></figure>
+        <span class="relabel">❝ Quoted</span>
+        <div class="nest">
+          <div class="tw-head"><span class="tw-author">Special Kherson Cat 🐈🇺🇦</span><span class="tw-handle">@bayraktar_1love</span></div>
+          <div class="tw-meta"><a href="https://x.com/bayraktar_1love/status/2064400724620914761">2026-06-09 17:34 UTC</a><span class="tw-id">ID 2064400724620914761</span></div>
+          <div class="tw-text"><p>CNN reports that the U.S. Army AH-64 Apache downed near the Strait of Hormuz was brought down by an Iranian Shahed kamikaze drone.</p></div>
+          <figure class="media single"><img src="cnn-reports-that-the-u-s-army-ah-64-apache-downed-near-the-strait-of-hormuz-was-brought-down-by-an-iranian.jpg" alt="CNN report on the downed Apache helicopter"></figure>
+        </div>
+      </div>
+    </article>
+
+    <!-- Kowsar-222 claim -->
+    <article class="tweet">
+      <div class="tw-head"><span class="tw-author">Nicole Grajewski</span><span class="tw-handle">@NicoleGrajewski</span></div>
+      <div class="tw-meta"><a href="https://x.com/NicoleGrajewski/status/2064458452110311608">2026-06-09 21:23 UTC</a><span class="tw-id">ID 2064458452110311608</span></div>
+      <div class="tw-text"><p>RT @mhmiranusa: Some Iranian unofficial sources claim that the American Apache helicopter was shot down by an Iranian Kowsar-222 surface-to-air missile…</p></div>
+      <span class="relabel">↻ Reposted</span>
+      <div class="nest">
+        <div class="tw-head"><span class="tw-author">Mehdi H.</span><span class="tw-handle">@mhmiranusa</span></div>
+        <div class="tw-meta"><a href="https://x.com/mhmiranusa/status/2064443772012736576">2026-06-09 20:25 UTC</a><span class="tw-id">ID 2064443772012736576</span></div>
+        <div class="tw-text"><p>Some Iranian unofficial sources claim that the American Apache helicopter was shot down by an Iranian Kowsar-222 surface to air missile which was launched from an Iranian fast attack boat during skirmishes between the boats and the Apaches.</p></div>
+        <figure class="media grid">
+          <img src="some-iranian-unofficial-sources-claim-that-the-american-apache-helicopter-was-shot-down-by-an-iranian-kowsar-222-surface-to-air-1.jpg" alt="Kowsar-222 claim image 1">
+          <img src="some-iranian-unofficial-sources-claim-that-the-american-apache-helicopter-was-shot-down-by-an-iranian-kowsar-222-surface-to-air-2.jpg" alt="Kowsar-222 claim image 2">
+          <img src="some-iranian-unofficial-sources-claim-that-the-american-apache-helicopter-was-shot-down-by-an-iranian-kowsar-222-surface-to-air-3.jpg" alt="Kowsar-222 claim image 3">
+        </figure>
+      </div>
+    </article>
+
+    <!-- CENTCOM begins strikes -->
+    <article class="tweet">
+      <div class="tw-head"><span class="tw-author">Nicole Grajewski</span><span class="tw-handle">@NicoleGrajewski</span></div>
+      <div class="tw-meta"><a href="https://x.com/NicoleGrajewski/status/2064458799943983258">2026-06-09 21:25 UTC</a><span class="tw-id">ID 2064458799943983258</span></div>
+      <div class="tw-text"><p>RT @vvanwilgenburg: #BREAKING: U.S. Central Command (CENTCOM) forces began launching self-defense strikes against Iran — @CENTCOM</p></div>
+      <span class="relabel">↻ Reposted</span>
+      <div class="nest">
+        <div class="tw-head"><span class="tw-author">Wladimir van Wilgenburg</span><span class="tw-handle">@vvanwilgenburg</span></div>
+        <div class="tw-meta"><a href="https://x.com/vvanwilgenburg/status/2064457252128399378">2026-06-09 21:18 UTC</a><span class="tw-id">ID 2064457252128399378</span></div>
+        <div class="tw-text"><p>#BREAKING: U.S. Central Command (CENTCOM) forces began launching self-defense strikes against Iran — @CENTCOM</p></div>
+        <figure class="media single"><img src="breaking-u-s-central-command-centcom-forces-began-launching-self-defense-strikes-against-iran-centcom-https-t-co-lrenh8njad.jpg" alt="CENTCOM begins self-defense strikes against Iran"></figure>
+      </div>
+    </article>
+
+    <!-- CENTCOM completed strikes -->
+    <article class="tweet">
+      <div class="tw-head"><span class="tw-author">Nicole Grajewski</span><span class="tw-handle">@NicoleGrajewski</span></div>
+      <div class="tw-meta"><a href="https://x.com/NicoleGrajewski/status/2064525510181310476">2026-06-10 01:50 UTC</a><span class="tw-id">ID 2064525510181310476</span></div>
+      <div class="tw-text"><p>RT @BarakRavid: CENTCOM: "U.S. forces completed self-defense strikes against Iran…in response to yesterday's downing of a U.S. Army Apache…"</p></div>
+      <span class="relabel">↻ Reposted</span>
+      <div class="nest">
+        <div class="tw-head"><span class="tw-author">Barak Ravid</span><span class="tw-handle">@BarakRavid</span></div>
+        <div class="tw-meta"><a href="https://x.com/BarakRavid/status/2064513756676133350">2026-06-10 01:03 UTC</a><span class="tw-id">ID 2064513756676133350</span></div>
+        <div class="tw-text"><p>CENTCOM: "U.S. forces completed self-defense strikes against Iran…in response to yesterday's downing of a U.S. Army Apache helicopter. The forces struck Iranian air defense, ground control stations, and surveillance radar sites near the Strait of Hormuz with precision munitions."</p></div>
+      </div>
+    </article>
+
+    <!-- gbrew three waves -->
+    <article class="tweet">
+      <div class="tw-head"><span class="tw-author">Nicole Grajewski</span><span class="tw-handle">@NicoleGrajewski</span></div>
+      <div class="tw-meta"><a href="https://x.com/NicoleGrajewski/status/2064526558618919400">2026-06-10 01:54 UTC</a><span class="tw-id">ID 2064526558618919400</span></div>
+      <div class="tw-text"><p>RT @gbrew24: US launched three waves of strikes on Iran, in response to Iran downing a helicopter.</p></div>
+      <span class="relabel">↻ Reposted</span>
+      <div class="nest">
+        <div class="tw-head"><span class="tw-author">Gregory Brew</span><span class="tw-handle">@gbrew24</span></div>
+        <div class="tw-meta"><a href="https://x.com/gbrew24/status/2064516433095041240">2026-06-10 01:14 UTC</a><span class="tw-id">ID 2064516433095041240</span></div>
+        <div class="tw-text"><p>US launched three waves of strikes on Iran, in response to Iran downing a helicopter.</p><p>Targets included air defense and radar installations across several southern provinces.</p><p>Iran has fired drones at US installations in Bahrain but otherwise has taken no action, as yet.</p></div>
+      </div>
+    </article>
+
+    <!-- BabakTaghvaee air defence Lorestan -->
+    <article class="tweet">
+      <div class="tw-head"><span class="tw-author">Nicole Grajewski</span><span class="tw-handle">@NicoleGrajewski</span></div>
+      <div class="tw-meta"><a href="https://x.com/NicoleGrajewski/status/2064526104509943889">2026-06-10 01:52 UTC</a><span class="tw-id">ID 2064526104509943889</span></div>
+      <div class="tw-text"><p>RT @BabakTaghvaee1: BREAKING: Air-defence activity in Lorestan province of Iran! The IRGC Aerospace Force units in Imam Ali missile base of…</p></div>
+      <span class="relabel">↻ Reposted</span>
+      <div class="nest">
+        <div class="tw-head"><span class="tw-author">Babak Taghvaee — The Crisis Watch</span><span class="tw-handle">@BabakTaghvaee1</span></div>
+        <div class="tw-meta"><a href="https://x.com/BabakTaghvaee1/status/2064504665723564540">2026-06-10 00:27 UTC</a><span class="tw-id">ID 2064504665723564540</span></div>
+        <div class="tw-text"><p>BREAKING: Air-defence activity in Lorestan province of Iran! The IRGC Aerospace Force units in Imam Ali missile base of Khorramabad can be seen launching surface-to-air missiles at the USAF or US Navy fighter jets involved in the third wave of airstrikes on Iran tonight.</p></div>
+        <figure class="media single"><img src="breaking-air-defence-activity-in-lorestan-province-of-iran-the-irgc-aerospace-force-units-in-imam-ali-missile-base-of-khorramabad.jpg" alt="Air-defence activity in Lorestan province"></figure>
+      </div>
+    </article>
+
+    <div class="summary-note">
+      <span class="lead">Compressed timeline — remaining entries</span>
+      Around the core chain, the feed tracked the fog of war in real time: <strong>OSINTtechnical</strong> reported explosions in the Iranian port of <strong>Sirik</strong> on the Strait of Hormuz (<a href="https://x.com/Osinttechnical/status/2064456445937037341" style="color:var(--signal);text-decoration:none">21:15 UTC</a>) and aftermath footage from <strong>Qeshm Island</strong>. The <strong>IRGC and Khatam al-Anbiya HQ</strong> claimed strikes on the U.S. 5th Fleet in Bahrain, though OSINT analysts noted "no evidence… no sirens or explosions heard," even as <strong>explosions were separately reported in Bahrain</strong>. Headlines from outlets confirmed "U.S. Launches Strikes on Iran in Response to Downed Apache Helicopter" and "Trump Says U.S. 'Must' Respond." Iran was simultaneously reported conducting <strong>drone strikes on KDPI Kurdish opposition</strong> targets in Erbil, Iraqi Kurdistan.
+    </div>
+
+    <div class="context">
+      <h3>Analytical Context</h3>
+      <p>The Apache's loss functions as the war's <strong>casus belli of convenience</strong>. Note the deliberate ambiguity in the reporting: a single U.S. official concedes the investigation "still hasn't determined if it was intentional," and Fabian Hinz lays out three readings — accident, failed interception, or deliberate attack — yet the political machinery moved straight to retaliation. This is the classic dynamic of <strong>escalation under uncertainty</strong>, where a contested incident near a strategic chokepoint is rapidly framed as a clear act of aggression.</p>
+      <p>The geography is not incidental. The <strong>Strait of Hormuz</strong> — through which a large share of seaborne crude transits — is the one terrain where Iran's asymmetric tools (fast attack boats, Shahed drones, mobile SAMs like the claimed Kowsar-222) can credibly threaten a superior conventional force. CENTCOM's response was calibrated and signaling-oriented: "self-defense strikes" against <strong>air defense, radar, and ground-control nodes</strong>, not regime or population targets — a proportional, face-saving riposte designed to restore deterrence without committing to open-ended war.</p>
+    </div>
+  </section>
+
+  <!-- ============================ THEME 2 ============================ -->
+  <section class="theme" id="t2">
+    <div class="theme-head">
+      <div class="theme-num live">Theme 02</div>
+      <h2 class="theme-title">Iran's Barrage & the Regional War</h2>
+      <p class="theme-intro">The munitions story underneath the diplomacy: successive waves of Iranian ballistic missiles toward Israel, Houthi launches from Yemen, Israeli strikes deep inside Iran, and the OSINT community's effort to identify systems and damage. Ordered as the strikes unfolded.</p>
+    </div>
+
+    <!-- Conflict Radar state TV launch -->
+    <article class="tweet">
+      <div class="tw-head"><span class="tw-author">Nicole Grajewski</span><span class="tw-handle">@NicoleGrajewski</span></div>
+      <div class="tw-meta"><a href="https://x.com/NicoleGrajewski/status/2063760140826710390">2026-06-07 23:08 UTC</a><span class="tw-id">ID 2063760140826710390</span></div>
+      <div class="tw-text"><p>RT @Conflict_Radar: Iranian state TV footage of the launch of the attack on Israel. Estimated to have involved 10 ballistic missiles…</p></div>
+      <span class="relabel">↻ Reposted</span>
+      <div class="nest">
+        <div class="tw-head"><span class="tw-author">Conflict Radar</span><span class="tw-handle">@Conflict_Radar</span></div>
+        <div class="tw-meta"><a href="https://x.com/Conflict_Radar/status/2063725400203657587">2026-06-07 20:50 UTC</a><span class="tw-id">ID 2063725400203657587</span></div>
+        <div class="tw-text"><p>Iranian state TV footage of the launch of the attack on Israel.</p><p>Estimated to have involved 10 ballistic missiles.</p></div>
+        <figure class="media single"><img src="iranian-state-tv-footage-of-the-launch-of-the-attack-on-israel-estimated-to-have-involved-10-ballistic-missiles-https-t-co-ox8bgktrk1.jpg" alt="Iranian state TV footage of missile launch"></figure>
+      </div>
+    </article>
+
+    <!-- 6th wave Kashan -->
+    <article class="tweet">
+      <div class="tw-head"><span class="tw-author">Nicole Grajewski</span><span class="tw-handle">@NicoleGrajewski</span></div>
+      <div class="tw-meta"><a href="https://x.com/NicoleGrajewski/status/2063760724749439355">2026-06-07 23:11 UTC</a><span class="tw-id">ID 2063760724749439355</span></div>
+      <div class="tw-text"><p>RT @mhmiranusa: Reports of the 6th wave of Iranian ballistic missiles launch towards Israel tonight…</p></div>
+      <span class="relabel">↻ Reposted</span>
+      <div class="nest">
+        <div class="tw-head"><span class="tw-author">Mehdi H.</span><span class="tw-handle">@mhmiranusa</span></div>
+        <div class="tw-meta"><a href="https://x.com/mhmiranusa/status/2063707139558789314">2026-06-07 19:38 UTC</a><span class="tw-id">ID 2063707139558789314</span></div>
+        <div class="tw-text"><p>Reports of the 6th wave of Iranian ballistic missiles launch towards Israel tonight. The 6th wave was reportedly launched from near the city of Kashan.</p></div>
+        <figure class="media single"><img src="reports-of-the-6th-wave-of-iranian-ballistic-missiles-launch-towards-israel-tonight-the-6th-wave-was-reportedly-launched-from.jpg" alt="Sixth wave of Iranian ballistic missiles"></figure>
+      </div>
+    </article>
+
+    <!-- Fattah-1 hypersonic -->
+    <article class="tweet">
+      <div class="tw-head"><span class="tw-author">Nicole Grajewski</span><span class="tw-handle">@NicoleGrajewski</span></div>
+      <div class="tw-meta"><a href="https://x.com/NicoleGrajewski/status/2063898346410950780">2026-06-08 08:18 UTC</a><span class="tw-id">ID 2063898346410950780</span></div>
+      <div class="tw-text"><p>RT @FarzinNadimi: Evidence that the IRGC used some of its most advanced Fattah-1 hypersonic ballistic missiles…</p></div>
+      <span class="relabel">↻ Reposted</span>
+      <div class="nest">
+        <div class="tw-head"><span class="tw-author">Farzin Nadimi, PhD فرزین ندیمی</span><span class="tw-handle">@FarzinNadimi</span></div>
+        <div class="tw-meta"><a href="https://x.com/FarzinNadimi/status/2063880271657582668">2026-06-08 07:06 UTC</a><span class="tw-id">ID 2063880271657582668</span></div>
+        <div class="tw-text"><p>Evidence that the IRGC used some of its most advanced Fattah-1 hypersonic ballistic missiles, with rocket-powered exo-/endo-atmospheric maneuvering warhead, for its latest attacks against northern Israel. The reentry vehicle separated from the missile body over southern Syria.</p></div>
+        <figure class="media single"><img src="evidence-that-the-irgc-used-some-of-its-most-advanced-fattah-1-hypersonic-ballistic-missiles-with-rocket-powered-exo-endo-atmospheric-maneuvering-warhead-for.jpg" alt="Evidence of Fattah-1 hypersonic missile use"></figure>
+      </div>
+    </article>
+
+    <!-- Karun petrochemical -->
+    <article class="tweet">
+      <div class="tw-head"><span class="tw-author">Nicole Grajewski</span><span class="tw-handle">@NicoleGrajewski</span></div>
+      <div class="tw-meta"><a href="https://x.com/NicoleGrajewski/status/2063898311912816970">2026-06-08 08:17 UTC</a><span class="tw-id">ID 2063898311912816970</span></div>
+      <div class="tw-text"><p>RT @Osinttechnical: Iranian state media says that Israeli forces bombed the Karun Petrochemical Company in the city of Bandar-e Mahshahr…</p></div>
+      <span class="relabel">↻ Reposted</span>
+      <div class="nest">
+        <div class="tw-head"><span class="tw-author">OSINTtechnical</span><span class="tw-handle">@Osinttechnical</span></div>
+        <div class="tw-meta"><a href="https://x.com/Osinttechnical/status/2063843004754821569">2026-06-08 04:38 UTC</a><span class="tw-id">ID 2063843004754821569</span></div>
+        <div class="tw-text"><p>Iranian state media says that Israeli forces bombed the Karun Petrochemical Company in the city of Bandar-e Mahshahr this morning.</p></div>
+        <figure class="media grid">
+          <img src="iranian-state-media-says-that-israeli-forces-bombed-the-karun-petrochemical-company-in-the-city-of-bandar-e-mahshahr-this-morning-1.jpg" alt="Karun Petrochemical bombing 1">
+          <img src="iranian-state-media-says-that-israeli-forces-bombed-the-karun-petrochemical-company-in-the-city-of-bandar-e-mahshahr-this-morning-2.png" alt="Karun Petrochemical bombing 2">
+        </figure>
+      </div>
+    </article>
+
+    <!-- Palestine-2 / Houthi Fattah-1 -->
+    <article class="tweet">
+      <div class="tw-head"><span class="tw-author">Nicole Grajewski</span><span class="tw-handle">@NicoleGrajewski</span></div>
+      <div class="tw-meta"><a href="https://x.com/NicoleGrajewski/status/2064225668515197322">2026-06-09 05:58 UTC</a><span class="tw-id">ID 2064225668515197322</span></div>
+      <div class="tw-text"><p>RT @fab_hinz: Houthis showing the launch of an Iranian-made two-stage Fattah-1 MRBM under the local designation Palestine-2.</p></div>
+      <span class="relabel">↻ Reposted</span>
+      <div class="nest">
+        <div class="tw-head"><span class="tw-author">Fabian Hinz</span><span class="tw-handle">@fab_hinz</span></div>
+        <div class="tw-meta"><a href="https://x.com/fab_hinz/status/2064019080265318894">2026-06-08 16:17 UTC</a><span class="tw-id">ID 2064019080265318894</span></div>
+        <div class="tw-text"><p>Houthis showing the launch of an Iranian-made two-stage Fattah-1 MRBM under the local designation Palestine-2.</p></div>
+        <span class="relabel">❝ Quoted</span>
+        <div class="nest">
+          <div class="tw-head"><span class="tw-author">Clash Report</span><span class="tw-handle">@clashreport</span></div>
+          <div class="tw-meta"><a href="https://x.com/clashreport/status/2064009450826891310">2026-06-08 15:39 UTC</a><span class="tw-id">ID 2064009450826891310</span></div>
+          <div class="tw-text"><p>WATCH: Footage of this morning's launch by the Houthis of a Palestine-2 missile from Yemen toward central Israel.</p></div>
+          <figure class="media single"><img src="watch-footage-of-this-morning-s-launch-by-the-houthis-of-a-palestine-2-missile-from-yemen-toward-central-israel-https-t-co-feqtkpxwpn.jpg" alt="Houthi Palestine-2 missile launch"></figure>
+        </div>
+      </div>
+    </article>
+
+    <!-- 15 impacts -->
+    <article class="tweet">
+      <div class="tw-head"><span class="tw-author">Nicole Grajewski</span><span class="tw-handle">@NicoleGrajewski</span></div>
+      <div class="tw-meta"><a href="https://x.com/NicoleGrajewski/status/2064473566041583801">2026-06-09 22:23 UTC</a><span class="tw-id">ID 2064473566041583801</span></div>
+      <div class="tw-text"><p>RT @websterkaroon: Approximately 15 impacts happened in at least 3 different Iranian southern cities…</p></div>
+      <span class="relabel">↻ Reposted</span>
+      <div class="nest">
+        <div class="tw-head"><span class="tw-author">Alireza Talakoubnejad</span><span class="tw-handle">@websterkaroon</span></div>
+        <div class="tw-meta"><a href="https://x.com/websterkaroon/status/2064468153372213615">2026-06-09 22:02 UTC</a><span class="tw-id">ID 2064468153372213615</span></div>
+        <div class="tw-text"><p>Approximately 15 impacts happened in at least 3 different Iranian southern cities.</p><p>My understanding is Iran is shooting back at US bases in the region.</p></div>
+      </div>
+    </article>
+
+    <div class="summary-note">
+      <span class="lead">Compressed timeline — remaining entries</span>
+      The feed catalogued a near-continuous tempo of strikes: the <strong>first official Iranian video</strong> of ballistic launches toward Israel; <strong>local photos of explosions</strong> inside Iran from Israeli attacks, with analysts judging from "shape and color" that missile launchers had been hit; a <strong>Sejjil launch</strong> celebrated with a traditional Lur dance; footage of missiles fired toward <strong>Azraq Air Base in Jordan</strong>; "a mix of liquid and solid propellant" launches against U.S. targets; <strong>3 BMs from Khomein, Markaz Province</strong>; and, on the war's first night, the reported sequence of <em>Iran threatened → Israel struck Beirut → Iran launched at Israel → Trump told Netanyahu to stand down → Israel retaliated → Houthis joined</em>. Saudi Arabia sounded a missile alert near the Prince Sultan Air Base; Iranian sources framed renewed launches from Kermanshah and Tabriz as proof those bombed bases had been reopened.
+    </div>
+
+    <div class="context">
+      <h3>Analytical Context</h3>
+      <p>The munitions inventory on display is a deliberate message. The <strong>Fattah-1</strong> — Iran's claimed hypersonic with a maneuvering reentry vehicle — and its Houthi-operated cousin, the <strong>Palestine-2</strong>, signal that Tehran is willing to commit its most advanced, hardest-to-intercept systems and to demonstrate that its <strong>"axis of resistance" can fire from multiple vectors</strong> (Iran, Yemen) at once. Counting "waves" and crediting six-plus barrages is itself an information operation: tempo and volume are meant to convey that Iranian magazines are deep and replenishable.</p>
+      <p>Yet the OSINT detail cuts against the maximalist framing. Strikes on <strong>launchers and air-defense radar</strong> inside Iran, alongside the targeting of energy infrastructure like the <strong>Karun petrochemical complex</strong>, point to a reciprocal counter-force campaign in which each side hunts the other's ability to keep firing. The reach into <strong>Jordanian (Azraq) and Gulf airspace</strong>, plus the Saudi alert, shows how quickly a bilateral exchange spills across third-party territory — the structural reason regional war is so hard to keep "limited."</p>
+    </div>
+  </section>
+
+  <!-- ============================ THEME 3 ============================ -->
+  <section class="theme" id="t3">
+    <div class="theme-head">
+      <div class="theme-num">Theme 03</div>
+      <h2 class="theme-title">Deterrence & Strategic Doctrine</h2>
+      <p class="theme-intro">Beneath the explosions, the analysts' war: a debate over what Iran is actually trying to achieve, whether a "new deterrence equation" is real or wishful, and why diplomacy keeps failing even as both sides claim to want off-ramps.</p>
+    </div>
+
+    <!-- vali_nasr pressure on MoU -->
+    <article class="tweet">
+      <div class="tw-head"><span class="tw-author">Nicole Grajewski</span><span class="tw-handle">@NicoleGrajewski</span></div>
+      <div class="tw-meta"><a href="https://x.com/NicoleGrajewski/status/2063898288403718158">2026-06-08 08:17 UTC</a><span class="tw-id">ID 2063898288403718158</span></div>
+      <div class="tw-text"><p>RT @vali_nasr: I would add to that this all came when US and Iran are deadlocked on MoU…</p></div>
+      <span class="relabel">↻ Reposted</span>
+      <div class="nest">
+        <div class="tw-head"><span class="tw-author">Vali Nasr</span><span class="tw-handle">@vali_nasr</span></div>
+        <div class="tw-meta"><a href="https://x.com/vali_nasr/status/2063867007720698024">2026-06-08 06:13 UTC</a><span class="tw-id">ID 2063867007720698024</span></div>
+        <div class="tw-text"><p>I would add to that this all came when US and Iran are deadlocked on MoU. This along with exchange in Persian Gulf is Iran putting pressure on US by signaling willingness to escalate and return to war when U.S. said war is over. The pressure is for Trump to move on the MoU.</p></div>
+        <span class="relabel">❝ Quoted</span>
+        <div class="nest">
+          <div class="tw-head"><span class="tw-author">Alex Ward</span><span class="tw-handle">@alexbward</span></div>
+          <div class="tw-meta"><a href="https://x.com/alexbward/status/2063789212063641931">2026-06-08 01:04 UTC</a><span class="tw-id">ID 2063789212063641931</span></div>
+          <div class="tw-text"><p>What happened tonight:</p><p>— Trump told Netanyahu to back off retaliating against Iran.</p><p>— Iran came to its proxy's defense, not the usual other way around.</p><p>— Israel and U.S. tried to separate US v Iran from Israel v Hezbollah. Now they are linked.</p></div>
+        </div>
+      </div>
+    </article>
+
+    <!-- glcarlstrom deterrence equation -->
+    <article class="tweet">
+      <div class="tw-head"><span class="tw-author">Nicole Grajewski</span><span class="tw-handle">@NicoleGrajewski</span></div>
+      <div class="tw-meta"><a href="https://x.com/NicoleGrajewski/status/2063898180001935429">2026-06-08 08:17 UTC</a><span class="tw-id">ID 2063898180001935429</span></div>
+      <div class="tw-text"><p>RT @glcarlstrom: Seeing some tweets about how Iran has imposed a new deterrence equation on Israel and the region. That seems like a whole lot of motivated reasoning…</p></div>
+      <span class="relabel">↻ Reposted</span>
+      <div class="nest">
+        <div class="tw-head"><span class="tw-author">Gregg Carlstrom</span><span class="tw-handle">@glcarlstrom</span></div>
+        <div class="tw-meta"><a href="https://x.com/glcarlstrom/status/2063898067770703882">2026-06-08 08:16 UTC</a><span class="tw-id">ID 2063898067770703882</span></div>
+        <div class="tw-text"><p>Seeing some tweets about how Iran has imposed a new deterrence equation on Israel and the region. That seems like a whole lot of motivated reasoning.</p><p>First, let's be clear about how much of a reversal this represents for Iran's strategic doctrine: instead of its Arab proxies…</p></div>
+      </div>
+    </article>
+
+    <!-- dex_eve warning shot -->
+    <article class="tweet">
+      <div class="tw-head"><span class="tw-author">Nicole Grajewski</span><span class="tw-handle">@NicoleGrajewski</span></div>
+      <div class="tw-meta"><a href="https://x.com/NicoleGrajewski/status/2063760776192512342">2026-06-07 23:11 UTC</a><span class="tw-id">ID 2063760776192512342</span></div>
+      <div class="tw-text"><p>RT @dex_eve: 10 missiles against an air base target — a target type Iran has only been able to do limited damage to — is a warning shot…</p></div>
+      <span class="relabel">↻ Reposted</span>
+      <div class="nest">
+        <div class="tw-head"><span class="tw-author">Decker Eveleth</span><span class="tw-handle">@dex_eve</span></div>
+        <div class="tw-meta"><a href="https://x.com/dex_eve/status/2063714225646616916">2026-06-07 20:06 UTC</a><span class="tw-id">ID 2063714225646616916</span></div>
+        <div class="tw-text"><p>10 missiles against an air base target — a target type that Iran has in the past only been able to do limited damage to in terms of operations — is a warning shot. Iran could do much more at this point if they wanted to.</p></div>
+        <span class="relabel">❝ Quoted</span>
+        <div class="nest">
+          <div class="tw-head"><span class="tw-author">Evergreen Intel</span><span class="tw-handle">@vcdgf555</span></div>
+          <div class="tw-meta"><a href="https://x.com/vcdgf555/status/2063709061791854983">2026-06-07 19:45 UTC</a><span class="tw-id">ID 2063709061791854983</span></div>
+          <div class="tw-text"><p>IRGC reporting they targeted Ramat David with TBMs.</p></div>
+        </div>
+      </div>
+    </article>
+
+    <!-- AliVaez two fronts -->
+    <article class="tweet">
+      <div class="tw-head"><span class="tw-author">Nicole Grajewski</span><span class="tw-handle">@NicoleGrajewski</span></div>
+      <div class="tw-meta"><a href="https://x.com/NicoleGrajewski/status/2064245687252840481">2026-06-09 07:18 UTC</a><span class="tw-id">ID 2064245687252840481</span></div>
+      <div class="tw-text"><p>RT @AliVaez: Told @WSJ: Iran has left Washington trying to separate two fronts whose key triggers remain outside the U.S.-Iran channel…</p></div>
+      <span class="relabel">↻ Reposted</span>
+      <div class="nest">
+        <div class="tw-head"><span class="tw-author">Ali Vaez</span><span class="tw-handle">@AliVaez</span></div>
+        <div class="tw-meta"><a href="https://x.com/AliVaez/status/2064245316145033572">2026-06-09 07:16 UTC</a><span class="tw-id">ID 2064245316145033572</span></div>
+        <div class="tw-text"><p>Told @WSJ: Iran has left Washington trying to separate two fronts whose key triggers remain outside the U.S.-Iran channel: Israel's asserted freedom of action in Lebanon and Hezbollah's refusal to stand down. The war has certainly made Iran less, not more, risk averse.</p></div>
+      </div>
+    </article>
+
+    <!-- ForeignAffairs Tabaar -->
+    <article class="tweet">
+      <div class="tw-head"><span class="tw-author">Nicole Grajewski</span><span class="tw-handle">@NicoleGrajewski</span></div>
+      <div class="tw-meta"><a href="https://x.com/NicoleGrajewski/status/2063621983988858978">2026-06-07 13:59 UTC</a><span class="tw-id">ID 2063621983988858978</span></div>
+      <div class="tw-text"><p>RT @ForeignAffairs: The United States and Iran are unlikely to make real peace because Tehran "has concluded that conflict is preferable to…"</p></div>
+      <span class="relabel">↻ Reposted</span>
+      <div class="nest">
+        <div class="tw-head"><span class="tw-author">Foreign Affairs</span><span class="tw-handle">@ForeignAffairs</span></div>
+        <div class="tw-meta"><a href="https://x.com/ForeignAffairs/status/2063616719768244274">2026-06-07 13:39 UTC</a><span class="tw-id">ID 2063616719768244274</span></div>
+        <div class="tw-text"><p>The United States and Iran are unlikely to make real peace because Tehran "has concluded that conflict is preferable to diplomacy," writes Mohammad Ayatollahi Tabaar. "The war, after all, seems to be helping Iran increase its international power."</p></div>
+      </div>
+    </article>
+
+    <div class="summary-note">
+      <span class="lead">Compressed timeline — remaining entries</span>
+      Other analysts mapped the diplomatic cul-de-sac: <strong>Gregg Carlstrom</strong> noted even "unnamed Pakistani sources can't keep up an optimistic front," citing reports that a U.S.–Iran deal within days was "unlikely" amid Israel's "non-stop ceasefire violations." <strong>Ziad Daoud</strong> framed the Apache as the moment "the clashes seemed to subside" before reigniting, and earlier summarized the cascade (Iran's threat over Beirut → Israeli strike → retaliation → Trump's restraint message → Houthi entry). <strong>Ali Vaez</strong> also flagged how Israel and Iran "nearly pull Trump back into a war he's anxious to end." Grajewski's own framing: the strikes were retaliation for Lebanon, "never a question of if hostilities would resume, but when."
+    </div>
+
+    <div class="context">
+      <h3>Analytical Context</h3>
+      <p>This theme is a live referendum on <strong>coercive bargaining theory</strong>. Vali Nasr reads the entire kinetic exchange instrumentally — as <strong>escalation-as-leverage</strong> to force movement on a stalled memorandum of understanding — while Decker Eveleth's "warning shot" reading (10 missiles, deliberately limited, against a hard target) supports the view that Iran is <strong>signaling capability rather than seeking maximal damage</strong>. The grammar of the strikes matters more than their tonnage.</p>
+      <p>Gregg Carlstrom supplies the crucial counterweight: claims of a "new deterrence equation" may be <strong>motivated reasoning</strong> that obscures a doctrinal reversal — Iran fighting <em>directly</em> rather than through Arab proxies, which is a sign of <strong>weakened forward defenses, not strength</strong>. Tabaar's Foreign Affairs thesis darkens the picture: if Tehran genuinely judges that <strong>conflict pays better than diplomacy</strong>, then off-ramps are structurally unstable, because the triggers (Lebanon, Hezbollah) sit outside the U.S.–Iran channel entirely. That is the core analytic tension of the week — managed signaling versus a regime that may have stopped wanting a deal.</p>
+    </div>
+  </section>
+
+  <!-- ============================ THEME 4 ============================ -->
+  <section class="theme" id="t4">
+    <div class="theme-head">
+      <div class="theme-num">Theme 04</div>
+      <h2 class="theme-title">The Wider Geopolitical Field</h2>
+      <p class="theme-intro">The conflict did not happen in a vacuum. The same feed tracked U.S.–Israel intelligence friction, Russia-linked sabotage and assassination, European defense realignment, the economics of postwar reconstruction — and one moment of pure internet levity.</p>
+    </div>
+
+    <!-- glubold Pentagon spying -->
+    <article class="tweet">
+      <div class="tw-head"><span class="tw-author">Nicole Grajewski</span><span class="tw-handle">@NicoleGrajewski</span></div>
+      <div class="tw-meta"><a href="https://x.com/NicoleGrajewski/status/2063632999518798332">2026-06-07 14:43 UTC</a><span class="tw-id">ID 2063632999518798332</span></div>
+      <div class="tw-text"><p>RT @glubold: NEW: The Pentagon has raised the level of concern about Israeli spying on the U.S. military to critical, its highest level…</p></div>
+      <span class="relabel">↻ Reposted</span>
+      <div class="nest">
+        <div class="tw-head"><span class="tw-author">Gordon Lubold</span><span class="tw-handle">@glubold</span></div>
+        <div class="tw-meta"><a href="https://x.com/glubold/status/2063264958738010611">2026-06-06 14:21 UTC</a><span class="tw-id">ID 2063264958738010611</span></div>
+        <div class="tw-text"><p>NEW: The Pentagon has raised the level of concern about Israeli spying on the U.S. military to critical, its highest level, amid worries between the two countries of divergence over the war in Iran.</p></div>
+      </div>
+    </article>
+
+    <!-- michaeldweiss Vance leak -->
+    <article class="tweet">
+      <div class="tw-head"><span class="tw-author">Nicole Grajewski</span><span class="tw-handle">@NicoleGrajewski</span></div>
+      <div class="tw-meta"><a href="https://x.com/NicoleGrajewski/status/2063760263975727114">2026-06-07 23:09 UTC</a><span class="tw-id">ID 2063760263975727114</span></div>
+      <div class="tw-text"><p>RT @michaeldweiss: Timing of this coincides with NYT reporting that the Pentagon is worried about Israel's spying on US officials…</p></div>
+      <span class="relabel">↻ Reposted</span>
+      <div class="nest">
+        <div class="tw-head"><span class="tw-author">Michael Weiss</span><span class="tw-handle">@michaeldweiss</span></div>
+        <div class="tw-meta"><a href="https://x.com/michaeldweiss/status/2063731053085237553">2026-06-07 21:13 UTC</a><span class="tw-id">ID 2063731053085237553</span></div>
+        <div class="tw-text"><p>Timing of this coincides with NYT reporting that the Pentagon is worried about Israel's spying on US officials, many of them Vance-aligned such as Bridge Colby.</p></div>
+        <span class="relabel">❝ Quoted</span>
+        <div class="nest">
+          <div class="tw-head"><span class="tw-author">Afshin Ismaeli</span><span class="tw-handle">@Afshin_Ismaeli</span></div>
+          <div class="tw-meta"><a href="https://x.com/Afshin_Ismaeli/status/2063018028833616156">2026-06-05 22:00 UTC</a><span class="tw-id">ID 2063018028833616156</span></div>
+          <div class="tw-text"><p>Israeli intelligence sources have accused Vice President JD Vance of leaking a Mossad plan to use Kurdish forces against Iran to Turkish President Erdogan. The leak was intended to help Erdogan reach President Trump in time to stop the operation before it could be carried out.</p></div>
+        </div>
+      </div>
+    </article>
+
+    <!-- FT Chernobyl -->
+    <article class="tweet">
+      <div class="tw-head"><span class="tw-author">Nicole Grajewski</span><span class="tw-handle">@NicoleGrajewski</span></div>
+      <div class="tw-meta"><a href="https://x.com/NicoleGrajewski/status/2063626282777162008">2026-06-07 14:17 UTC</a><span class="tw-id">ID 2063626282777162008</span></div>
+      <div class="tw-text"><p>RT @FT: Russian drone hits nuclear fuel site near Chernobyl</p></div>
+      <span class="relabel">↻ Reposted</span>
+      <div class="nest">
+        <div class="tw-head"><span class="tw-author">Financial Times</span><span class="tw-handle">@FT</span></div>
+        <div class="tw-meta"><a href="https://x.com/FT/status/2063596200897462294">2026-06-07 12:17 UTC</a><span class="tw-id">ID 2063596200897462294</span></div>
+        <div class="tw-text"><p>Russian drone hits nuclear fuel site near Chernobyl.</p></div>
+      </div>
+    </article>
+
+    <!-- WarMonitor Moscow assassination -->
+    <article class="tweet">
+      <div class="tw-head"><span class="tw-author">Nicole Grajewski</span><span class="tw-handle">@NicoleGrajewski</span></div>
+      <div class="tw-meta"><a href="https://x.com/NicoleGrajewski/status/2064394985278001307">2026-06-09 17:11 UTC</a><span class="tw-id">ID 2064394985278001307</span></div>
+      <div class="tw-text"><p>RT @WarMonitor3: Intelligence reports suggest the Russian official today assassinated in Moscow was the Head of the Department of Supply of Missiles and Ammunition…</p></div>
+      <span class="relabel">↻ Reposted</span>
+      <div class="nest">
+        <div class="tw-head"><span class="tw-author">WarMonitor🇺🇦🇬🇧</span><span class="tw-handle">@WarMonitor3</span></div>
+        <div class="tw-meta"><a href="https://x.com/WarMonitor3/status/2064372881925038293">2026-06-09 15:43 UTC</a><span class="tw-id">ID 2064372881925038293</span></div>
+        <div class="tw-text"><p>Intelligence reports suggest the Russian official today assassinated in Moscow was the Head of the Department of Supply of Missiles and Ammunition for the Russian ministry of defence.</p></div>
+      </div>
+    </article>
+
+    <!-- FT Treasury Iranian assets -->
+    <article class="tweet">
+      <div class="tw-head"><span class="tw-author">Nicole Grajewski</span><span class="tw-handle">@NicoleGrajewski</span></div>
+      <div class="tw-meta"><a href="https://x.com/NicoleGrajewski/status/2063632962646663336">2026-06-07 14:43 UTC</a><span class="tw-id">ID 2063632962646663336</span></div>
+      <div class="tw-text"><p>RT @FT: The US Treasury secretary is weighing plans to use Iranian assets to pay for the rebuilding of Gulf countries hit by retaliation…</p></div>
+      <span class="relabel">↻ Reposted</span>
+      <div class="nest">
+        <div class="tw-head"><span class="tw-author">Financial Times</span><span class="tw-handle">@FT</span></div>
+        <div class="tw-meta"><a href="https://x.com/FT/status/2063598638538825958">2026-06-07 12:27 UTC</a><span class="tw-id">ID 2063598638538825958</span></div>
+        <div class="tw-text"><p>The US Treasury secretary is weighing plans to use Iranian assets to pay for the rebuilding of Gulf countries hit by retaliation from Tehran, in a bid to limit the war's fallout on American allies in the Middle East.</p></div>
+        <figure class="media single"><img src="the-us-treasury-secretary-is-weighing-plans-to-use-iranian-assets-to-pay-for-the-rebuilding-of-gulf-countries-hit.jpg" alt="US Treasury weighing use of Iranian assets"></figure>
+      </div>
+    </article>
+
+    <!-- Algeria / Lawrence Kansas levity -->
+    <article class="tweet">
+      <div class="tw-head"><span class="tw-author">Nicole Grajewski</span><span class="tw-handle">@NicoleGrajewski</span></div>
+      <div class="tw-meta"><a href="https://x.com/NicoleGrajewski/status/2064537683846697142">2026-06-10 02:38 UTC</a><span class="tw-id">ID 2064537683846697142</span></div>
+      <div class="tw-text"><p>RT @OrlandoNapoli22: This is perfect because I've always heard people call Lawrence, Kansas the Algeria of the Midwest</p></div>
+      <span class="relabel">↻ Reposted</span>
+      <div class="nest">
+        <div class="tw-head"><span class="tw-author">OZ</span><span class="tw-handle">@OrlandoNapoli22</span></div>
+        <div class="tw-meta"><a href="https://x.com/OrlandoNapoli22/status/2064363687381528803">2026-06-09 15:07 UTC</a><span class="tw-id">ID 2064363687381528803</span></div>
+        <div class="tw-text"><p>This is perfect because I've always heard people call Lawrence, Kansas the Algeria of the Midwest.</p></div>
+        <span class="relabel">❝ Quoted</span>
+        <div class="nest">
+          <div class="tw-head"><span class="tw-author">Dean Ammi</span><span class="tw-handle">@AlgerianFooty</span></div>
+          <div class="tw-meta"><a href="https://x.com/AlgerianFooty/status/2064096526981292318">2026-06-08 21:25 UTC</a><span class="tw-id">ID 2064096526981292318</span></div>
+          <div class="tw-text"><p>🗣️ "I want to say thank you to Algeria for choosing Lawrence, Kansas." 🇺🇸</p><p>The locals in USA are all getting behind Algeria. 🇩🇿</p></div>
+          <figure class="media single"><img src="i-want-to-say-thank-you-to-algeria-for-choosing-lawrence-kansas-the-locals-in-usa-are-all.jpg" alt="Algeria / Lawrence, Kansas"></figure>
+        </div>
+      </div>
+    </article>
+
+    <div class="summary-note">
+      <span class="lead">Compressed timeline — remaining entries</span>
+      The European track ran in parallel: <strong>German Defense Minister Pistorius</strong> sought new partners after the collapse of the Franco-German joint fighter-jet project (<a href="https://x.com/business/status/2064269866480046515" style="color:var(--signal);text-decoration:none">Bloomberg</a>); <strong>Ukraine</strong> was reported building a cheap alternative to Patriot missiles (FT via @jillrussia); and Anton Jäger wrote for NYT Opinion on <strong>Kojève's grave in Brussels and the idea of a European geopolitics</strong> — a reminder that the feed's curator reads the war through a broader intellectual frame. An Iranian provincial governor also publicly denied that an explosion had occurred in Qeshm, underscoring the persistent gap between claims and confirmation.
+    </div>
+
+    <div class="context">
+      <h3>Analytical Context</h3>
+      <p>This theme exposes the <strong>connective tissue between theaters</strong>. The Pentagon raising Israeli espionage to its "critical" ceiling — paired with the explosive claim that VP Vance leaked a Mossad-Kurdish operation to Erdogan — reveals that the most consequential fault line may run <strong>inside the U.S.–Israel alliance itself</strong>, not just between adversaries. Allied trust, not enemy capability, becomes the scarce resource.</p>
+      <p>The Russia items (a drone strike near <strong>Chernobyl</strong>, the assassination of the official responsible for <strong>missile and ammunition supply</strong>) and the European defense story (collapsed Franco-German jet program, Ukraine improvising cheap interceptors) sketch a <strong>globalized munitions economy under stress</strong>: everyone is short of air defense and racing for cheaper magazines. The Treasury's reconstruction-financing scheme — billing Tehran for Gulf damage — shows great powers already <strong>pricing the postwar</strong> mid-conflict. And the Algeria/Lawrence, Kansas gag is a deliberate tonal release valve: even an OSINT war feed needs a moment of absurdist relief amid the grimness.</p>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <div>SUMMARY.HTML · generated from 3 timeline exports + 30 media files</div>
+    <div>SOURCE ACCOUNT · <a href="https://x.com/NicoleGrajewski">@NicoleGrajewski</a> &nbsp;·&nbsp; COVERAGE 2026-06-07 → 2026-06-10 UTC</div>
+    <div>All dates link to the original status. Reposts and quoted tweets shown nested under their parent. Claims are reproduced as posted and are not independently verified.</div>
+  </footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dispatch — Policy Tensor on the Counter-Base War</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,400;1,9..144,500&family=Spline+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0d0f12;
+    --ink-2: #14171c;
+    --panel: #181c22;
+    --panel-2: #1e232b;
+    --line: #2b313b;
+    --line-soft: #232932;
+    --paper: #ece4d6;
+    --paper-dim: #b9b3a6;
+    --muted: #8b8578;
+    --amber: #d9923f;
+    --amber-bright: #f0a94e;
+    --rust: #b6502f;
+    --teal: #5e9b8f;
+    --serif: "Fraunces", Georgia, serif;
+    --sans: "Spline Sans", system-ui, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(217,146,63,0.08), transparent 60%),
+      radial-gradient(900px 500px at -10% 20%, rgba(94,155,143,0.06), transparent 55%),
+      var(--ink);
+    color: var(--paper);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  a { color: inherit; }
+
+  /* ---------- Masthead ---------- */
+  .masthead {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 70px 28px 38px;
+    border-bottom: 1px solid var(--line);
+    position: relative;
+  }
+  .kicker {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--amber);
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .kicker::before {
+    content: "";
+    width: 34px;
+    height: 1px;
+    background: var(--amber);
+    display: inline-block;
+  }
+  .masthead h1 {
+    font-family: var(--serif);
+    font-weight: 800;
+    font-size: clamp(2.6rem, 7vw, 5.1rem);
+    line-height: 0.98;
+    letter-spacing: -0.02em;
+    margin: 22px 0 18px;
+    color: var(--paper);
+  }
+  .masthead h1 em {
+    font-style: italic;
+    font-weight: 500;
+    color: var(--amber-bright);
+  }
+  .standfirst {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: clamp(1.1rem, 2.3vw, 1.45rem);
+    line-height: 1.5;
+    color: var(--paper-dim);
+    max-width: 760px;
+  }
+  .meta-row {
+    margin-top: 30px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 26px;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  .meta-row b { color: var(--paper); font-weight: 500; }
+
+  /* ---------- Contents ---------- */
+  .toc {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 34px 28px 10px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1px;
+    background: var(--line-soft);
+    border: 1px solid var(--line-soft);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-top: 46px;
+    margin-bottom: 20px;
+    padding: 0;
+  }
+  .toc a {
+    background: var(--ink-2);
+    padding: 22px 24px;
+    text-decoration: none;
+    display: block;
+    transition: background 0.25s ease, transform 0.25s ease;
+  }
+  .toc a:hover { background: var(--panel-2); }
+  .toc .n {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--amber);
+    letter-spacing: 0.1em;
+  }
+  .toc .t {
+    font-family: var(--serif);
+    font-size: 1.18rem;
+    font-weight: 600;
+    margin-top: 8px;
+    color: var(--paper);
+    line-height: 1.2;
+  }
+
+  /* ---------- Layout ---------- */
+  main { max-width: 1080px; margin: 0 auto; padding: 20px 28px 90px; }
+
+  .theme { padding: 56px 0 12px; border-top: 1px solid var(--line); margin-top: 36px; }
+  .theme:first-of-type { border-top: none; }
+
+  .theme-head { margin-bottom: 34px; }
+  .theme-index {
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.3em;
+    color: var(--amber);
+    text-transform: uppercase;
+  }
+  .theme-head h2 {
+    font-family: var(--serif);
+    font-weight: 800;
+    font-size: clamp(1.9rem, 4.5vw, 3rem);
+    line-height: 1.04;
+    letter-spacing: -0.015em;
+    margin: 12px 0 16px;
+    color: var(--paper);
+  }
+  .theme-intro {
+    font-size: 1.05rem;
+    color: var(--paper-dim);
+    max-width: 720px;
+  }
+  .live-flag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--rust);
+    border: 1px solid rgba(182,80,47,0.5);
+    border-radius: 999px;
+    padding: 5px 12px;
+    margin-top: 18px;
+    background: rgba(182,80,47,0.08);
+  }
+  .live-flag .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--rust);
+    animation: pulse 1.8s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity: 1; transform: scale(1);} 50% { opacity: .35; transform: scale(1.4);} }
+
+  .section-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 40px 0 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-label::after { content:""; flex:1; height:1px; background: var(--line-soft); }
+
+  /* ---------- Tweet card ---------- */
+  .tweet {
+    background: linear-gradient(180deg, var(--panel) 0%, var(--ink-2) 100%);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 24px 26px;
+    margin: 18px 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .tweet::before {
+    content:"";
+    position: absolute; left:0; top:0; bottom:0; width: 3px;
+    background: linear-gradient(var(--amber), var(--rust));
+    opacity: 0.85;
+  }
+  .t-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; margin-bottom: 14px; }
+  .t-author { font-family: var(--serif); font-weight: 600; font-size: 1.12rem; color: var(--paper); }
+  .t-handle { font-family: var(--mono); font-size: 0.82rem; color: var(--teal); }
+  .t-date {
+    font-family: var(--mono); font-size: 0.78rem; color: var(--amber);
+    text-decoration: none; border-bottom: 1px dotted rgba(217,146,63,0.5);
+    margin-left: auto;
+    transition: color 0.2s;
+  }
+  .t-date:hover { color: var(--amber-bright); }
+  .t-id { font-family: var(--mono); font-size: 0.68rem; color: var(--muted); letter-spacing: 0.04em; }
+  .t-body { font-size: 1.06rem; line-height: 1.62; color: var(--paper); white-space: pre-wrap; }
+  .t-body a { color: var(--teal); text-decoration: none; border-bottom: 1px solid rgba(94,155,143,0.35); }
+
+  /* ---------- Nested ---------- */
+  .nested {
+    margin: 16px 0 4px;
+    border-left: 2px solid var(--line);
+    padding: 14px 0 4px 18px;
+    background:
+      linear-gradient(90deg, rgba(94,155,143,0.05), transparent 40%);
+    border-radius: 0 8px 8px 0;
+  }
+  .nested .nest-tag {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--teal); margin-bottom: 8px; display:block;
+  }
+  .nested.repost .nest-tag { color: var(--amber); }
+  .nested .t-author { font-size: 1rem; }
+  .nested .t-body { font-size: 0.97rem; color: var(--paper-dim); }
+  .nested .tweet { background: rgba(20,23,28,0.6); border-color: var(--line-soft); }
+  .nested .tweet::before { opacity: 0.4; width: 2px; }
+  /* deeper nest */
+  .nested .nested { margin-left: 4px; }
+
+  /* ---------- Images ---------- */
+  .media-single { margin: 16px 0 4px; text-align: center; }
+  .media-single img {
+    max-width: 100%; max-height: 520px; border-radius: 10px;
+    border: 1px solid var(--line); box-shadow: 0 18px 40px rgba(0,0,0,0.45);
+  }
+  .media-grid {
+    margin: 16px 0 4px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+  }
+  .media-grid img {
+    width: 100%; height: 100%; object-fit: cover; aspect-ratio: 4/3;
+    border-radius: 10px; border: 1px solid var(--line);
+    box-shadow: 0 10px 26px rgba(0,0,0,0.4);
+  }
+  .nested .media-single img, .nested .media-grid img { max-height: 360px; }
+
+  /* ---------- Narrative + Analytical ---------- */
+  .narrative {
+    background: var(--ink-2);
+    border: 1px dashed var(--line);
+    border-radius: 12px;
+    padding: 22px 26px;
+    margin: 22px 0;
+    color: var(--paper-dim);
+    font-size: 1.02rem;
+  }
+  .narrative p { margin: 0 0 12px; }
+  .narrative p:last-child { margin-bottom: 0; }
+  .narrative strong { color: var(--paper); font-weight: 600; }
+  .narrative .mini {
+    font-family: var(--mono); font-size: 0.74rem; color: var(--teal);
+    text-decoration: none; border-bottom: 1px dotted rgba(94,155,143,0.5);
+  }
+
+  .analytic {
+    margin: 30px 0 8px;
+    padding: 26px 30px;
+    border-radius: 14px;
+    background:
+      linear-gradient(180deg, rgba(217,146,63,0.08), rgba(217,146,63,0.02));
+    border: 1px solid rgba(217,146,63,0.28);
+    position: relative;
+  }
+  .analytic h3 {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--amber-bright);
+    margin: 0 0 14px;
+  }
+  .analytic p { margin: 0 0 12px; font-size: 1.03rem; color: var(--paper); }
+  .analytic p:last-child { margin-bottom: 0; }
+  .analytic em { color: var(--amber-bright); font-style: italic; }
+
+  /* ---------- Footer ---------- */
+  footer {
+    max-width: 1080px; margin: 0 auto; padding: 40px 28px 80px;
+    border-top: 1px solid var(--line);
+    font-family: var(--mono); font-size: 12px; color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+  footer a { color: var(--teal); text-decoration: none; }
+
+  /* ---------- Reveal animation ---------- */
+  .reveal { opacity: 0; transform: translateY(18px); transition: opacity .7s ease, transform .7s ease; }
+  .reveal.in { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+    .live-flag .dot { animation: none; }
+  }
+
+  @media (max-width: 600px) {
+    body { font-size: 16px; }
+    .tweet { padding: 20px 18px; }
+    .t-date { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="kicker">Timeline Dispatch · @policytensor</div>
+  <h1>The Counter-Base War &amp; the <em>Arithmetic of Decline</em></h1>
+  <p class="standfirst">A single night's feed from Policy Tensor, read as one argument: missiles are rewriting the map of American power — from the Gulf littoral to the Taiwan Strait — while the home front trades sovereignty for spectacle.</p>
+  <div class="meta-row">
+    <span><b>Source</b> &nbsp;3 timeline exports</span>
+    <span><b>Window</b> &nbsp;09 Jun – 10 Jun 2026</span>
+    <span><b>Author</b> &nbsp;Policy Tensor</span>
+    <span><b>Themes</b> &nbsp;4</span>
+  </div>
+</header>
+
+<nav class="toc" aria-label="Contents">
+  <a href="#t1"><span class="n">01</span><span class="t">The Counter-Base War in the Gulf</span></a>
+  <a href="#t2"><span class="n">02</span><span class="t">The Pacific Mirror: China &amp; Taiwan</span></a>
+  <a href="#t3"><span class="n">03</span><span class="t">Media Capture &amp; Oligarchy</span></a>
+  <a href="#t4"><span class="n">04</span><span class="t">The Human Ledger: Gaza &amp; Lebanon</span></a>
+</nav>
+
+<main>
+
+  <!-- ============== THEME 1 ============== -->
+  <section class="theme" id="t1">
+    <div class="theme-head reveal">
+      <div class="theme-index">Theme 01</div>
+      <h2>The Counter-Base War in the Gulf</h2>
+      <p class="theme-intro">The spine of the feed: a real-time reading of the U.S.–Iran clash in the Strait of Hormuz. Policy Tensor tracks the tit-for-tat through the night — the interceptor math, the case for abandoning Gulf bases, and the wager that a deal survives the latest skirmish.</p>
+      <span class="live-flag"><span class="dot"></span> Live developments · shown chronologically</span>
+    </div>
+
+    <div class="section-label reveal">Fully quoted · in the order they broke</div>
+
+    <!-- 22:09 still reading essay -->
+    <article class="tweet reveal">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-handle">@policytensor</span>
+        <span class="t-id">ID 2064469879986544652</span>
+        <a class="t-date" href="https://x.com/policytensor/status/2064469879986544652">2026-06-09 22:09 UTC</a>
+      </div>
+      <div class="t-body">Still reading the essay everyone is raving about. Just want to note that this is totally ignorant of military facts, above all, the scale of Iranian firepower that has been revealed. Any picture of the Ramadan War that ignores Iranian counter-base attacks is totally wrong. https://t.co/cR1XXGHJBm</div>
+      <div class="media-single">
+        <img src="still-reading-the-essay-everyone-is-raving-about-just-want-to-note-that-this-is-totally-ignorant-of-military-facts.jpg" alt="Screenshot critiquing essay on the Ramadan War" loading="lazy">
+      </div>
+    </article>
+
+    <!-- 23:05 SRBM salvo of ten -->
+    <article class="tweet reveal">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-handle">@policytensor</span>
+        <span class="t-id">ID 2064484046722208255</span>
+        <a class="t-date" href="https://x.com/policytensor/status/2064484046722208255">2026-06-09 23:05 UTC</a>
+      </div>
+      <div class="t-body">The Iranian response will likely use SRBMs, conserving the MRBMs for Israel or general escalation. This means that they will hit US bases on the Gulf littoral. I doubt that they will escalate. Should be a tit for tat. Maybe a salvo of ten.</div>
+    </article>
+
+    <!-- 23:21 skirmishes purpose - Guy Laron Hormuz -->
+    <article class="tweet reveal">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-handle">@policytensor</span>
+        <span class="t-id">ID 2064487969981948148</span>
+        <a class="t-date" href="https://x.com/policytensor/status/2064487969981948148">2026-06-09 23:21 UTC</a>
+      </div>
+      <div class="t-body">Exactly right. The skirmishes have a purpose. To chip away at the Iranian position. Recall @HamidRezaAz’s last dispatch. Together with the Israeli escalation in Lebanon, this is what pushed the Iranians into their new strategy.</div>
+      <div class="nested">
+        <span class="nest-tag">Quoted</span>
+        <article class="tweet">
+          <div class="t-head">
+            <span class="t-author">Guy Laron</span>
+            <span class="t-handle">@guy_laron</span>
+            <span class="t-id">ID 2064475662207873305</span>
+            <a class="t-date" href="https://x.com/guy_laron/status/2064475662207873305">2026-06-09 22:32 UTC</a>
+          </div>
+          <div class="t-body">1. Is the U.S. secretly reopening Hormuz? What's unfolding off Iran's coast is a premeditated stealth campaign to bleed Tehran's leverage one tanker at a time. It's Tanker War 2.0, not a haphazard series of operations. https://t.co/yb6T26HEIg</div>
+          <div class="media-single">
+            <img src="1-is-the-u-s-secretly-reopening-hormuz-what-s-unfolding-off-iran-s-coast-is-a-premeditated-stealth-campaign-to-bleed-tehran-s.png" alt="Thread on a stealth campaign in the Strait of Hormuz" loading="lazy">
+          </div>
+        </article>
+      </div>
+    </article>
+
+    <!-- 00:31 RT HormuzLetter breaking 3 ballistic missiles -->
+    <article class="tweet reveal">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-handle">@policytensor</span>
+        <span class="t-id">ID 2064505642056855969</span>
+        <a class="t-date" href="https://x.com/policytensor/status/2064505642056855969">2026-06-10 00:31 UTC</a>
+      </div>
+      <div class="t-body">RT @HormuzLetter: BREAKING: Iran launches 3 ballistic missiles from Isfahan towards US bases in the Gulf.</div>
+      <div class="nested repost">
+        <span class="nest-tag">Reposted</span>
+        <article class="tweet">
+          <div class="t-head">
+            <span class="t-author">The Hormuz Letter</span>
+            <span class="t-handle">@HormuzLetter</span>
+            <span class="t-id">ID 2064503669429588270</span>
+            <a class="t-date" href="https://x.com/HormuzLetter/status/2064503669429588270">2026-06-10 00:23 UTC</a>
+          </div>
+          <div class="t-body">BREAKING: Iran launches 3 ballistic missiles from Isfahan towards US bases in the Gulf.</div>
+        </article>
+      </div>
+    </article>
+
+    <!-- 02:12 RT DropSite IRGC 21 targets -->
+    <article class="tweet reveal">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-handle">@policytensor</span>
+        <span class="t-id">ID 2064531098189590562</span>
+        <a class="t-date" href="https://x.com/policytensor/status/2064531098189590562">2026-06-10 02:12 UTC</a>
+      </div>
+      <div class="t-body">RT @DropSiteNews: 🔺 IRGC Claims Strikes on U.S. Air Base in Jordan, Says 21 Targets Hit Across Region</div>
+      <div class="nested repost">
+        <span class="nest-tag">Reposted</span>
+        <article class="tweet">
+          <div class="t-head">
+            <span class="t-author">Drop Site</span>
+            <span class="t-handle">@DropSiteNews</span>
+            <span class="t-id">ID 2064530909643063487</span>
+            <a class="t-date" href="https://x.com/DropSiteNews/status/2064530909643063487">2026-06-10 02:11 UTC</a>
+          </div>
+          <div class="t-body">🔺 IRGC Claims Strikes on U.S. Air Base in Jordan, Says 21 Targets Hit Across Region
+
+The IRGC issued a statement claiming it struck 21 targets at U.S. air and naval bases across the region and separately targeted Al-Azraq Air Base in Jordan, according to Khabar Fouri.</div>
+        </article>
+      </div>
+    </article>
+
+    <!-- 02:45 RT DropSite Al-Azraq + nested OSINT -->
+    <article class="tweet reveal">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-handle">@policytensor</span>
+        <span class="t-id">ID 2064539340152140206</span>
+        <a class="t-date" href="https://x.com/policytensor/status/2064539340152140206">2026-06-10 02:45 UTC</a>
+      </div>
+      <div class="t-body">RT @DropSiteNews: Al-Azraq Air Base and Muwaffaq Salti Air Base are two names for the same facility, located in Azraq in eastern Jordan, ab…</div>
+      <div class="nested repost">
+        <span class="nest-tag">Reposted</span>
+        <article class="tweet">
+          <div class="t-head">
+            <span class="t-author">Drop Site</span>
+            <span class="t-handle">@DropSiteNews</span>
+            <span class="t-id">ID 2064538582660899326</span>
+            <a class="t-date" href="https://x.com/DropSiteNews/status/2064538582660899326">2026-06-10 02:42 UTC</a>
+          </div>
+          <div class="t-body">Al-Azraq Air Base and Muwaffaq Salti Air Base are two names for the same facility, located in Azraq in eastern Jordan, about 100 km east of Amman.
+
+In February 2026, satellite imagery showed more than 60 U.S. jets at the base — about three times the usual number — including 30</div>
+          <div class="nested">
+            <span class="nest-tag">Quoted within</span>
+            <article class="tweet">
+              <div class="t-head">
+                <span class="t-author">OSINTtechnical</span>
+                <span class="t-handle">@Osinttechnical</span>
+                <span class="t-id">ID 2064525895067472015</span>
+                <a class="t-date" href="https://x.com/Osinttechnical/status/2064525895067472015">2026-06-10 01:51 UTC</a>
+              </div>
+              <div class="t-body">Iran's IRGC says it has attacked Muwaffaq Salti Air Base in Jordan with a salvo of medium-range ballistic missiles.
+
+The base serves as a major staging point for USAF forces in the region. https://t.co/EpD0XIxCIm</div>
+              <div class="media-grid">
+                <img src="iran-s-irgc-says-it-has-attacked-muwaffaq-salti-air-base-in-jordan-with-a-salvo-of-medium-range-ballistic-missiles-the-1.jpg" alt="IRGC strike claim on Muwaffaq Salti Air Base" loading="lazy">
+                <img src="iran-s-irgc-says-it-has-attacked-muwaffaq-salti-air-base-in-jordan-with-a-salvo-of-medium-range-ballistic-missiles-the-2.png" alt="Map/imagery of Muwaffaq Salti Air Base" loading="lazy">
+              </div>
+            </article>
+          </div>
+        </article>
+      </div>
+    </article>
+
+    <!-- 04:27 bases abandonment Sean Mathews -->
+    <article class="tweet reveal">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-handle">@policytensor</span>
+        <span class="t-id">ID 2064565012216050031</span>
+        <a class="t-date" href="https://x.com/policytensor/status/2064565012216050031">2026-06-10 04:27 UTC</a>
+      </div>
+      <div class="t-body">There may be a case for bases around the world. But none within the range of short-range missiles of a great missile power. The bases on the Gulf littoral should be abandoned wholesale. And the bases that are not abandoned have to be hardened.</div>
+      <div class="nested">
+        <span class="nest-tag">Quoted</span>
+        <article class="tweet">
+          <div class="t-head">
+            <span class="t-author">Sean Mathews</span>
+            <span class="t-handle">@SeanPmathews</span>
+            <span class="t-id">ID 2064302876701098078</span>
+            <a class="t-date" href="https://x.com/SeanPmathews/status/2064302876701098078">2026-06-09 11:05 UTC</a>
+          </div>
+          <div class="t-body">The U.S.-Israeli war on Iran has shown that the era of big military bases in the Gulf is over, U.S. officials and analysts tell me. 🧵 https://t.co/vTySdBnpsZ</div>
+          <div class="media-single">
+            <img src="the-u-s-israeli-war-on-iran-has-shown-that-the-era-of-big-military-bases-in-the-gulf-is-over-u-s.jpg" alt="Report: the era of big Gulf military bases is over" loading="lazy">
+          </div>
+        </article>
+      </div>
+    </article>
+
+    <div class="section-label reveal">The rest of the night, in brief</div>
+    <div class="narrative reveal">
+      <p>Through the small hours, Policy Tensor narrates the strike's logic and aftermath in real time. He warns against complacency — <a class="mini" href="https://x.com/policytensor/status/2064506229032935654">00:33</a> — conceding Iran might respond disproportionately under "the new 150% policy": "Maybe 30, not 10." The delay in Iran's reply, he reads via <strong>@OSINTWarfare</strong> (<a class="mini" href="https://x.com/policytensor/status/2064505371574595992">00:30</a>), as caution against U.S. drones hunting launch sites overhead. He muses whether restoring deterrence requires "something new" but a warship "might be too escalatory" <a class="mini" href="https://x.com/policytensor/status/2064510968332275803">00:52</a>, and reads U.S. strikes on Hormozgan water tanks as a sign Washington "cannot locate the drone and missile production sites" <a class="mini" href="https://x.com/policytensor/status/2064508745023885810">00:43</a>.</p>
+      <p>By dawn the technical post-mortem sharpens: the chopper episode "was almost certainly an excuse" (quoting <strong>@DanielLDavis1</strong>, <a class="mini" href="https://x.com/policytensor/status/2064552426431009047">03:37</a>); U.S. F-35s had been consolidated at Ben Gurion and Prince Sultan "to share the bmd umbrella given the scarcity of interceptors" (quoting <strong>@EGYOSINT</strong>, <a class="mini" href="https://x.com/policytensor/status/2064537125781934125">02:36</a>); and on magazine depth — "Not conserving the MRBMs then... apparently they've all been updated" <a class="mini" href="https://x.com/policytensor/status/2064532957612646422">02:19</a>. Earlier in the cycle he framed the wager itself: a deal still holds unless "the Trump team is not totally stupid" and reverts to "full-scale war" (quoting <strong>@DanDePetris</strong>, <a class="mini" href="https://x.com/policytensor/status/2064432904399143045">19:42</a>), reposting <strong>@RKelanic</strong>'s view that full-scale resumption is unlikely <a class="mini" href="https://x.com/policytensor/status/2064478689639768392">22:44</a>, and judging the helicopter shootdown a "Russian upgrade" of the Shahed <a class="mini" href="https://x.com/policytensor/status/2064429378310697251">19:28</a>.</p>
+    </div>
+
+    <div class="analytic reveal">
+      <h3>Analytical Context</h3>
+      <p>The throughline is a <em>counter-base</em> theory of war: precision ballistic missiles in sufficient salvos have made fixed, concentrated airpower — the apron full of "eagles," the regional mega-base — a liability rather than an asset. The recurring "interceptor math" is the crux: ballistic-missile defense (BMD) is finite and expensive per shot, so a large enough salvo always saturates it. That arithmetic drives every downstream claim — abandon or harden Gulf-littoral bases, conserve MRBMs for Israel, expect a calibrated "tit for tat."</p>
+      <p>Note the analytic posture: he treats Iran as a rational escalation-manager operating a published "150% doctrine" (respond with half-again the inflicted damage), and reads U.S. behavior — water-tank strikes, drone overflights — as evidence of <em>targeting failure</em> rather than strength. The "separate peace" wager (a Trump–Bibi split leaving Israel to fight alone) recurs as the optimistic branch of his decision tree, conditioned entirely on Washington behaving instrumentally rather than ideologically.</p>
+    </div>
+  </section>
+
+  <!-- ============== THEME 2 ============== -->
+  <section class="theme" id="t2">
+    <div class="theme-head reveal">
+      <div class="theme-index">Theme 02</div>
+      <h2>The Pacific Mirror: China &amp; Taiwan</h2>
+      <p class="theme-intro">The Gulf is a rehearsal. Policy Tensor exports the same missile logic to the Western Pacific — Taiwan as the indefensible apron, AUKUS as an expensive dud, and a Cold War with China that the U.S. is structurally set up to lose.</p>
+    </div>
+
+    <div class="section-label reveal">Fully quoted</div>
+
+    <!-- equilibrium model (pinned, appears all files) -->
+    <article class="tweet reveal">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-handle">@policytensor</span>
+        <span class="t-id">ID 2064280559702909010</span>
+        <a class="t-date" href="https://x.com/policytensor/status/2064280559702909010">2026-06-09 09:36 UTC</a>
+      </div>
+      <div class="t-body">An Equilibrium Model of Counter-Base War in the Western Pacific, by @policytensor https://t.co/DOAYbvr7zF https://t.co/MoVdZY0mmL</div>
+      <div class="media-single">
+        <img src="an-equilibrium-model-of-counter-base-war-in-the-western-pacific-by-policytensor-https-t-co-doaybvr7zf-https-t-co-movdzy0mml.jpg" alt="An Equilibrium Model of Counter-Base War in the Western Pacific" loading="lazy">
+      </div>
+    </article>
+
+    <!-- Taiwan impossible to defend -->
+    <article class="tweet reveal">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-handle">@policytensor</span>
+        <span class="t-id">ID 2064280232530526624</span>
+        <a class="t-date" href="https://x.com/policytensor/status/2064280232530526624">2026-06-09 09:35 UTC</a>
+      </div>
+      <div class="t-body">There is no recognitiion of the military fact that Taiwan is impossible to defend. How the fuck do think this is going to end? https://t.co/m3bYV3bHEV https://t.co/dsuD30CnM6</div>
+      <div class="media-single">
+        <img src="there-is-no-recognitiion-of-the-military-fact-that-taiwan-is-impossible-to-defend-how-the-fuck-do-think-this.jpg" alt="Argument that Taiwan is militarily indefensible" loading="lazy">
+      </div>
+    </article>
+
+    <!-- China stupid enough to attempt conquest -->
+    <article class="tweet reveal">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-handle">@policytensor</span>
+        <span class="t-id">ID 2064406407231795477</span>
+        <a class="t-date" href="https://x.com/policytensor/status/2064406407231795477">2026-06-09 17:56 UTC</a>
+      </div>
+      <div class="t-body">It's really alarming that people are not thinking straight about this. There would be a risk of failure only if China is stupid enough to attempt to conquer the island without first kicking out the US from Asia. If it does things correctly, it can guarantee success. https://t.co/j7FbsXfLY0</div>
+      <div class="media-single">
+        <img src="it-s-really-alarming-that-people-are-not-thinking-straight-about-this-there-would-be-a-risk-of-failure-only-if.jpg" alt="Argument on the correct sequencing of a Taiwan campaign" loading="lazy">
+      </div>
+    </article>
+
+    <!-- Cold War with China - Bethany Allen -->
+    <article class="tweet reveal">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-handle">@policytensor</span>
+        <span class="t-id">ID 2064577857586635168</span>
+        <a class="t-date" href="https://x.com/policytensor/status/2064577857586635168">2026-06-10 05:18 UTC</a>
+      </div>
+      <div class="t-body">The Cold War was an excellent device to impose discipline at home. No doubt US elites desperately want one with China for the same reason. The problem is that we will lose Cold War they want so bad, and lose a hot war if we’re stupid enough to fight China.</div>
+      <div class="nested">
+        <span class="nest-tag">Quoted</span>
+        <article class="tweet">
+          <div class="t-head">
+            <span class="t-author">Bethany 貝書穎</span>
+            <span class="t-handle">@BethanyAllenEbr</span>
+            <span class="t-id">ID 2064549050683432990</span>
+            <a class="t-date" href="https://x.com/BethanyAllenEbr/status/2064549050683432990">2026-06-10 03:23 UTC</a>
+          </div>
+          <div class="t-body">I increasingly find that my primary role in the "China influence" space these days is to debunk a lot of very, very poor quality "China influence" research reports that have been coming out.
+
+I don't think it would be an overreach to call this slate of reports "China influence https://t.co/CcrSME0lIf</div>
+          <div class="media-grid">
+            <img src="i-increasingly-find-that-my-primary-role-in-the-china-influence-space-these-days-is-to-debunk-a-lot-of-1.jpg" alt="China influence research critique 1" loading="lazy">
+            <img src="i-increasingly-find-that-my-primary-role-in-the-china-influence-space-these-days-is-to-debunk-a-lot-of-2.jpg" alt="China influence research critique 2" loading="lazy">
+            <img src="i-increasingly-find-that-my-primary-role-in-the-china-influence-space-these-days-is-to-debunk-a-lot-of-3.jpg" alt="China influence research critique 3" loading="lazy">
+            <img src="i-increasingly-find-that-my-primary-role-in-the-china-influence-space-these-days-is-to-debunk-a-lot-of-4.jpg" alt="China influence research critique 4" loading="lazy">
+          </div>
+        </article>
+      </div>
+    </article>
+
+    <!-- Taiwan Japanese protectorate - Bonnie Glaser rare earth -->
+    <article class="tweet reveal">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-handle">@policytensor</span>
+        <span class="t-id">ID 2064574900472258659</span>
+        <a class="t-date" href="https://x.com/policytensor/status/2064574900472258659">2026-06-10 05:06 UTC</a>
+      </div>
+      <div class="t-body">Short of a formal apology by Iron Lady, really hard to see the Chinese oblige. Should’ve thought things through before declaring Taiwan a Japanese protectorate.</div>
+      <div class="nested">
+        <span class="nest-tag">Quoted</span>
+        <article class="tweet">
+          <div class="t-head">
+            <span class="t-author">Bonnie Glaser / 葛來儀</span>
+            <span class="t-handle">@BonnieGlaser</span>
+            <span class="t-id">ID 2064369760725299698</span>
+            <a class="t-date" href="https://x.com/BonnieGlaser/status/2064369760725299698">2026-06-09 15:31 UTC</a>
+          </div>
+          <div class="t-body">US asks China to resume rare-earth exports to Japan
+https://t.co/2grIpsvUr0 via @NikkeiAsia https://t.co/W3d5ao9bPF</div>
+          <div class="media-single">
+            <img src="us-asks-china-to-resume-rare-earth-exports-to-japan-https-t-co-2gripsvur0-via-nikkeiasia-https-t-co-w3d5ao9bpf.png" alt="US asks China to resume rare-earth exports to Japan" loading="lazy">
+          </div>
+        </article>
+      </div>
+    </article>
+
+    <div class="section-label reveal">Also in this thread</div>
+    <div class="narrative reveal">
+      <p>Two further posts round out the Pacific argument. He reposts <strong>@JJKALE2</strong> on Warwick Powell's critique of AUKUS — "an extremely expensive dud" that "could be straight up dangerous for Australia" <a class="mini" href="https://x.com/policytensor/status/2064413667630751983">18:25</a> — and promotes his own equilibrium model as "the most sophisticated model of war in Asia" <a class="mini" href="https://x.com/policytensor/status/2064282823410831755">09:45</a>, jousting with interlocutors who won't "do the math" <a class="mini" href="https://x.com/policytensor/status/2064291635714719883">10:20</a>.</p>
+    </div>
+
+    <div class="analytic reveal">
+      <h3>Analytical Context</h3>
+      <p>This theme is the Gulf war's <em>theoretical twin</em>. The same equation — saturating salvos versus finite interception — renders Taiwan "impossible to defend" in his framing, and reframes a cross-strait campaign as a <em>sequencing</em> problem: China can "guarantee success" only by first expelling U.S. power-projection from Asia (the counter-base step) rather than rushing an amphibious assault. AUKUS and forward basing become sunk costs in a game whose payoff matrix has already shifted.</p>
+      <p>The "China influence" and rare-earth threads add the political-economy layer: he reads the elite appetite for a new Cold War as a <em>domestic-discipline</em> device (à la the original Cold War's role in regimenting society), while arguing the material balance — manufacturing, rare earths, missile mass — means the U.S. "will lose the Cold War they want so bad." It's a structural-realist case dressed in granular OSINT.</p>
+    </div>
+  </section>
+
+  <!-- ============== THEME 3 ============== -->
+  <section class="theme" id="t3">
+    <div class="theme-head reveal">
+      <div class="theme-index">Theme 03</div>
+      <h2>Media Capture, Oligarchy &amp; American Decline</h2>
+      <p class="theme-intro">The home-front correlate of military overstretch: concentrated ownership of media, crypto self-dealing, oligarchs as foreign-policy actors, and the spectacle of luxury sold against a backdrop of war.</p>
+    </div>
+
+    <div class="section-label reveal">Fully quoted</div>
+
+    <!-- Greenwald media ownership + NY Post Bari Weiss -->
+    <article class="tweet reveal">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-handle">@policytensor</span>
+        <span class="t-id">ID 2064445714189500616</span>
+        <a class="t-date" href="https://x.com/policytensor/status/2064445714189500616">2026-06-09 20:33 UTC</a>
+      </div>
+      <div class="t-body">RT @ggreenwald: The planet's most fanatical Israel loyalists now own and control (or are about to) Paramount, CBS, TikTok, Warner Brothers,…</div>
+      <div class="nested repost">
+        <span class="nest-tag">Reposted</span>
+        <article class="tweet">
+          <div class="t-head">
+            <span class="t-author">Glenn Greenwald</span>
+            <span class="t-handle">@ggreenwald</span>
+            <span class="t-id">ID 2064424379212054945</span>
+            <a class="t-date" href="https://x.com/ggreenwald/status/2064424379212054945">2026-06-09 19:08 UTC</a>
+          </div>
+          <div class="t-body">The planet's most fanatical Israel loyalists now own and control (or are about to) Paramount, CBS, TikTok, Warner Brothers, CNN: all acquired in the last two years by Netanyahu's close friend, Larry Ellison, right as public support for Israel in the US and the west collapses:</div>
+          <div class="nested">
+            <span class="nest-tag">Quoted within</span>
+            <article class="tweet">
+              <div class="t-head">
+                <span class="t-author">New York Post</span>
+                <span class="t-handle">@nypost</span>
+                <span class="t-id">ID 2064388279156294124</span>
+                <a class="t-date" href="https://x.com/nypost/status/2064388279156294124">2026-06-09 16:44 UTC</a>
+              </div>
+              <div class="t-body">CBS News boss Bari Weiss poised to oversee CNN editorial operations: report https://t.co/9TOb1jnX68 https://t.co/zodbfpgDKf</div>
+              <div class="media-single">
+                <img src="cbs-news-boss-bari-weiss-poised-to-oversee-cnn-editorial-operations-report-https-t-co-9tob1jnx68-https-t-co-zodbfpgdkf.jpg" alt="Report: Bari Weiss poised to oversee CNN editorial operations" loading="lazy">
+              </div>
+            </article>
+          </div>
+        </article>
+      </div>
+    </article>
+
+    <!-- Gwyneth 51 Park - DD Geopolitics -->
+    <article class="tweet reveal">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-handle">@policytensor</span>
+        <span class="t-id">ID 2064534631035097406</span>
+        <a class="t-date" href="https://x.com/policytensor/status/2064534631035097406">2026-06-10 02:26 UTC</a>
+      </div>
+      <div class="t-body">You can watch the genocide from the comfort of your penthouse at 51 Park.</div>
+      <div class="nested">
+        <span class="nest-tag">Quoted</span>
+        <article class="tweet">
+          <div class="t-head">
+            <span class="t-author">DD Geopolitics</span>
+            <span class="t-handle">@DD_Geopolitics</span>
+            <span class="t-id">ID 2064371416628420608</span>
+            <a class="t-date" href="https://x.com/DD_Geopolitics/status/2064371416628420608">2026-06-09 15:37 UTC</a>
+          </div>
+          <div class="t-body">Gwyneth Paltrow promotes $10M penthouses in Herzliya while Gaza burns and Lebanon bleeds.
+
+While children are buried under rubble in Gaza, while Lebanese families flee Israeli airstrikes, while Gazans starve under total blockade, she is is fronting an ad campaign for "51 Park," a https://t.co/Exl7JVKmTm</div>
+          <div class="media-single">
+            <img src="gwyneth-paltrow-promotes-10m-penthouses-in-herzliya-while-gaza-burns-and-lebanon-bleeds-while-children-are-buried-under-rubble-in.jpg" alt="Gwyneth Paltrow promotes Herzliya penthouses" loading="lazy">
+          </div>
+        </article>
+      </div>
+    </article>
+
+    <!-- Life is wonderful here mama - PopBase -->
+    <article class="tweet reveal">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-handle">@policytensor</span>
+        <span class="t-id">ID 2064585262257021364</span>
+        <a class="t-date" href="https://x.com/policytensor/status/2064585262257021364">2026-06-10 05:47 UTC</a>
+      </div>
+      <div class="t-body">Life is wonderful here, mama. You must come visit! https://t.co/BfbOUTvKl9</div>
+      <div class="media-single">
+        <img src="life-is-wonderful-here-mama-you-must-come-visit-https-t-co-bfboutvkl9.jpg" alt="Sardonic repost of the 51 Park campaign" loading="lazy">
+      </div>
+      <div class="nested">
+        <span class="nest-tag">Quoted</span>
+        <article class="tweet">
+          <div class="t-head">
+            <span class="t-author">Pop Base</span>
+            <span class="t-handle">@PopBase</span>
+            <span class="t-id">ID 2064507350346793062</span>
+            <a class="t-date" href="https://x.com/PopBase/status/2064507350346793062">2026-06-10 00:38 UTC</a>
+          </div>
+          <div class="t-body">Gwyneth Paltrow stars in new campaign for Israel luxury housing development ‘51PARK’ in Herzliya. https://t.co/otQlxBEMwk</div>
+          <div class="media-grid">
+            <img src="gwyneth-paltrow-stars-in-new-campaign-for-israel-luxury-housing-development-51park-in-herzliya-https-t-co-otqlxbemwk-1.jpg" alt="51 Park campaign image 1" loading="lazy">
+            <img src="gwyneth-paltrow-stars-in-new-campaign-for-israel-luxury-housing-development-51park-in-herzliya-https-t-co-otqlxbemwk-2.jpg" alt="51 Park campaign image 2" loading="lazy">
+          </div>
+        </article>
+      </div>
+    </article>
+
+    <!-- Mukesh Ambani - Josh Kaplan -->
+    <article class="tweet reveal">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-handle">@policytensor</span>
+        <span class="t-id">ID 2064534084936683775</span>
+        <a class="t-date" href="https://x.com/policytensor/status/2064534084936683775">2026-06-10 02:24 UTC</a>
+      </div>
+      <div class="t-body">Mukesh Ambani is no mere billionaire. The man is worth something like $100 billion and a good claim at being the most powerful oligarch in Asia!</div>
+      <div class="nested">
+        <span class="nest-tag">Quoted</span>
+        <article class="tweet">
+          <div class="t-head">
+            <span class="t-author">Josh Kaplan</span>
+            <span class="t-handle">@js_kaplan</span>
+            <span class="t-id">ID 2064289781098369523</span>
+            <a class="t-date" href="https://x.com/js_kaplan/status/2064289781098369523">2026-06-09 10:13 UTC</a>
+          </div>
+          <div class="t-body">NEW: An Indian billionaire was in Trump’s crosshairs. Then he poured millions into an obscure startup secretly backed by Donald Trump Jr. https://t.co/2iwJp53vbB
+
+w/ @JustinElliott @Amierjeski</div>
+        </article>
+      </div>
+    </article>
+
+    <!-- Malinen apology -->
+    <article class="tweet reveal">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-handle">@policytensor</span>
+        <span class="t-id">ID 2064550142582120452</span>
+        <a class="t-date" href="https://x.com/policytensor/status/2064550142582120452">2026-06-10 03:28 UTC</a>
+      </div>
+      <div class="t-body">I apologize for sharing that. Turns out, Malinen is a conspiracy theory nut job. https://t.co/cxTtuPDpyD</div>
+      <div class="media-single">
+        <img src="i-apologize-for-sharing-that-turns-out-malinen-is-a-conspiracy-theory-nut-job-https-t-co-cxttupdpyd.jpg" alt="Retraction re: Tuomas Malinen" loading="lazy">
+      </div>
+      <div class="nested">
+        <span class="nest-tag">Quoted (self)</span>
+        <article class="tweet">
+          <div class="t-head">
+            <span class="t-author">Policy Tensor</span>
+            <span class="t-handle">@policytensor</span>
+            <span class="t-id">ID 2064528292258910560</span>
+            <a class="t-date" href="https://x.com/policytensor/status/2064528292258910560">2026-06-10 02:01 UTC</a>
+          </div>
+          <div class="t-body">“[T]wo weeks ago it was brought to my knowledge that our president, Alexander Stubb, is a likely CIA recruit.”
+
+From Malinen’s Substack.</div>
+        </article>
+      </div>
+    </article>
+
+    <div class="section-label reveal">Briefly noted</div>
+    <div class="narrative reveal">
+      <p>Adjacent posts extend the oligarchy-and-grift motif: Trump's crypto ventures added "$2.3 billion to the family fortune" while wooed investors took a matching hit <a class="mini" href="https://x.com/policytensor/status/2064404145608491444">17:47</a>; a wry note that "$3bn in cash" can't physically fit on a bizjet, quoting <strong>@glcarlstrom</strong> <a class="mini" href="https://x.com/policytensor/status/2064435854689366497">19:53</a>; scorn for a "full professor at Johns Hopkins" (Hal Brands) on U.S. military performance <a class="mini" href="https://x.com/policytensor/status/2064430748661125601">19:33</a>; an "elementary problem with @davidshor-ism" — you can't just give voters what they want, "it also has to work" <a class="mini" href="https://x.com/policytensor/status/2064541743911944697">02:54</a>; and a regional-capital aside that Oman is supplanting Dubai <a class="mini" href="https://x.com/policytensor/status/2064605907158282479">07:09</a>.</p>
+    </div>
+
+    <div class="analytic reveal">
+      <h3>Analytical Context</h3>
+      <p>This theme reads domestic politics through an <em>oligarchic-capture</em> lens. Greenwald's media-consolidation map (Ellison acquiring Paramount, CBS, CNN, etc.) and the Bari Weiss/CNN appointment are presented as manufactured-consent infrastructure assembled "right as public support for Israel collapses" — narrative control substituting for waning legitimacy. The Gwyneth Paltrow "51 Park" posts weaponize <em>juxtaposition</em>: luxury spectacle staged over Gaza and Lebanon, the "watch the genocide from your penthouse" line distilling the moral indictment.</p>
+      <p>The Trump-crypto and Ambani items frame statecraft as <em>private rent extraction</em> — sovereign power and personal fortune fused. Note the methodological self-correction on Malinen: publicly retracting a shared claim and labeling the source a "conspiracy theory nut job" signals an analyst policing his own epistemic hygiene even while trafficking in adversarial narratives.</p>
+    </div>
+  </section>
+
+  <!-- ============== THEME 4 ============== -->
+  <section class="theme" id="t4">
+    <div class="theme-head reveal">
+      <div class="theme-index">Theme 04</div>
+      <h2>The Human Ledger: Gaza, Lebanon &amp; Israeli Conduct</h2>
+      <p class="theme-intro">Beneath the strategic abstractions, Policy Tensor keeps a casualty ledger — insisting the violence in Lebanon dwarfs Iran's, amplifying documentation of civilian deaths, and tracking the war's spread into cabinet-level escalation.</p>
+    </div>
+
+    <div class="section-label reveal">Fully quoted</div>
+
+    <!-- Lebanon vs Iran ACLED -->
+    <article class="tweet reveal">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-handle">@policytensor</span>
+        <span class="t-id">ID 2064496233067041024</span>
+        <a class="t-date" href="https://x.com/policytensor/status/2064496233067041024">2026-06-09 23:53 UTC</a>
+      </div>
+      <div class="t-body">Not only have more people been killed and displaced in Lebanon than Iran, the scale of violence meted out to Lebanon is vastly larger. ACLED data shows 5,017 airstrikes and 1,561 attacks with indirect weapons since 2/27. Cf. 3,014 and 41 for Iran. Note that these are event https://t.co/3b1pmCMAAd</div>
+      <div class="media-single">
+        <img src="not-only-have-more-people-been-killed-and-displaced-in-lebanon-than-iran-the-scale-of-violence-meted-out-to.png" alt="ACLED comparison of violence in Lebanon vs Iran" loading="lazy">
+      </div>
+    </article>
+
+    <!-- RT btselem Abu Haikal -->
+    <article class="tweet reveal">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-handle">@policytensor</span>
+        <span class="t-id">ID 2064542923983573004</span>
+        <a class="t-date" href="https://x.com/policytensor/status/2064542923983573004">2026-06-10 02:59 UTC</a>
+      </div>
+      <div class="t-body">RT @btselem: New footage obtained by B’Tselem uncovers the moments when the Abu Haikal family was shot. Seven-month-old Sam Abu Haikal was…</div>
+      <div class="nested repost">
+        <span class="nest-tag">Reposted</span>
+        <article class="tweet">
+          <div class="t-head">
+            <span class="t-author">B'Tselem בצלם بتسيلم</span>
+            <span class="t-handle">@btselem</span>
+            <span class="t-id">ID 2064406597389185453</span>
+            <a class="t-date" href="https://x.com/btselem/status/2064406597389185453">2026-06-09 17:57 UTC</a>
+          </div>
+          <div class="t-body">New footage obtained by B’Tselem uncovers the moments when the Abu Haikal family was shot. Seven-month-old Sam Abu Haikal was killed in the shooting, and both his parents were injured. The footage clearly shows that the Israeli soldier fired at the car as it was slowing to a https://t.co/rYNeMClLlj</div>
+          <div class="media-single">
+            <img src="new-footage-obtained-by-b-tselem-uncovers-the-moments-when-the-abu-haikal-family-was-shot-seven-month-old-sam-abu-haikal-was.jpg" alt="B'Tselem footage of the Abu Haikal family shooting" loading="lazy">
+          </div>
+        </article>
+      </div>
+    </article>
+
+    <!-- RT DropSite 9125 injured -->
+    <article class="tweet reveal">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-handle">@policytensor</span>
+        <span class="t-id">ID 2064552026747371681</span>
+        <a class="t-date" href="https://x.com/policytensor/status/2064552026747371681">2026-06-10 03:35 UTC</a>
+      </div>
+      <div class="t-body">RT @DropSiteNews: ⭕️ Israeli Health Ministry Reports 9,125 Injured Since Start of Iran War
+
+The Israeli Health Ministry said the number of…</div>
+      <div class="nested repost">
+        <span class="nest-tag">Reposted</span>
+        <article class="tweet">
+          <div class="t-head">
+            <span class="t-author">Drop Site</span>
+            <span class="t-handle">@DropSiteNews</span>
+            <span class="t-id">ID 2064548811997872228</span>
+            <a class="t-date" href="https://x.com/DropSiteNews/status/2064548811997872228">2026-06-10 03:22 UTC</a>
+          </div>
+          <div class="t-body">⭕️ Israeli Health Ministry Reports 9,125 Injured Since Start of Iran War
+
+The Israeli Health Ministry said the number of people injured since the war on Iran began on February 28 has risen to 9,125, after 13 new injuries were recorded today, Al Mayadeen reported.
+
+🔸 By the</div>
+        </article>
+      </div>
+    </article>
+
+    <!-- Ben Gvir detain Hezbollah wives -->
+    <article class="tweet reveal">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-handle">@policytensor</span>
+        <span class="t-id">ID 2064441026513682659</span>
+        <a class="t-date" href="https://x.com/policytensor/status/2064441026513682659">2026-06-09 20:14 UTC</a>
+      </div>
+      <div class="t-body">“Ben Gvir proposed detaining Hezbollah members’ wives and youth in dedicated prisons.”</div>
+      <div class="nested">
+        <span class="nest-tag">Quoted</span>
+        <article class="tweet">
+          <div class="t-head">
+            <span class="t-author">Drop Site</span>
+            <span class="t-handle">@DropSiteNews</span>
+            <span class="t-id">ID 2064430174653849893</span>
+            <a class="t-date" href="https://x.com/DropSiteNews/status/2064430174653849893">2026-06-09 19:31 UTC</a>
+          </div>
+          <div class="t-body">🇮🇱 Israeli ministers clashed in a cabinet meeting Monday over how to escalate against both Iran and Hezbollah, according to i24 News.
+
+➤ Foreign Minister Sa’ar warned Hezbollah was trying to draw Israel into a war of attrition. Minister Elkin said Israel had managed to strike</div>
+        </article>
+      </div>
+    </article>
+
+    <!-- Ramat David HQ EW -->
+    <article class="tweet reveal">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-handle">@policytensor</span>
+        <span class="t-id">ID 2064465233066754231</span>
+        <a class="t-date" href="https://x.com/policytensor/status/2064465233066754231">2026-06-09 21:50 UTC</a>
+      </div>
+      <div class="t-body">Very interesting.</div>
+      <div class="nested">
+        <span class="nest-tag">Quoted</span>
+        <article class="tweet">
+          <div class="t-head">
+            <span class="t-author">Arya Yadeghaar (Backup)</span>
+            <span class="t-handle">@AryJeayBackup</span>
+            <span class="t-id">ID 2064316896577487239</span>
+            <a class="t-date" href="https://x.com/AryJeayBackup/status/2064316896577487239">2026-06-09 12:01 UTC</a>
+          </div>
+          <div class="t-body">According to reports, the building that Iranian missiles hit inside of Israeli Ramat David Air Base, was the HQ of the Israeli Air Force’s 157th Squadron, which specializes in electronic warfare (EW).
+
+Looks like a very calculated and high value hit. https://t.co/CTMljuTUn4</div>
+          <div class="media-grid">
+            <img src="according-to-reports-the-building-that-iranian-missiles-hit-inside-of-israeli-ramat-david-air-base-was-the-hq-of-1.jpg" alt="Ramat David Air Base strike report 1" loading="lazy">
+            <img src="according-to-reports-the-building-that-iranian-missiles-hit-inside-of-israeli-ramat-david-air-base-was-the-hq-of-2.jpg" alt="Ramat David Air Base strike report 2" loading="lazy">
+          </div>
+        </article>
+      </div>
+    </article>
+
+    <div class="section-label reveal">Also in the ledger</div>
+    <div class="narrative reveal">
+      <p>Two related strands recur. On de-escalation: the chopper "debacle" is "a one-off" that won't derail the deal, but "Israeli actions in Lebanon may very well" — the Iranians' response function lets Israel "derail the deal unilaterally" (quoting <strong>@academic_la</strong>, <a class="mini" href="https://x.com/policytensor/status/2064464874382426352">21:49</a>). On the case for a "separate peace": "Let's sit back and watch them learn some lessons about size," reacting to reports Israel may face Iran alone (quoting <strong>@DeItaone</strong>, <a class="mini" href="https://x.com/policytensor/status/2064397195189575743">17:20</a>), echoing his earlier Trump–Bibi-breakup scenario <a class="mini" href="https://x.com/policytensor/status/2064443919275086091">20:26</a>. He also relays Bennis comparing Trump's posture to Biden's "please stop killing so many Palestinians" while still arming Israel <a class="mini" href="https://x.com/policytensor/status/2064402732828500421">17:42</a>.</p>
+    </div>
+
+    <div class="analytic reveal">
+      <h3>Analytical Context</h3>
+      <p>Where the other themes are predictive, this one is <em>evidentiary and moral</em>. Policy Tensor anchors claims in datasets (ACLED event counts, Health Ministry tallies) and primary documentation (B'Tselem video), insisting the Lebanon front — not Iran — is the war's true center of mass, both in violence inflicted and risk of derailing diplomacy. The Ramat David item shows the analytic eye even here: an Iranian hit on an electronic-warfare squadron HQ is read as a "calculated and high value" strike, tying the human ledger back to the counter-base thesis.</p>
+      <p>The structural dynamic he keeps surfacing: an <em>asymmetry of escalation control</em>. Because Iran responds to Israeli (not just American) provocations, Israel holds a unilateral lever to wreck any U.S.–Iran settlement — which is why "a separate peace" recurs as both his strategic forecast and his preferred outcome. References to Ben Gvir's prison proposal and cabinet infighting document the radicalization of the Israeli side that makes that lever more likely to be pulled.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>Synthesized from 3 raw timeline exports (2026-06-10-12-57-09 / -29 / -45) of <a href="https://x.com/policytensor">@policytensor</a>, 09–10 June 2026. Overlapping snapshots were de-duplicated by tweet ID; dates link to source tweets. Images are local files referenced by relative path.</p>
+</footer>
+
+<script>
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e) => {
+      if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+  document.querySelectorAll('.reveal').forEach((el, i) => {
+    el.style.transitionDelay = Math.min(i % 6, 5) * 60 + 'ms';
+    io.observe(el);
+  });
+</script>
+
+</body>
+</html>

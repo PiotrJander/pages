@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Policy Tensor — Timeline Dossier</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #14110d;
+    --ink-2: #1d1914;
+    --paper: #f4ece0;
+    --paper-dim: #d8cdbb;
+    --rule: #3a3329;
+    --accent: #c0563b;
+    --accent-2: #d9a441;
+    --thread: #6f6553;
+    --muted: #9a8e79;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background:
+      radial-gradient(120% 80% at 50% -10%, #221d16 0%, var(--ink) 60%) fixed,
+      var(--ink);
+    color: var(--paper);
+    font-family: "Newsreader", Georgia, serif;
+    font-size: 19px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+    z-index: 9999;
+    mix-blend-mode: overlay;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 24px 120px; }
+
+  /* Masthead */
+  header.masthead {
+    padding: 84px 0 36px;
+    border-bottom: 3px double var(--rule);
+    margin-bottom: 8px;
+  }
+  .kicker {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    letter-spacing: 0.42em;
+    text-transform: uppercase;
+    color: var(--accent-2);
+    margin: 0 0 18px;
+  }
+  h1.title {
+    font-family: "Fraunces", serif;
+    font-weight: 800;
+    font-size: clamp(44px, 9vw, 92px);
+    line-height: 0.94;
+    letter-spacing: -0.02em;
+    margin: 0 0 22px;
+    color: var(--paper);
+  }
+  h1.title em { font-style: italic; color: var(--accent); font-weight: 500; }
+  .standfirst {
+    font-size: 21px;
+    color: var(--paper-dim);
+    max-width: 60ch;
+    margin: 0 0 26px;
+  }
+  .meta-row {
+    display: flex; flex-wrap: wrap; gap: 10px 26px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px; letter-spacing: 0.08em;
+    color: var(--muted); text-transform: uppercase;
+  }
+  .meta-row span b { color: var(--paper); font-weight: 600; }
+
+  /* Contents */
+  nav.toc {
+    margin: 40px 0 70px;
+    padding: 26px 30px;
+    border: 1px solid var(--rule);
+    background: linear-gradient(180deg, rgba(255,255,255,0.025), transparent);
+  }
+  nav.toc h2 {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px; letter-spacing: 0.4em; text-transform: uppercase;
+    color: var(--muted); margin: 0 0 16px;
+  }
+  nav.toc ol { margin: 0; padding: 0; list-style: none; counter-reset: t; }
+  nav.toc li { counter-increment: t; border-top: 1px solid var(--rule); }
+  nav.toc li:first-child { border-top: none; }
+  nav.toc a {
+    display: flex; align-items: baseline; gap: 16px;
+    padding: 12px 0; text-decoration: none; color: var(--paper);
+    transition: color .2s, padding-left .2s;
+  }
+  nav.toc a::before {
+    content: counter(t, decimal-leading-zero);
+    font-family: "JetBrains Mono", monospace; font-size: 12px;
+    color: var(--accent); flex: 0 0 auto;
+  }
+  nav.toc a:hover { color: var(--accent-2); padding-left: 8px; }
+  nav.toc a span.t-title { font-family: "Fraunces", serif; font-size: 20px; }
+
+  /* Theme sections */
+  section.theme { margin: 0 0 90px; scroll-margin-top: 30px; }
+  .theme-head { margin: 0 0 30px; }
+  .theme-num {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px; letter-spacing: 0.3em; color: var(--accent);
+    display: block; margin-bottom: 10px;
+  }
+  .theme-head h2 {
+    font-family: "Fraunces", serif; font-weight: 800;
+    font-size: clamp(30px, 5.5vw, 46px); line-height: 1.02;
+    letter-spacing: -0.015em; margin: 0;
+  }
+  .theme-intro { color: var(--paper-dim); font-size: 19px; margin: 16px 0 0; max-width: 62ch; }
+
+  /* Tweet card */
+  article.tweet {
+    border: 1px solid var(--rule);
+    background: var(--ink-2);
+    padding: 24px 26px;
+    margin: 26px 0;
+    position: relative;
+  }
+  article.tweet::before {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: var(--accent);
+  }
+  .t-author { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+  .t-author .name { font-family: "Fraunces", serif; font-weight: 600; font-size: 19px; }
+  .t-author .handle { color: var(--accent-2); font-family: "JetBrains Mono", monospace; font-size: 13px; }
+  .t-sub {
+    font-family: "JetBrains Mono", monospace; font-size: 11.5px;
+    color: var(--muted); margin-bottom: 14px; letter-spacing: 0.04em;
+  }
+  .t-sub a { color: var(--muted); text-decoration: none; border-bottom: 1px dotted var(--thread); }
+  .t-sub a:hover { color: var(--accent-2); border-color: var(--accent-2); }
+  .t-sub .id { opacity: 0.7; }
+  .t-body { font-size: 19.5px; line-height: 1.6; }
+  .t-body p { margin: 0 0 12px; }
+  .t-body p:last-child { margin-bottom: 0; }
+
+  /* Nested (quote / repost) */
+  .nested {
+    margin: 16px 0 4px; padding: 16px 18px;
+    border: 1px solid var(--rule);
+    border-left: 2px solid var(--thread);
+    background: rgba(0,0,0,0.22);
+    font-size: 0.94em;
+  }
+  .nested .nested { background: rgba(0,0,0,0.3); }
+  .nest-label {
+    font-family: "JetBrains Mono", monospace; font-size: 10px;
+    letter-spacing: 0.28em; text-transform: uppercase;
+    color: var(--accent-2); margin-bottom: 8px;
+  }
+  .nested .t-author .name { font-size: 16.5px; }
+
+  /* Images */
+  .media { margin: 16px 0 4px; }
+  .media.single { text-align: center; }
+  .media.single img { max-width: 100%; max-height: 560px; border: 1px solid var(--rule); }
+  .media.grid {
+    display: grid; gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+  .media.grid img { width: 100%; height: 100%; object-fit: cover; border: 1px solid var(--rule); }
+  img { display: block; }
+
+  /* Narrative summary block */
+  .narrative {
+    font-size: 18px; color: var(--paper-dim);
+    border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
+    padding: 18px 0; margin: 28px 0;
+  }
+  .narrative .lbl {
+    font-family: "JetBrains Mono", monospace; font-size: 10px;
+    letter-spacing: 0.3em; text-transform: uppercase; color: var(--muted);
+    display: block; margin-bottom: 8px;
+  }
+
+  /* Analytical context */
+  .context {
+    margin: 30px 0 0; padding: 24px 26px;
+    background: linear-gradient(180deg, rgba(192,86,59,0.10), rgba(217,164,65,0.04));
+    border: 1px solid var(--rule);
+  }
+  .context .lbl {
+    font-family: "JetBrains Mono", monospace; font-size: 11px;
+    letter-spacing: 0.32em; text-transform: uppercase; color: var(--accent-2);
+    display: block; margin-bottom: 12px;
+  }
+  .context p { margin: 0 0 10px; font-size: 18px; color: var(--paper); }
+  .context p:last-child { margin-bottom: 0; }
+
+  /* Chronology note */
+  .timenote {
+    margin: 16px 0 0; font-family: "Newsreader", serif; font-style: italic;
+    font-size: 16.5px; color: var(--muted);
+    padding-left: 16px; border-left: 2px solid var(--accent);
+  }
+
+  footer {
+    border-top: 3px double var(--rule); padding-top: 28px; margin-top: 40px;
+    font-family: "JetBrains Mono", monospace; font-size: 12px;
+    color: var(--muted); letter-spacing: 0.06em;
+  }
+  a.x-link { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="kicker">Timeline Dossier &middot; Open-Source Analysis</p>
+    <h1 class="title">The Noose<br>&amp; the <em>Ledger</em></h1>
+    <p class="standfirst">Twenty-one posts from <strong>Policy Tensor</strong> tracing a single argument: that the US&ndash;Iran war is a structural pressure campaign whose outcome is being priced, in real time, into bond spreads, oil, and the credibility of American empire.</p>
+    <div class="meta-row">
+      <span>Author: <b>Policy Tensor</b> (@policytensor)</span>
+      <span>Posts: <b>21</b></span>
+      <span>Window: <b>Jun 3 &ndash; Jun 9, 2026</b></span>
+      <span>Themes: <b>5</b></span>
+    </div>
+  </header>
+
+  <nav class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#t1"><span class="t-title">Counter-Base War &amp; the Logic of Escalation</span></a></li>
+      <li><a href="#t2"><span class="t-title">The Market Is Reading the War</span></a></li>
+      <li><a href="#t3"><span class="t-title">Grand Strategy: Recognizing Iranian Power</span></a></li>
+      <li><a href="#t4"><span class="t-title">Empire on Suicide Watch</span></a></li>
+      <li><a href="#t5"><span class="t-title">Margins: Culture, Media &amp; the Discourse</span></a></li>
+    </ol>
+  </nav>
+
+  <!-- ===================== THEME 1 ===================== -->
+  <section class="theme" id="t1">
+    <div class="theme-head">
+      <span class="theme-num">Theme 01</span>
+      <h2>Counter-Base War &amp; the Logic of Escalation</h2>
+      <p class="theme-intro">The war's military grammar: missile waves on air bases, ceasefire "violations" that are really a sustained campaign, and the claim that time and attrition shift leverage toward Tehran.</p>
+    </div>
+
+    <p class="timenote">Time ordering: Iran's deterrent threat over Beirut (Jun 3) precedes the "5th wave" of strikes (Jun 7), which Policy Tensor reads alongside his earlier warning (Jun 6) that Iran would abandon self-imposed restraint. By Jun 7&ndash;9 the framing hardens into a formal model. The causal claim is explicit: US "salami tactics" invite escalation, and each blunting attempt feeds the next wave.</p>
+
+    <article class="tweet">
+      <div class="t-author"><span class="name">Policy Tensor</span><span class="handle">@policytensor</span></div>
+      <div class="t-sub"><a href="https://x.com/policytensor/status/2064280559702909010">2026-06-09 09:36 UTC</a> &middot; <span class="id">ID 2064280559702909010</span></div>
+      <div class="t-body"><p>An Equilibrium Model of Counter-Base War in the Western Pacific, by @policytensor</p></div>
+      <div class="media single">
+        <img src="an-equilibrium-model-of-counter-base-war-in-the-western-pacific-by-policytensor-https-t-co-doaybvr7zf-https-t-co-movdzy0mml.jpg" alt="Counter-base war model figure">
+      </div>
+    </article>
+
+    <article class="tweet">
+      <div class="t-author"><span class="name">Policy Tensor</span><span class="handle">@policytensor</span></div>
+      <div class="t-sub"><a href="https://x.com/policytensor/status/2063717503872737422">2026-06-07 20:19 UTC</a> &middot; <span class="id">ID 2063717503872737422</span></div>
+      <div class="t-body"><p>This is what I meant. It looks very much like they used Khorramshahr missiles with submunitions warhead in an apron attack on Ramat David Air Base.</p></div>
+      <div class="nested">
+        <div class="nest-label">Quoted Forward</div>
+        <div class="t-author"><span class="name">Policy Tensor</span><span class="handle">@policytensor</span></div>
+        <div class="t-sub"><a href="https://x.com/policytensor/status/2063095712720605485">2026-06-06 03:08 UTC</a> &middot; <span class="id">ID 2063095712720605485</span></div>
+        <div class="t-body"><p>One is getting the sense that the Iranians will soon conclude that their self-imposed restraints are counterproductive, allowing the US to continue its salami tactics.</p></div>
+      </div>
+    </article>
+
+    <article class="tweet">
+      <div class="t-author"><span class="name">Policy Tensor</span><span class="handle">@policytensor</span></div>
+      <div class="t-sub"><a href="https://x.com/policytensor/status/2063538306416026052">2026-06-07 08:27 UTC</a> &middot; <span class="id">ID 2063538306416026052</span></div>
+      <div class="t-body"><p>Recall @HamidRezaAz telling us that the Iranians think their position is being eroded. But perhaps Pape's point is structural. Iran's power grows as the noose tightens. Time is Iran's great power ally. Although, if they do not know it does it matter?</p></div>
+      <div class="nested">
+        <div class="nest-label">Quoted Forward</div>
+        <div class="t-author"><span class="name">Robert A. Pape</span><span class="handle">@ProfessorPape</span></div>
+        <div class="t-sub"><a href="https://x.com/ProfessorPape/status/2063233711760343466">2026-06-06 12:17 UTC</a> &middot; <span class="id">ID 2063233711760343466</span></div>
+        <div class="t-body"><p>US&ndash;Iran strikes are escalating beyond isolated violations of a ceasefire.</p><p>Iran hitting US military bases and their host countries, US trying to blunt the strikes.</p><p>This is a pressure campaign against Gulf states that will grow as oil inventories run dry. Iran's leverage grows.</p></div>
+        <div class="media single">
+          <img src="us-iran-strikes-are-escalating-beyond-isolated-violations-of-a-ceasefire-iran-hitting-us-military-bases-and-their-host-countries.jpg" alt="Pape escalation analysis">
+        </div>
+      </div>
+    </article>
+
+    <article class="tweet">
+      <div class="t-author"><span class="name">Policy Tensor</span><span class="handle">@policytensor</span></div>
+      <div class="t-sub"><a href="https://x.com/policytensor/status/2063715427809743339">2026-06-07 20:11 UTC</a> &middot; <span class="id">ID 2063715427809743339</span></div>
+      <div class="t-body"><p>RT @S_Mahendrarajah: Promises made, promises kept. 5th wave launched&hellip;</p></div>
+      <div class="media single">
+        <img src="rt-s-mahendrarajah-promises-made-promises-kept-5th-wave-launched-https-t-co-sdxu7uaxgw.jpg" alt="5th wave launch">
+      </div>
+      <div class="nested">
+        <div class="nest-label">Reposted</div>
+        <div class="t-author"><span class="name">Shivan Mahendrarajah</span><span class="handle">@S_Mahendrarajah</span></div>
+        <div class="t-sub"><a href="https://x.com/S_Mahendrarajah/status/2063706797773303829">2026-06-07 19:36 UTC</a> &middot; <span class="id">ID 2063706797773303829</span></div>
+        <div class="t-body"><p>Promises made, promises kept. 5th wave launched&hellip;</p></div>
+        <div class="nested">
+          <div class="nest-label">Quoted Forward</div>
+          <div class="t-author"><span class="name">IRIB (Islamic Republic of Iran Broadcasting)</span><span class="handle">@iribnews_irib</span></div>
+          <div class="t-sub"><a href="https://x.com/iribnews_irib/status/2062272446724477109">2026-06-03 20:37 UTC</a> &middot; <span class="id">ID 2062272446724477109</span></div>
+          <div class="t-body"><p>&#128680; BREAKING &mdash; Araghchi: In the event of any attack on Beirut, Iran's military forces will attack Israel.</p></div>
+        </div>
+      </div>
+    </article>
+
+    <div class="context">
+      <span class="lbl">Analytical Context</span>
+      <p><strong>Counter-base warfare</strong> is the doctrine of degrading an adversary by saturating its forward air bases rather than seeking decisive battle &mdash; precisely the asymmetric logic Iran can sustain with cheap missiles (the <em>Khorramshahr</em>, a liquid-fuel MRBM) against fixed, expensive targets like Israel's Ramat David. Policy Tensor borrows Robert Pape's <em>coercion</em> framework: bombing rarely breaks will directly, but a campaign that drains Gulf oil inventories converts military pressure into economic leverage.</p>
+      <p>The recurring image is the <strong>"noose"</strong> &mdash; a structural inversion in which the encircled party gains bargaining power as the encircler's costs mount. The closing rhetorical question ("if they do not know it, does it matter?") flags the gap between objective structure and the actors' perceptions, the central problem of deterrence theory.</p>
+    </div>
+  </section>
+
+  <!-- ===================== THEME 2 ===================== -->
+  <section class="theme" id="t2">
+    <div class="theme-head">
+      <span class="theme-num">Theme 02</span>
+      <h2>The Market Is Reading the War</h2>
+      <p class="theme-intro">A tight chain of posts arguing the conflict is legible in financial data: term spreads, the dollar index, and dealer risk appetite all encode the war and the ceasefire.</p>
+    </div>
+
+    <p class="timenote">Posted in a single burst on Jun 7 (19:42&ndash;20:05 UTC), this is a self-contained thread &mdash; the numbered tweet (1)(2)(3) sets the thesis, the dollar-index post supplies the confirming signal, and the final post defines the operative term. Read top-to-bottom as one argument.</p>
+
+    <article class="tweet">
+      <div class="t-author"><span class="name">Policy Tensor</span><span class="handle">@policytensor</span></div>
+      <div class="t-sub"><a href="https://x.com/policytensor/status/2063708247274684906">2026-06-07 19:42 UTC</a> &middot; <span class="id">ID 2063708247274684906</span></div>
+      <div class="t-body"><p>(1) Markets have delivered a 50bps tightening since the war. This will continue to climb as long as Hormuz remains closed. One can read this from the 2Y&ndash;3mo term spread.</p><p>(2) Cyclical growth expectations have fallen. This is suggested by the 10Y&ndash;2Y term spread.</p><p>(3) But risk&hellip;</p></div>
+      <div class="media grid">
+        <img src="1-markets-have-delivered-a-50bps-tightening-since-the-war-this-will-continue-to-climb-as-long-as-hormuz-remains-1.png" alt="Term spread chart 1">
+        <img src="1-markets-have-delivered-a-50bps-tightening-since-the-war-this-will-continue-to-climb-as-long-as-hormuz-remains-2.png" alt="Term spread chart 2">
+        <img src="1-markets-have-delivered-a-50bps-tightening-since-the-war-this-will-continue-to-climb-as-long-as-hormuz-remains-3.png" alt="Term spread chart 3">
+      </div>
+    </article>
+
+    <article class="tweet">
+      <div class="t-author"><span class="name">Policy Tensor</span><span class="handle">@policytensor</span></div>
+      <div class="t-sub"><a href="https://x.com/policytensor/status/2063712949307322814">2026-06-07 20:01 UTC</a> &middot; <span class="id">ID 2063712949307322814</span></div>
+      <div class="t-body"><p>Same risk appetite signal in the dollar index. Tight during the war. Totally crashed on the day of the ceasefire.</p></div>
+      <div class="media single">
+        <img src="same-risk-appetite-signal-in-the-dollar-index-tight-during-the-war-totally-crashed-on-the-day-of-the-ceasefire.jpg" alt="Dollar index risk-appetite chart">
+      </div>
+    </article>
+
+    <article class="tweet">
+      <div class="t-author"><span class="name">Policy Tensor</span><span class="handle">@policytensor</span></div>
+      <div class="t-sub"><a href="https://x.com/policytensor/status/2063713892191162418">2026-06-07 20:05 UTC</a> &middot; <span class="id">ID 2063713892191162418</span></div>
+      <div class="t-body"><p>By risk appetite, I mean the risk appetite of US securities broker-dealers; roughly, how much they are juicing the machine. The wager of the claim is that when this data is updated, we'll find the graph rise significantly above the already high level in 2025Q4.</p></div>
+      <div class="media single">
+        <img src="by-risk-appetite-i-mean-the-risk-appetite-of-us-securities-broker-dealers-roughly-how-much-they-are-juicing-the-machine.jpg" alt="Dealer risk appetite chart">
+      </div>
+    </article>
+
+    <div class="context">
+      <span class="lbl">Analytical Context</span>
+      <p>The argument runs on <strong>yield-curve mechanics</strong>. The 2Y&ndash;3mo spread tracks expected near-term policy tightening; the 10Y&ndash;2Y spread captures longer-run growth expectations. A war that threatens the Strait of <strong>Hormuz</strong> &mdash; the chokepoint for roughly a fifth of global oil &mdash; raises the inflation/risk premium even as it dims growth, which is exactly the "tighter front end, lower growth" pattern described.</p>
+      <p>"Risk appetite of broker-dealers" points to the <strong>dealer-balance-sheet</strong> school of macro-finance (associated with Hyun Song Shin and the BIS), where intermediaries' willingness to expand leverage &mdash; "juicing the machine" &mdash; is the real driver of financial conditions. The falsifiable wager (the Q1 2026 print exceeding Q4 2025) is what separates this from commentary: it is a dated, checkable forecast.</p>
+    </div>
+  </section>
+
+  <!-- ===================== THEME 3 ===================== -->
+  <section class="theme" id="t3">
+    <div class="theme-head">
+      <span class="theme-num">Theme 03</span>
+      <h2>Grand Strategy: Recognizing Iranian Power</h2>
+      <p class="theme-intro">The prescriptive core: US military problems are downstream of a wrong Iran policy, and the fix is regional retrenchment around a balance that openly accommodates Iranian strength.</p>
+    </div>
+
+    <article class="tweet">
+      <div class="t-author"><span class="name">Policy Tensor</span><span class="handle">@policytensor</span></div>
+      <div class="t-sub"><a href="https://x.com/policytensor/status/2063518139300581391">2026-06-07 07:07 UTC</a> &middot; <span class="id">ID 2063518139300581391</span></div>
+      <div class="t-body"><p>The problem with our military policy cannot be solved without the correct Iran policy. At a minimum, said policy must recognize Iranian power. We need to repurpose the quartet as the diluter of that power in a regional six power framework. Both Iran and Israel need regional&hellip;</p></div>
+    </article>
+
+    <article class="tweet">
+      <div class="t-author"><span class="name">Policy Tensor</span><span class="handle">@policytensor</span></div>
+      <div class="t-sub"><a href="https://x.com/policytensor/status/2063521010695966936">2026-06-07 07:18 UTC</a> &middot; <span class="id">ID 2063521010695966936</span></div>
+      <div class="t-body"><p>It is in the US interest to leave the Middle East. This would be a rationalization of the Middle East RSC. If we are nowhere close to this understanding of our interests it is bc of extra-rational rigidities of political economy. The lobby and the Blob and all the rest of it.</p></div>
+    </article>
+
+    <article class="tweet">
+      <div class="t-author"><span class="name">Policy Tensor</span><span class="handle">@policytensor</span></div>
+      <div class="t-sub"><a href="https://x.com/policytensor/status/2063526724680163691">2026-06-07 07:41 UTC</a> &middot; <span class="id">ID 2063526724680163691</span></div>
+      <div class="t-body"><p>Until China makes ten times as many as Taiwan. You see how that works?</p></div>
+      <div class="nested">
+        <div class="nest-label">Quoted Forward</div>
+        <div class="t-author"><span class="name">Jojje Olsson</span><span class="handle">@jojjeols</span></div>
+        <div class="t-sub"><a href="https://x.com/jojjeols/status/2063154163501109513">2026-06-06 07:00 UTC</a> &middot; <span class="id">ID 2063154163501109513</span></div>
+        <div class="t-body"><p>Palmer Luckey suggests that "Taiwan should be making 10 times more weapons than it needs for itself, which would be good for the economy, international relations, and its own weapons stockpiles."</p></div>
+      </div>
+    </article>
+
+    <div class="narrative">
+      <span class="lbl">Also in this theme</span>
+      A follow-up <a class="x-link" href="https://x.com/policytensor/status/2063546990982533418">clarification (Jun 7, 09:01 UTC)</a> defines the "quartet" as <em>"the Saudi-engineered concert of the Sunni powers"</em> &mdash; the bloc Policy Tensor wants repurposed from anti-Iran containment into a balancer within a wider regional system.
+    </div>
+
+    <div class="context">
+      <span class="lbl">Analytical Context</span>
+      <p>This is <strong>offshore-balancing realism</strong>. The "RSC" is a <em>Regional Security Complex</em> (Buzan &amp; W&aelig;ver): a cluster of states whose security is so interlinked it must be analyzed as a unit. "Rationalizing" the Middle East RSC means letting local powers find their own equilibrium rather than having the US impose one. The proposed "six-power framework" (Iran, Israel, plus the Saudi-led Sunni "quartet") is a <strong>concert-of-powers</strong> design in the 19th-century mold.</p>
+      <p>"The lobby and the Blob" names the domestic obstacle: the Israel lobby and the bipartisan foreign-policy establishment, treated here as <em>extra-rational rigidities</em> &mdash; path dependencies that prevent the US from acting on its own stated interests. The Taiwan retort extends the logic globally: arms races are <strong>relative</strong>, so a build-up that a larger rival can simply out-produce yields no durable security.</p>
+    </div>
+  </section>
+
+  <!-- ===================== THEME 4 ===================== -->
+  <section class="theme" id="t4">
+    <div class="theme-head">
+      <span class="theme-num">Theme 04</span>
+      <h2>Empire on Suicide Watch</h2>
+      <p class="theme-intro">Decline read from the inside: elite overproduction, the policing of dissent, and the claim that continuity &mdash; not any "great man" &mdash; explains US conduct.</p>
+    </div>
+
+    <article class="tweet">
+      <div class="t-author"><span class="name">Policy Tensor</span><span class="handle">@policytensor</span></div>
+      <div class="t-sub"><a href="https://x.com/policytensor/status/2063534270962884745">2026-06-07 08:11 UTC</a> &middot; <span class="id">ID 2063534270962884745</span></div>
+      <div class="t-body"><p>RT @phenomenalworld: "I do think there is justification for saying this is an empire on suicide watch&hellip;"</p></div>
+      <div class="nested">
+        <div class="nest-label">Reposted</div>
+        <div class="t-author"><span class="name">Phenomenal World</span><span class="handle">@phenomenalworld</span></div>
+        <div class="t-sub"><a href="https://x.com/phenomenalworld/status/2063268920262377862">2026-06-06 14:36 UTC</a> &middot; <span class="id">ID 2063268920262377862</span></div>
+        <div class="t-body"><p>"I do think there is justification for saying this is an empire on suicide watch: the leadership at the center is actively undermining the very foundations of American power."</p><p>An interview with Herman Mark Schwartz.</p></div>
+        <div class="media single">
+          <img src="i-do-think-there-is-justification-for-saying-this-is-an-empire-on-suicide-watch-the-leadership-at-the-center.jpg" alt="Phenomenal World interview card">
+        </div>
+      </div>
+    </article>
+
+    <article class="tweet">
+      <div class="t-author"><span class="name">Policy Tensor</span><span class="handle">@policytensor</span></div>
+      <div class="t-sub"><a href="https://x.com/policytensor/status/2063527709154726327">2026-06-07 07:45 UTC</a> &middot; <span class="id">ID 2063527709154726327</span></div>
+      <div class="t-body"><p>At no point is the great man theory less persuasive than when an outlaw president delivers on the loudest demands of established foreign policy elites. The continuities kill the exceptionalism claim.</p></div>
+      <div class="nested">
+        <div class="nest-label">Quoted Forward</div>
+        <div class="t-author"><span class="name">Brandon Weichert</span><span class="handle">@WeTheBrandon</span></div>
+        <div class="t-sub"><a href="https://x.com/WeTheBrandon/status/2063495665406124194">2026-06-07 05:37 UTC</a> &middot; <span class="id">ID 2063495665406124194</span></div>
+        <div class="t-body"><p>Brent Johnson makes a fatal mistake that many of us made during COVID: that Trump is playing 5D chess. It's all part of a plan. It's not. The president isn't a planner. He's a kinetic operator. And he's shat the bed in Iran. That's all. This thing will go upside down fast because&hellip;</p></div>
+      </div>
+    </article>
+
+    <article class="tweet">
+      <div class="t-author"><span class="name">Policy Tensor</span><span class="handle">@policytensor</span></div>
+      <div class="t-sub"><a href="https://x.com/policytensor/status/2063544135844282391">2026-06-07 08:50 UTC</a> &middot; <span class="id">ID 2063544135844282391</span></div>
+      <div class="t-body"><p>Dunno. Look more like casualties of elite overproduction.</p></div>
+      <div class="nested">
+        <div class="nest-label">Quoted Forward</div>
+        <div class="t-author"><span class="name">Assal Rad</span><span class="handle">@AssalRad</span></div>
+        <div class="t-sub"><a href="https://x.com/AssalRad/status/2062948723240673547">2026-06-05 17:24 UTC</a> &middot; <span class="id">ID 2062948723240673547</span></div>
+        <div class="t-body"><p>A professor in the U.S. was suspended for mentioning Palestinians, just days after Hasan Piker was barred from the UK for condemning a genocide.</p><p>Your rights are being stripped away in service of Israel's impunity.</p></div>
+        <div class="media single">
+          <img src="a-professor-in-the-u-s-was-suspended-for-mentioning-palestinians-just-days-after-hasan-piker-was-barred-from-the-uk.jpg" alt="Suspension news card">
+        </div>
+      </div>
+    </article>
+
+    <div class="narrative">
+      <span class="lbl">Also in this theme</span>
+      On the same Gulf-war economics thread, Policy Tensor <a class="x-link" href="https://x.com/policytensor/status/2063543576294781314">replies to Murtaza Hussain (Jun 7, 08:48 UTC)</a> on US efforts to compel Arab states into a permanent front line: <em>"Money is fungible. Does it really matter if the US has to hand out 100 to give Iran 20? Sounds to me like the most American way of saving face."</em>
+    </div>
+
+    <div class="context">
+      <span class="lbl">Analytical Context</span>
+      <p><strong>"Elite overproduction"</strong> is Peter Turchin's term (structural-demographic theory): when a society mints more credentialed aspirants than there are elite slots, the surplus turns to intra-elite conflict and instability &mdash; reframing campus crackdowns not as strength but as a symptom of decay. The "empire on suicide watch" thesis, from political economist <strong>Herman Mark Schwartz</strong>, locates American power in institutional foundations (the dollar, alliances, rule-of-law credibility) that the leadership is itself eroding.</p>
+      <p>The rejection of <strong>"great man" / "5D chess"</strong> readings is methodological: by stressing <em>continuity</em> between an "outlaw" president and the establishment he supposedly defies, Policy Tensor argues outcomes are driven by structure, not personality &mdash; the same anti-exceptionalist move that runs through the whole timeline.</p>
+    </div>
+  </section>
+
+  <!-- ===================== THEME 5 ===================== -->
+  <section class="theme" id="t5">
+    <div class="theme-head">
+      <span class="theme-num">Theme 05</span>
+      <h2>Margins: Culture, Media &amp; the Discourse</h2>
+      <p class="theme-intro">Off-duty posts &mdash; paleo-diet pedantry, a prize announcement, a regional meme, and the small skirmishes of online life &mdash; that round out the timeline's texture.</p>
+    </div>
+
+    <article class="tweet">
+      <div class="t-author"><span class="name">Policy Tensor</span><span class="handle">@policytensor</span></div>
+      <div class="t-sub"><a href="https://x.com/policytensor/status/2063541936040923140">2026-06-07 08:41 UTC</a> &middot; <span class="id">ID 2063541936040923140</span></div>
+      <div class="t-body"><p>Um, Neanderthals are the original northern population. There is no evidence of any northern population eating insects. It is entirely a tropical phenomenon.</p><p>"A new genomic study from Spain's Institute of Evolutionary Biology analyzed dental calculus (tartar) from 745 ancient&hellip;"</p></div>
+      <div class="nested">
+        <div class="nest-label">Quoted Forward</div>
+        <div class="t-author"><span class="name">Owen Lewis</span><span class="handle">@is_OwenLewis</span></div>
+        <div class="t-sub"><a href="https://x.com/is_OwenLewis/status/2063405822781313129">2026-06-06 23:40 UTC</a> &middot; <span class="id">ID 2063405822781313129</span></div>
+        <div class="t-body"><p>Sources: [links]</p></div>
+      </div>
+    </article>
+
+    <article class="tweet">
+      <div class="t-author"><span class="name">Policy Tensor</span><span class="handle">@policytensor</span></div>
+      <div class="t-sub"><a href="https://x.com/policytensor/status/2063534764691243295">2026-06-07 08:13 UTC</a> &middot; <span class="id">ID 2063534764691243295</span></div>
+      <div class="t-body"><p>RT @uncleTomat0: How China, Japan &amp; Korea see each other&hellip; &#129315;</p></div>
+      <div class="media single">
+        <img src="rt-uncletomat0-https-t-co-1zlps9yq07.jpg" alt="China/Japan/Korea mutual-perception meme">
+      </div>
+      <div class="nested">
+        <div class="nest-label">Reposted</div>
+        <div class="t-author"><span class="name">&#30058;&#33538;&#22823;&#21460; &#127464;&#127475;</span><span class="handle">@uncleTomat0</span></div>
+        <div class="t-sub"><a href="https://x.com/uncleTomat0/status/2063269529447551141">2026-06-06 14:39 UTC</a> &middot; <span class="id">ID 2063269529447551141</span></div>
+        <div class="t-body"><p>&#20013;&#26085;&#38889;&#30524;&#20013;&#30340;&#23545;&#26041;&hellip;&#21704;&#21704;&#21704; &#129315;</p></div>
+        <div class="media single">
+          <img src="rt-uncletomat0-https-t-co-1zlps9yq07.jpg" alt="China/Japan/Korea meme">
+        </div>
+      </div>
+    </article>
+
+    <div class="narrative">
+      <span class="lbl">Collapsed &mdash; four more posts</span>
+      <p style="margin:0 0 10px;">The remainder are quick reactions and a literary note:</p>
+      <p style="margin:0 0 8px;">&middot; <strong>Orwell Prize</strong> &mdash; an <a class="x-link" href="https://x.com/policytensor/status/2063538433365004452">RT of William Dalrymple (Jun 7, 08:27 UTC)</a> congratulating @SamDalrymple123 on the 2026 Orwell Prize shortlist (eight non-fiction and eight novels).</p>
+      <p style="margin:0 0 8px;">&middot; <strong>NYU correction</strong> &mdash; <a class="x-link" href="https://x.com/policytensor/status/2063532893092073919">"There is no four year masters program for film at NYU"</a> (Jun 7, 08:05), quoting Hollywood Gadfly's thread debunking a self-made-filmmaker origin story (~$1M education, $330k+ in prior grants, an investor father as exec producer).</p>
+      <p style="margin:0 0 8px;">&middot; <strong>Two terse RTs</strong> &mdash; <a class="x-link" href="https://x.com/policytensor/status/2063534468552425815">"Haha what a loser" (@keithdorejel, Jun 7, 08:12)</a> with an attached image.</p>
+      <p style="margin:0;">The images for these collapsed items are retained in the export folder.</p>
+    </div>
+
+    <div class="context">
+      <span class="lbl">Analytical Context</span>
+      <p>Even the marginalia reveal the account's intellectual posture: an <strong>empiricist reflex</strong> (dental-calculus genomics to debunk a paleo-diet claim; a hard fact to correct a film-school myth) and a taste for puncturing <strong>narrative inflation</strong> &mdash; whether a self-made-artist legend or a viral economic claim. The <strong>China&ndash;Japan&ndash;Korea</strong> meme nods to mutual-perception and historical-memory dynamics in East Asian relations, a register adjacent to the timeline's grand-strategy core.</p>
+    </div>
+  </section>
+
+  <footer>
+    Generated from raw Twitter/X timeline export &middot; 21 posts, 5 themes &middot; Source author: @policytensor &middot; Window Jun 3&ndash;9, 2026 (UTC).
+  </footer>
+
+</div>
+</body>
+</html>

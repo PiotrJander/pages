@@ -1,0 +1,888 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dispatch — The Hormuz Escalation, 9–11 June 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#15120d;
+    --paper:#f4ece0;
+    --paper-2:#ece0cf;
+    --bg:#14110c;
+    --bg-2:#1c1813;
+    --card:#211c15;
+    --line:#3a3125;
+    --muted:#a99c84;
+    --dim:#7d715c;
+    --ember:#e8932b;
+    --ember-soft:#f0b85e;
+    --alert:#d8503a;
+    --alert-soft:#e87a63;
+    --good:#7fa66a;
+    --serif:"Fraunces", Georgia, serif;
+    --body:"Newsreader", Georgia, serif;
+    --mono:"JetBrains Mono", ui-monospace, monospace;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1200px 800px at 80% -10%, rgba(232,147,43,.10), transparent 60%),
+      radial-gradient(900px 700px at -10% 20%, rgba(216,80,58,.08), transparent 55%),
+      var(--bg);
+    color:var(--paper);
+    font-family:var(--body);
+    font-size:19px;
+    line-height:1.62;
+    -webkit-font-smoothing:antialiased;
+    letter-spacing:.1px;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:1;mix-blend-mode:overlay;opacity:.5;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.6'/%3E%3C/svg%3E");
+  }
+  .wrap{position:relative;z-index:2;max-width:980px;margin:0 auto;padding:0 24px;}
+
+  /* ---------- Masthead ---------- */
+  header.masthead{padding:72px 0 26px;border-bottom:1px solid var(--line);}
+  .kicker{
+    font-family:var(--mono);font-size:12px;letter-spacing:.32em;text-transform:uppercase;
+    color:var(--ember);display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  }
+  .kicker .dot{width:8px;height:8px;border-radius:50%;background:var(--alert);box-shadow:0 0 0 0 rgba(216,80,58,.6);animation:pulse 2.2s infinite;}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(216,80,58,.55);}70%{box-shadow:0 0 0 10px rgba(216,80,58,0);}100%{box-shadow:0 0 0 0 rgba(216,80,58,0);}}
+  h1.title{
+    font-family:var(--serif);font-weight:900;font-size:clamp(44px,8vw,86px);line-height:.96;
+    margin:22px 0 18px;letter-spacing:-.02em;color:var(--paper);
+  }
+  h1.title em{font-style:italic;color:var(--ember-soft);font-weight:500;}
+  .standfirst{font-size:21px;color:var(--muted);max-width:760px;font-weight:400;}
+  .standfirst b{color:var(--paper);font-weight:600;}
+  .meta-row{
+    margin-top:30px;display:flex;gap:28px;flex-wrap:wrap;font-family:var(--mono);font-size:12.5px;color:var(--dim);
+    letter-spacing:.05em;
+  }
+  .meta-row span b{color:var(--ember);font-weight:500;}
+
+  /* ---------- Index ---------- */
+  nav.toc{margin:40px 0 8px;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden;}
+  nav.toc a{
+    background:var(--bg-2);padding:18px 18px;text-decoration:none;color:var(--paper);
+    display:flex;flex-direction:column;gap:6px;transition:background .25s,transform .25s;
+  }
+  nav.toc a:hover{background:var(--card);}
+  nav.toc a .n{font-family:var(--mono);font-size:11px;color:var(--ember);letter-spacing:.2em;}
+  nav.toc a .t{font-family:var(--serif);font-size:16px;font-weight:600;line-height:1.2;}
+
+  /* ---------- Theme section ---------- */
+  section.theme{padding:64px 0 28px;border-top:1px solid var(--line);scroll-margin-top:20px;}
+  .theme-head{display:flex;gap:20px;align-items:flex-start;margin-bottom:8px;}
+  .theme-num{
+    font-family:var(--mono);font-size:13px;font-weight:700;color:var(--bg);background:var(--ember);
+    padding:4px 10px;border-radius:6px;letter-spacing:.1em;margin-top:14px;white-space:nowrap;
+  }
+  h2.theme-title{font-family:var(--serif);font-weight:900;font-size:clamp(30px,5vw,48px);line-height:1.02;letter-spacing:-.015em;margin:0;color:var(--paper);}
+  .theme-intro{color:var(--muted);font-size:20px;margin:14px 0 6px;max-width:780px;}
+  .theme-intro b{color:var(--paper);font-weight:600;}
+  .chrono-flag{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--alert-soft);display:inline-flex;align-items:center;gap:8px;margin:18px 0 4px;}
+  .chrono-flag::before{content:"";width:26px;height:1px;background:var(--alert-soft);}
+
+  /* ---------- Tweet card ---------- */
+  .tweet{
+    background:linear-gradient(180deg,var(--card),#1d1810);
+    border:1px solid var(--line);border-radius:16px;padding:24px 26px;margin:26px 0;
+    position:relative;box-shadow:0 18px 40px -28px rgba(0,0,0,.9);
+  }
+  .tweet.lead{border-left:3px solid var(--ember);}
+  .t-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px;margin-bottom:12px;}
+  .t-author{font-family:var(--serif);font-weight:600;font-size:18px;color:var(--paper);letter-spacing:.01em;}
+  .t-user{font-family:var(--mono);font-size:13px;color:var(--ember);}
+  .t-id{font-family:var(--mono);font-size:11px;color:var(--dim);background:var(--bg-2);padding:2px 7px;border-radius:5px;border:1px solid var(--line);}
+  .t-date{margin-left:auto;font-family:var(--mono);font-size:12px;}
+  .t-date a{color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--dim);transition:color .2s,border-color .2s;}
+  .t-date a:hover{color:var(--ember-soft);border-color:var(--ember-soft);}
+  .t-body{font-size:19.5px;color:#ece4d6;}
+  .t-body p{margin:0 0 10px;}
+  .t-body p:last-child{margin-bottom:0;}
+
+  /* images */
+  .media{margin-top:16px;}
+  .media.single{text-align:center;}
+  .media.single img{max-width:min(100%,560px);}
+  .media.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+  .media.grid.three img:first-child,.media.grid.four{}
+  .media img{width:100%;border-radius:10px;border:1px solid var(--line);display:block;background:var(--bg-2);}
+
+  /* nested */
+  .nest{
+    margin-top:16px;border-left:2px solid var(--line);padding:14px 0 4px 18px;position:relative;
+  }
+  .nest .nest{margin-left:2px;}
+  .nest-label{
+    font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--dim);display:inline-flex;align-items:center;gap:7px;margin-bottom:10px;
+  }
+  .nest-label.repost{color:var(--good);}
+  .nest-label.quote{color:var(--ember);}
+  .nest-label::before{content:"\21B3";font-size:13px;letter-spacing:0;}
+  .nest .t-author{font-size:16px;}
+  .nest .t-body{font-size:17px;color:#d9d0c0;}
+  .nest .media.single img{max-width:min(100%,440px);}
+
+  /* narrative + analytical blocks */
+  .narrative{
+    margin:30px 0;padding:22px 26px;border-radius:14px;background:rgba(255,255,255,.018);
+    border:1px solid var(--line);
+  }
+  .narrative h4{font-family:var(--mono);font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--dim);margin:0 0 12px;font-weight:500;}
+  .narrative p{margin:0 0 12px;color:#d4cab8;font-size:18.5px;}
+  .narrative p:last-child{margin-bottom:0;}
+  .narrative a{color:var(--ember-soft);text-decoration:none;border-bottom:1px solid rgba(240,184,94,.3);}
+  .narrative .h{color:var(--paper);font-weight:600;}
+
+  .context{
+    margin:34px 0 8px;padding:26px 28px;border-radius:14px;position:relative;
+    background:linear-gradient(180deg,rgba(232,147,43,.07),rgba(232,147,43,.02));
+    border:1px solid rgba(232,147,43,.26);
+  }
+  .context h4{
+    font-family:var(--mono);font-size:12px;letter-spacing:.26em;text-transform:uppercase;color:var(--ember);
+    margin:0 0 14px;display:flex;align-items:center;gap:10px;font-weight:500;
+  }
+  .context h4::before{content:"\25C8";}
+  .context p{margin:0 0 13px;color:#e3d9c8;font-size:18.5px;}
+  .context p:last-child{margin-bottom:0;}
+  .context b{color:var(--paper);}
+
+  footer{padding:64px 0 90px;border-top:1px solid var(--line);margin-top:60px;color:var(--dim);font-family:var(--mono);font-size:12.5px;letter-spacing:.04em;}
+  footer b{color:var(--muted);font-weight:500;}
+  footer a{color:var(--ember);text-decoration:none;}
+
+  @media(max-width:620px){
+    body{font-size:17px;}
+    .tweet{padding:20px 18px;}
+    .t-date{margin-left:0;width:100%;}
+    .media.grid{grid-template-columns:1fr;}
+    .theme-num{margin-top:8px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker"><span class="dot"></span> Situation Dispatch &nbsp;//&nbsp; Strait of Hormuz &nbsp;//&nbsp; OSINT Timeline</div>
+    <h1 class="title">The Gulf Comes Off <em>the Leash</em></h1>
+    <p class="standfirst">Two analyst timelines &mdash; <b>@policytensor</b> and <b>@NicoleGrajewski</b> &mdash; trace 48 hours in which a downed Apache reignited open war between the United States and Iran across the Strait of Hormuz, while the deeper argument plays out: <b>the era of the Gulf basing system is ending, and Asia is the real theatre.</b></p>
+    <div class="meta-row">
+      <span>WINDOW &nbsp;<b>09&ndash;11 JUN 2026</b></span>
+      <span>SOURCES &nbsp;<b>2 timelines</b></span>
+      <span>THEMES &nbsp;<b>5</b></span>
+      <span>POSTS PARSED &nbsp;<b>100+</b></span>
+    </div>
+    <nav class="toc">
+      <a href="#t1"><span class="n">01 / LIVE</span><span class="t">The Escalation Spiral</span></a>
+      <a href="#t2"><span class="n">02</span><span class="t">Coercion &amp; Its Limits</span></a>
+      <a href="#t3"><span class="n">03</span><span class="t">End of the Base Era</span></a>
+      <a href="#t4"><span class="n">04</span><span class="t">The Parsi Affair</span></a>
+      <a href="#t5"><span class="n">05</span><span class="t">Off the Front Line</span></a>
+    </nav>
+  </header>
+
+  <section class="theme" id="t1">
+    <div class="theme-head">
+      <span class="theme-num">01</span>
+      <h2 class="theme-title">The Escalation Spiral: From a Downed Apache to Open War</h2>
+    </div>
+    <p class="theme-intro">A single helicopter loss over the Strait of Hormuz on 9 June detonated a 48-hour cycle of strike and counter-strike. Because this thread is <b>live and developing</b>, it is presented in the order events broke.</p>
+    <div class="chrono-flag">Chronological &mdash; 09 Jun 17:44 UTC &rarr; 11 Jun 09:52 UTC</div>
+
+    <div class="tweet lead">
+      <div class="t-head">
+        <span class="t-author">Nicole Grajewski</span>
+        <span class="t-user">@NicoleGrajewski</span>
+        <span class="t-id">2064418773638271324</span>
+        <span class="t-date"><a href="https://x.com/NicoleGrajewski/status/2064418773638271324">09 Jun 18:46 UTC</a></span>
+      </div>
+      <div class="t-body"><p>RT @fab_hinz: Assuming the reporting is correct, this could have been a freak accident, a failed shoot-down attempt, or an intentional attack&hellip;</p></div>
+      <div class="nest">
+        <span class="nest-label repost">Reposted</span>
+        <div class="t-head">
+          <span class="t-author">Fabian Hinz</span>
+          <span class="t-user">@fab_hinz</span>
+          <span class="t-id">2064403164112056526</span>
+          <span class="t-date"><a href="https://x.com/fab_hinz/status/2064403164112056526">09 Jun 17:44 UTC</a></span>
+        </div>
+        <div class="t-body"><p>Assuming the reporting is correct, this could have been a freak accident, a failed shoot-down attempt, or an intentional attack.</p><p>Worth noting that Iran previously marketed an interceptor variant of the jet-powered Shahed for export.</p></div>
+        <div class="media single"><img src="assuming-the-reporting-is-correct-this-could-have-been-a-freak-accident-a-failed-shoot-down-attempt-or-an-intentional-attack.jpg" alt="Shahed interceptor variant"></div>
+        <div class="nest">
+          <span class="nest-label quote">Quoted</span>
+          <div class="t-head">
+            <span class="t-author">Special Kherson Cat</span>
+            <span class="t-user">@bayraktar_1love</span>
+            <span class="t-id">2064400724620914761</span>
+            <span class="t-date"><a href="https://x.com/bayraktar_1love/status/2064400724620914761">09 Jun 17:34 UTC</a></span>
+          </div>
+          <div class="t-body"><p>CNN reports that the U.S. Army AH-64 Apache downed near the Strait of Hormuz was brought down by an Iranian Shahed kamikaze drone.</p></div>
+          <div class="media single"><img src="cnn-reports-that-the-u-s-army-ah-64-apache-downed-near-the-strait-of-hormuz-was-brought-down-by-an-iranian.jpg" alt="CNN report on downed Apache"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tweet">
+      <div class="t-head">
+        <span class="t-author">Nicole Grajewski</span>
+        <span class="t-user">@NicoleGrajewski</span>
+        <span class="t-id">2064458799943983258</span>
+        <span class="t-date"><a href="https://x.com/NicoleGrajewski/status/2064458799943983258">09 Jun 21:25 UTC</a></span>
+      </div>
+      <div class="t-body"><p>RT @vvanwilgenburg: #BREAKING: U.S. Central Command (CENTCOM) forces began launching self-defense strikes against Iran&hellip;</p></div>
+      <div class="nest">
+        <span class="nest-label repost">Reposted</span>
+        <div class="t-head">
+          <span class="t-author">Wladimir van Wilgenburg</span>
+          <span class="t-user">@vvanwilgenburg</span>
+          <span class="t-id">2064457252128399378</span>
+          <span class="t-date"><a href="https://x.com/vvanwilgenburg/status/2064457252128399378">09 Jun 21:18 UTC</a></span>
+        </div>
+        <div class="t-body"><p>#BREAKING: U.S. Central Command (CENTCOM) forces began launching self-defense strikes against Iran &mdash; @CENTCOM</p></div>
+        <div class="media single"><img src="breaking-u-s-central-command-centcom-forces-began-launching-self-defense-strikes-against-iran-centcom-https-t-co-lrenh8njad.jpg" alt="CENTCOM self-defense strikes announcement"></div>
+      </div>
+    </div>
+
+    <div class="narrative">
+      <h4>Overnight 9&ndash;10 June &mdash; the first exchange</h4>
+      <p>Within minutes, reports cascaded: <span class="h">explosions in Sirik</span> on the Hormuz coast <a href="https://x.com/Osinttechnical/status/2064456445937037341">(21:15)</a>, then Barak Ravid relaying the formal CENTCOM line that forces had &ldquo;struck Iranian air defense, ground control stations, and surveillance radar sites near the Strait of Hormuz&rdquo; in response to the Apache <a href="https://x.com/BarakRavid/status/2064513756676133350">(10 Jun 01:03)</a>. Grajewski catalogued the night in near real time &mdash; <span class="h">three waves of US strikes</span> across southern provinces <a href="https://x.com/gbrew24/status/2064516433095041240">(per @gbrew24)</a>, roughly <span class="h">15 impacts in at least three Iranian cities</span> <a href="https://x.com/websterkaroon/status/2064468153372213615">(@websterkaroon)</a>, and unverified IRGC claims of attacks on the US Fifth Fleet that arrived &ldquo;with no sirens or explosions heard&rdquo; <a href="https://x.com/FaytuksNetwork/status/2064511883810386373">(@FaytuksNetwork)</a>.</p>
+    </div>
+
+    <div class="tweet">
+      <div class="t-head">
+        <span class="t-author">Nicole Grajewski</span>
+        <span class="t-user">@NicoleGrajewski</span>
+        <span class="t-id">2064526104509943889</span>
+        <span class="t-date"><a href="https://x.com/NicoleGrajewski/status/2064526104509943889">10 Jun 01:52 UTC</a></span>
+      </div>
+      <div class="t-body"><p>RT @BabakTaghvaee1: BREAKING: Air-defence activity in Lorestan province of Iran! The IRGC Aerospace Force units in Imam Ali missile base of&hellip;</p></div>
+      <div class="nest">
+        <span class="nest-label repost">Reposted</span>
+        <div class="t-head">
+          <span class="t-author">Babak Taghvaee &mdash; The Crisis Watch</span>
+          <span class="t-user">@BabakTaghvaee1</span>
+          <span class="t-id">2064504665723564540</span>
+          <span class="t-date"><a href="https://x.com/BabakTaghvaee1/status/2064504665723564540">10 Jun 00:27 UTC</a></span>
+        </div>
+        <div class="t-body"><p>BREAKING: Air-defence activity in Lorestan province of Iran! The IRGC Aerospace Force units in Imam Ali missile base of Khorramabad can be seen launching surface-to-air missiles at the USAF or US Navy fighter jets involved in the third wave of airstrikes ta Iran tonight.</p></div>
+        <div class="media single"><img src="breaking-air-defence-activity-in-lorestan-province-of-iran-the-irgc-aerospace-force-units-in-imam-ali-missile-base-of-khorramabad.jpg" alt="Air-defence activity over Lorestan"></div>
+      </div>
+    </div>
+
+    <div class="tweet">
+      <div class="t-head">
+        <span class="t-author">Nicole Grajewski</span>
+        <span class="t-user">@NicoleGrajewski</span>
+        <span class="t-id">2064817234229219622</span>
+        <span class="t-date"><a href="https://x.com/NicoleGrajewski/status/2064817234229219622">10 Jun 21:09 UTC</a></span>
+      </div>
+      <div class="t-body"><p>RT @Osinttechnical: Hegseth indicates the US will strike Iran tonight, potentially tomorrow, says that bombs will be dropped on &ldquo;key facili&hellip;&rdquo;</p></div>
+      <div class="nest">
+        <span class="nest-label repost">Reposted</span>
+        <div class="t-head">
+          <span class="t-author">OSINTtechnical</span>
+          <span class="t-user">@Osinttechnical</span>
+          <span class="t-id">2064813374936916090</span>
+          <span class="t-date"><a href="https://x.com/Osinttechnical/status/2064813374936916090">10 Jun 20:54 UTC</a></span>
+        </div>
+        <div class="t-body"><p>Hegseth indicates the US will strike Iran tonight, potentially tomorrow, says that bombs will be dropped on &ldquo;key facilities.&rdquo;</p></div>
+        <div class="media single"><img src="hegseth-indicates-the-us-will-strike-iran-tonight-potentially-tomorrow-says-that-bombs-will-be-dropped-on-key-facilities-https-t-co-twietoxdls.jpg" alt="Hegseth on key facilities"></div>
+      </div>
+    </div>
+
+    <div class="tweet lead">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-user">@policytensor</span>
+        <span class="t-id">2064855176314257470</span>
+        <span class="t-date"><a href="https://x.com/policytensor/status/2064855176314257470">10 Jun 23:40 UTC</a></span>
+      </div>
+      <div class="t-body"><p>This is it. All the gloves are coming off. Prepare for a massive salvo like the very first day of the war. Except with more careful targeting of US assets and key allied infrastructure.</p></div>
+      <div class="nest">
+        <span class="nest-label quote">Quoted</span>
+        <div class="t-head">
+          <span class="t-author">The Hormuz Letter</span>
+          <span class="t-user">@HormuzLetter</span>
+          <span class="t-id">2064837826827399488</span>
+          <span class="t-date"><a href="https://x.com/HormuzLetter/status/2064837826827399488">10 Jun 22:31 UTC</a></span>
+        </div>
+        <div class="t-body"><p>BREAKING: Iran says strikes on US ships &ldquo;trapped in the Strait of Hormuz&rdquo; have now begun, with the IRGC preparing for a &ldquo;historic operation,&rdquo; per a source close to Iran&rsquo;s Ghalibaf.</p></div>
+      </div>
+    </div>
+
+    <div class="tweet">
+      <div class="t-head">
+        <span class="t-author">Nicole Grajewski</span>
+        <span class="t-user">@NicoleGrajewski</span>
+        <span class="t-id">2064920807680209352</span>
+        <span class="t-date"><a href="https://x.com/NicoleGrajewski/status/2064920807680209352">11 Jun 04:00 UTC</a></span>
+      </div>
+      <div class="t-body"><p>RT @sentdefender: Iran&rsquo;s Islamic Revolutionary Guard Corps (IRGC) has announced that its Missile Forces carried out an attack earlier on Mu&hellip;</p></div>
+      <div class="nest">
+        <span class="nest-label repost">Reposted</span>
+        <div class="t-head">
+          <span class="t-author">OSINTdefender</span>
+          <span class="t-user">@sentdefender</span>
+          <span class="t-id">2064915193998578153</span>
+          <span class="t-date"><a href="https://x.com/sentdefender/status/2064915193998578153">11 Jun 03:38 UTC</a></span>
+        </div>
+        <div class="t-body"><p>Iran&rsquo;s Islamic Revolutionary Guard Corps (IRGC) has announced that its Missile Forces carried out an attack earlier on Muwaffaq Salti Air Base in Jordan using 12 medium-range ballistic missiles, as retaliation for last night&rsquo;s wave of U.S. strikes against Iran.</p></div>
+        <div class="media single"><img src="iran-s-islamic-revolutionary-guard-corps-irgc-has-announced-that-its-missile-forces-carried-out-an-attack-earlier-on-muwaffaq-salti.jpg" alt="IRGC attack on Muwaffaq Salti Air Base"></div>
+      </div>
+    </div>
+
+    <div class="narrative">
+      <h4>The counter-strike lands &mdash; and the targeting logic shows</h4>
+      <p>The Iranian reply was not random. Analyst @mhmiranusa argued that <span class="h">five missiles out of Tabriz were all aimed at one point &mdash; the F-35 ramp at Muwaffaq Salti</span> <a href="https://x.com/mhmiranusa/status/2064907489447903324">(03:08)</a>, while OSINTtechnical posted <a href="https://x.com/Osinttechnical/status/2064896599575208350">footage of a Patriot battery engaging incoming MRBMs over Jordan</a>. Parallel claims followed of strikes on the <span class="h">Fifth Fleet headquarters and Sheikh Isa Air Base in Bahrain</span> <a href="https://x.com/EGYOSINT/status/2064905530531860510">(@EGYOSINT)</a> and a &ldquo;successful hit&rdquo; on the Jabal al-Dukhan radar station. CENTCOM, predictably, stayed silent &mdash; as Policy Tensor noted, it <a href="https://x.com/policytensor/status/2064865263455994252">&ldquo;is not going to confirm unless ordered to do so.&rdquo;</a></p>
+    </div>
+
+    <div class="tweet">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-user">@policytensor</span>
+        <span class="t-id">2065009291551969510</span>
+        <span class="t-date"><a href="https://x.com/policytensor/status/2065009291551969510">11 Jun 09:52 UTC</a></span>
+      </div>
+      <div class="t-body"><p>RT @AJEnglish: BREAKING: Three liquefied natural gas (LNG) tankers have exited the Strait of Hormuz with their transponders off and bound f&hellip;</p></div>
+      <div class="nest">
+        <span class="nest-label repost">Reposted</span>
+        <div class="t-head">
+          <span class="t-author">Al Jazeera English</span>
+          <span class="t-user">@AJEnglish</span>
+          <span class="t-id">2065007845423079774</span>
+          <span class="t-date"><a href="https://x.com/AJEnglish/status/2065007845423079774">11 Jun 09:46 UTC</a></span>
+        </div>
+        <div class="t-body"><p>BREAKING: Three liquefied natural gas (LNG) tankers have exited the Strait of Hormuz with their transponders off and bound for destinations in Asia, according to ship-tracking data from LSEG and Kpler.</p></div>
+        <div class="media single"><img src="breaking-three-liquefied-natural-gas-lng-tankers-have-exited-the-strait-of-hormuz-with-their-transponders-off-and-bound-for.jpg" alt="LNG tankers exit Hormuz with transponders off"></div>
+      </div>
+    </div>
+
+    <div class="narrative">
+      <h4>Morning after &mdash; a verdict, hedged</h4>
+      <p>By daylight on 11 June, Policy Tensor delivered an early assessment that cut against the maximalist mood he had stoked overnight: <a href="https://x.com/policytensor/status/2065003238651281495">&ldquo;It looks very much like Iran fucked up. I may be wrong. We&rsquo;ll see&rdquo;</a> &mdash; clarifying minutes later that he meant Iran had <a href="https://x.com/policytensor/status/2065004612902412544">&ldquo;under-responded.&rdquo;</a> The tankers slipping out of Hormuz dark, bound for Asia, were the market&rsquo;s own verdict on whether the waterway was still safe.</p>
+    </div>
+
+    <div class="context">
+      <h4>Analytical Context</h4>
+      <p>This sequence is a textbook <b>tit-for-tat escalation ladder</b> in which each side calibrates a response just above the last rung. The original casus belli &mdash; a downed Apache &mdash; is almost incidental; as Policy Tensor put it elsewhere, <b>&ldquo;the chopper was almost certainly an excuse.&rdquo;</b> What matters is the signalling grammar: the US strikes <b>radar, air-defence and C2 nodes</b> (capability degradation, escalation-control targets), while Iran answers against <b>fixed, high-value air assets parked on aprons</b> &mdash; the F-35 ramp at Muwaffaq Salti, the Fifth Fleet at Bahrain &mdash; precisely the targets its missile model says are most cost-effective.</p>
+      <p>The fog is doing real work here. A flood of unconfirmed claims (a hypersonic warship hit, Fifth Fleet fires, &ldquo;historic operations&rdquo;) outpaces verification, and CENTCOM&rsquo;s silence is itself a deliberate move on the board. The single most telling <b>hard</b> indicator is economic: <b>LNG tankers running dark out of Hormuz</b> means commercial actors have priced in a closed or contested strait regardless of what either government confirms.</p>
+    </div>
+  </section>
+
+  <section class="theme" id="t2">
+    <div class="theme-head">
+      <span class="theme-num">02</span>
+      <h2 class="theme-title">Coercion and Its Limits: Can Bombing Buy a Deal?</h2>
+    </div>
+    <p class="theme-intro">Running beneath the live feed is a sustained argument among strategists about whether force can actually coerce Tehran. The recurring answer &mdash; from Policy Tensor, Kelly Grieco, Rosemary Kelanic and Daniel DePetris &mdash; is <b>no, and the attempt is self-defeating.</b></p>
+
+    <div class="tweet lead">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-user">@policytensor</span>
+        <span class="t-id">2064828809338081645</span>
+        <span class="t-date"><a href="https://x.com/policytensor/status/2064828809338081645">10 Jun 21:55 UTC</a></span>
+      </div>
+      <div class="t-body"><p>There is no miscalculation. Everything is calculated here. Both sides are doing what they are doing bc they think this will help them closer to getting their way.</p></div>
+    </div>
+
+    <div class="tweet">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-user">@policytensor</span>
+        <span class="t-id">2064880370328219929</span>
+        <span class="t-date"><a href="https://x.com/policytensor/status/2064880370328219929">11 Jun 01:20 UTC</a></span>
+      </div>
+      <div class="t-body"><p>RT @ka_grieco: We&rsquo;re back to &ldquo;shock and awe&rdquo; as strategy, I see. Iran just absorbed thousands of strikes over two months. What exactly chan&hellip;</p></div>
+      <div class="nest">
+        <span class="nest-label repost">Reposted</span>
+        <div class="t-head">
+          <span class="t-author">Kelly Grieco</span>
+          <span class="t-user">@ka_grieco</span>
+          <span class="t-id">2064872511737663877</span>
+          <span class="t-date"><a href="https://x.com/ka_grieco/status/2064872511737663877">11 Jun 00:49 UTC</a></span>
+        </div>
+        <div class="t-body"><p>We&rsquo;re back to &ldquo;shock and awe&rdquo; as strategy, I see. Iran just absorbed thousands of strikes over two months. What exactly changes with scale and speed alone? Nothing.</p></div>
+        <div class="nest">
+          <span class="nest-label quote">Quoted</span>
+          <div class="t-head">
+            <span class="t-author">Axios</span>
+            <span class="t-user">@axios</span>
+            <span class="t-id">2064803031460249632</span>
+            <span class="t-date"><a href="https://x.com/axios/status/2064803031460249632">10 Jun 20:12 UTC</a></span>
+          </div>
+          <div class="t-body"><p>Sources said one option Trump is considering is launching an operation that is big in scale but short in duration, with the aim of pressing Iran to change its position in the negotiations.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tweet">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-user">@policytensor</span>
+        <span class="t-id">2064867821968904273</span>
+        <span class="t-date"><a href="https://x.com/policytensor/status/2064867821968904273">11 Jun 00:30 UTC</a></span>
+      </div>
+      <div class="t-body"><p>The other possibility is the gulf burning down to the ground.</p></div>
+      <div class="nest">
+        <span class="nest-label quote">Quoted</span>
+        <div class="t-head">
+          <span class="t-author">Rosemary Kelanic</span>
+          <span class="t-user">@RKelanic</span>
+          <span class="t-id">2064865761777046015</span>
+          <span class="t-date"><a href="https://x.com/RKelanic/status/2064865761777046015">11 Jun 00:22 UTC</a></span>
+        </div>
+        <div class="t-body"><p>Trump restarting airstrikes on Iran is a huge mistake.</p><p>It will not bring Iran closer to a deal. Attacks alone can&rsquo;t coerce concessions. Trump must also convince Iran it can <em>avoid</em> attack by meeting US demands.</p><p>It&rsquo;s called the assurance problem &mdash; and it&rsquo;s been a major&hellip;</p></div>
+      </div>
+    </div>
+
+    <div class="tweet">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-user">@policytensor</span>
+        <span class="t-id">2064987967228101045</span>
+        <span class="t-date"><a href="https://x.com/policytensor/status/2064987967228101045">11 Jun 08:27 UTC</a></span>
+      </div>
+      <div class="t-body"><p>Iranian response on US assets might.</p></div>
+      <div class="nest">
+        <span class="nest-label quote">Quoted</span>
+        <div class="t-head">
+          <span class="t-author">Daniel DePetris</span>
+          <span class="t-user">@DanDePetris</span>
+          <span class="t-id">2064895407444873352</span>
+          <span class="t-date"><a href="https://x.com/DanDePetris/status/2064895407444873352">11 Jun 02:20 UTC</a></span>
+        </div>
+        <div class="t-body"><p>Six weeks of continuous U.S. bombing didn&rsquo;t force Iran to capitulate.</p><p>So it&rsquo;s hard to see how another two days of U.S. bombing is going to force Iran to capitulate.</p></div>
+      </div>
+    </div>
+
+    <div class="tweet">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-user">@policytensor</span>
+        <span class="t-id">2064963544165073041</span>
+        <span class="t-date"><a href="https://x.com/policytensor/status/2064963544165073041">11 Jun 06:50 UTC</a></span>
+      </div>
+      <div class="t-body"><p>I have seen a lot of shares about Sy Hersh reporting on Trump considering nuclear weapons use. What it shows is potty training. The implied nuclear threat is going to be ignored as it always has since the nuclear revolution. There is no possibility of nuclear use yet.</p></div>
+    </div>
+
+    <div class="tweet">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-user">@policytensor</span>
+        <span class="t-id">2064828099745771582</span>
+        <span class="t-date"><a href="https://x.com/policytensor/status/2064828099745771582">10 Jun 21:52 UTC</a></span>
+      </div>
+      <div class="t-body"><p>Escalation dominance is not an end in itself. It is bc Iran wants to consolidate its new power position that it wants to establish escalation dominance. The counter-escalation yesterday failed to convince the US. If this is still the proximate goal for Tehran, they have to&hellip;</p></div>
+    </div>
+
+    <div class="narrative">
+      <h4>The rest of the argument</h4>
+      <p>Around these anchors, the timeline circles the same nerve. Policy Tensor reads the targeting as deliberate signalling &mdash; <a href="https://x.com/policytensor/status/2064902615922553244">&ldquo;Why Jordan and not Ben Gurion? Are they signaling a controlled counter-escalation?&rdquo;</a> &mdash; and rejects the comforting language of accident: against the claim that Trump had &ldquo;lost control,&rdquo; he insists it is <a href="https://x.com/policytensor/status/2064881373299495163">&ldquo;Calculated not inadvertent.&rdquo;</a> Grieco supplies the structural punchline that <span class="h">a ceasefire announced in Washington is now hostage to Tehran&rsquo;s choices</span>: <a href="https://x.com/ka_grieco/status/2064875754748289319">&ldquo;Iran now effectively decides whether the ceasefire still holds.&rdquo;</a> The open question Policy Tensor keeps returning to &mdash; <a href="https://x.com/policytensor/status/2064820280053088371">&ldquo;Is a resumption of high-intensity war now inevitable?&rdquo;</a> &mdash; is, by the logic on display, answered in the affirmative.</p>
+    </div>
+
+    <div class="context">
+      <h4>Analytical Context</h4>
+      <p>The cluster is a live application of <b>coercion theory</b> &mdash; the Schelling-derived distinction between <b>brute force</b> (destroying capability) and <b>coercion</b> (changing the adversary&rsquo;s decision). Kelanic&rsquo;s &ldquo;assurance problem&rdquo; is the crux: coercion only works if the target believes compliance will actually <em>stop</em> the pain. Repeated, open-ended bombing destroys exactly that belief, so Iran&rsquo;s rational move is to keep absorbing and escalating rather than concede.</p>
+    <p>Policy Tensor&rsquo;s insistence that &ldquo;everything is calculated&rdquo; is a deliberate rejection of the <b>inadvertent-escalation</b> framing that dominates Western commentary. In his reading both sides are <b>rational actors competing for escalation dominance</b>, not stumbling toward catastrophe &mdash; which is precisely why he treats the nuclear chatter as theatre (&ldquo;potty training&rdquo;): the <b>tradition of non-use</b> remains the binding constraint, and an implied threat with no credible follow-through carries no coercive weight.</p>
+    </div>
+  </section>
+
+  <section class="theme" id="t3">
+    <div class="theme-head">
+      <span class="theme-num">03</span>
+      <h2 class="theme-title">The End of the Base Era &mdash; and Why Asia Is the Real Theatre</h2>
+    </div>
+    <p class="theme-intro">Policy Tensor&rsquo;s through-line is that the Gulf war is a strategic distraction. In an age of cheap, accurate missiles, <b>fixed bases within range of a missile power are liabilities</b> &mdash; and every munition spent on Iran is one unavailable for the contest he thinks actually decides the century: China.</p>
+
+    <div class="tweet lead">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-user">@policytensor</span>
+        <span class="t-id">2064280559702909010</span>
+        <span class="t-date"><a href="https://x.com/policytensor/status/2064280559702909010">09 Jun 09:36 UTC</a></span>
+      </div>
+      <div class="t-body"><p>An Equilibrium Model of Counter-Base War in the Western Pacific, by @policytensor</p></div>
+      <div class="media single"><img src="an-equilibrium-model-of-counter-base-war-in-the-western-pacific-by-policytensor-https-t-co-doaybvr7zf-https-t-co-movdzy0mml.jpg" alt="An Equilibrium Model of Counter-Base War in the Western Pacific"></div>
+    </div>
+
+    <div class="tweet">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-user">@policytensor</span>
+        <span class="t-id">2064565012216050031</span>
+        <span class="t-date"><a href="https://x.com/policytensor/status/2064565012216050031">10 Jun 04:27 UTC</a></span>
+      </div>
+      <div class="t-body"><p>There may be a case for bases around the world. But none within the range of short-range missiles of a great missile power. The bases on the Gulf littoral should be abandoned wholesale. And the bases that are not abandoned have to be hardened.</p></div>
+      <div class="nest">
+        <span class="nest-label quote">Quoted</span>
+        <div class="t-head">
+          <span class="t-author">Sean Mathews</span>
+          <span class="t-user">@SeanPmathews</span>
+          <span class="t-id">2064302876701098078</span>
+          <span class="t-date"><a href="https://x.com/SeanPmathews/status/2064302876701098078">09 Jun 11:05 UTC</a></span>
+        </div>
+        <div class="t-body"><p>The U.S.-Israeli war on Iran has shown that the era of big military bases in the Gulf is over, U.S. officials and analysts tell me. &#129525;</p></div>
+        <div class="media single"><img src="the-u-s-israeli-war-on-iran-has-shown-that-the-era-of-big-military-bases-in-the-gulf-is-over-u-s.jpg" alt="The era of big military bases in the Gulf is over"></div>
+      </div>
+    </div>
+
+    <div class="tweet">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-user">@policytensor</span>
+        <span class="t-id">2064829860145447254</span>
+        <span class="t-date"><a href="https://x.com/policytensor/status/2064829860145447254">10 Jun 21:59 UTC</a></span>
+      </div>
+      <div class="t-body"><p>Are there still fifty birds at Ben Gurion? A massive salvo there could bag them the equivalent of a carrier.</p></div>
+      <div class="nest">
+        <span class="nest-label quote">Quoted</span>
+        <div class="t-head">
+          <span class="t-author">Policy Tensor</span>
+          <span class="t-user">@policytensor</span>
+          <span class="t-id">2063837723866120434</span>
+          <span class="t-date"><a href="https://x.com/policytensor/status/2063837723866120434">08 Jun 04:17 UTC</a></span>
+        </div>
+        <div class="t-body"><p>Updated the model. If the CEP of Iranian MRBMs is 10m instead of 50m, and Iran launches a salvo of 100 of them, then it will bag 32 birds instead of 22. If Iran uses a lot of the heavier Khorramshahr, the losses mount faster. I assume four-layered ballistic missile defense and&hellip;</p></div>
+        <div class="media single"><img src="updated-the-model-if-the-cep-of-iranian-mrbms-is-10m-instead-of-50m-and-iran-launches-a-salvo-of.jpg" alt="Updated counter-base salvo model"></div>
+      </div>
+    </div>
+
+    <div class="tweet">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-user">@policytensor</span>
+        <span class="t-id">2064975388929855928</span>
+        <span class="t-date"><a href="https://x.com/policytensor/status/2064975388929855928">11 Jun 07:37 UTC</a></span>
+      </div>
+      <div class="t-body"><p>Why the fuck do you think they said that. But it is worse. We will lose to China.</p></div>
+      <div class="nest">
+        <span class="nest-label quote">Quoted</span>
+        <div class="t-head">
+          <span class="t-author">Foreign Policy</span>
+          <span class="t-user">@ForeignPolicy</span>
+          <span class="t-id">2064694244380438908</span>
+          <span class="t-date"><a href="https://x.com/ForeignPolicy/status/2064694244380438908">10 Jun 13:00 UTC</a></span>
+        </div>
+        <div class="t-body"><p>The war in Iran has depleted the Pentagon as China&rsquo;s military buildup matures.</p></div>
+      </div>
+    </div>
+
+    <div class="tweet">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-user">@policytensor</span>
+        <span class="t-id">2064886648362484167</span>
+        <span class="t-date"><a href="https://x.com/policytensor/status/2064886648362484167">11 Jun 01:45 UTC</a></span>
+      </div>
+      <div class="t-body"><p>RT @tshugart3: Pay attention to this, folks. Isolation of Taiwan from the east using the China Coast Guard&mdash;if this turns into that&mdash;could be&hellip;</p></div>
+      <div class="nest">
+        <span class="nest-label repost">Reposted</span>
+        <div class="t-head">
+          <span class="t-author">Tom Shugart</span>
+          <span class="t-user">@tshugart3</span>
+          <span class="t-id">2064670949564096596</span>
+          <span class="t-date"><a href="https://x.com/tshugart3/status/2064670949564096596">10 Jun 11:28 UTC</a></span>
+        </div>
+        <div class="t-body"><p>Pay attention to this, folks. Isolation of Taiwan from the east using the China Coast Guard&mdash;if this turns into that&mdash;could be the first step of&hellip;all sorts of things. &#128064;</p></div>
+        <div class="nest">
+          <span class="nest-label quote">Quoted</span>
+          <div class="t-head">
+            <span class="t-author">Joseph Wu</span>
+            <span class="t-user">@josephwutw</span>
+            <span class="t-id">2064232672285938010</span>
+            <span class="t-date"><a href="https://x.com/josephwutw/status/2064232672285938010">09 Jun 06:26 UTC</a></span>
+          </div>
+          <div class="t-body"><p>#China&rsquo;s Hai Xun &amp; CG vessels are harassing commercial ships in #Taiwan&rsquo;s EEZ to fabricate a facade of #PRC jurisdiction. This expansionism is a major escalation of regional tension. We call on all commercial vessels in the area to ignore #CCG radio calls.</p></div>
+          <div class="media grid three">
+            <img src="china-s-hai-xun-amp-cg-vessels-are-harassing-commercial-ships-in-taiwan-s-eez-to-fabricate-a-facade-of-prc-jurisdiction-1.jpg" alt="Hai Xun harassment in Taiwan EEZ 1">
+            <img src="china-s-hai-xun-amp-cg-vessels-are-harassing-commercial-ships-in-taiwan-s-eez-to-fabricate-a-facade-of-prc-jurisdiction-2.jpg" alt="Hai Xun harassment in Taiwan EEZ 2">
+            <img src="china-s-hai-xun-amp-cg-vessels-are-harassing-commercial-ships-in-taiwan-s-eez-to-fabricate-a-facade-of-prc-jurisdiction-3.jpg" alt="Hai Xun harassment in Taiwan EEZ 3">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tweet">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-user">@policytensor</span>
+        <span class="t-id">2064773941202206783</span>
+        <span class="t-date"><a href="https://x.com/policytensor/status/2064773941202206783">10 Jun 18:17 UTC</a></span>
+      </div>
+      <div class="t-body"><p>Had Bridge gotten his way, we would not be at war with Iran. The prioritizers understood very well that you have limited military means and that attacking Iran will tie up a substantial portion of US capabilities that were sorely needed in Asia.</p><p>That ship has now sailed.</p></div>
+      <div class="nest">
+        <span class="nest-label quote">Quoted</span>
+        <div class="t-head">
+          <span class="t-author">Pax Curl</span>
+          <span class="t-user">@lebkitt</span>
+          <span class="t-id">2064690431611318471</span>
+          <span class="t-date"><a href="https://x.com/lebkitt/status/2064690431611318471">10 Jun 12:45 UTC</a></span>
+        </div>
+        <div class="t-body"><p>The U.S. imperial strategy has been hard to read because it keeps contradicting itself. Some of it looks isolationist. Some of it looks wildly interventionist. Some of it looks improvised. But the pattern is starting to become clearer.</p><p>A useful clue is where Elbridge Colby is&hellip;</p></div>
+      </div>
+    </div>
+
+    <div class="narrative">
+      <h4>The China frame, stated plainly</h4>
+      <p>Policy Tensor draws the geopolitics out to its bleak conclusion. On the appetite for confrontation: <a href="https://x.com/policytensor/status/2064577857586635168">&ldquo;The Cold War was an excellent device to impose discipline at home&hellip; The problem is that we will lose [the] Cold War they want so bad, and lose a hot war if we&rsquo;re stupid enough to fight China.&rdquo;</a> And on the rare-earth leverage Beijing now wields after Tokyo&rsquo;s posturing over Taiwan: <a href="https://x.com/policytensor/status/2064574900472258659">&ldquo;Should&rsquo;ve thought things through before declaring Taiwan a Japanese protectorate.&rdquo;</a> The Western Pacific &ldquo;counter-base&rdquo; essay that opens this theme is the formal model under all of it.</p>
+    </div>
+
+    <div class="context">
+      <h4>Analytical Context</h4>
+      <p>This is the <b>&ldquo;prioritizer&rdquo; / restraint</b> school of US grand strategy &mdash; associated with Elbridge Colby (&ldquo;Bridge&rdquo;) &mdash; which holds that finite American military means should be hoarded for deterring China, not burned in the Middle East. Policy Tensor&rsquo;s <b>counter-base war model</b> is the technical case: as missile accuracy improves (CEP falling from 50m to 10m), the <b>cost-exchange ratio flips decisively against fixed forward bases</b>, since a cheap salvo can destroy aircraft worth orders of magnitude more &mdash; &ldquo;the equivalent of a carrier&rdquo; parked on an apron.</p>
+      <p>The same logic that dooms Gulf bases applies to the First Island Chain, which is why the Taiwan Coast Guard &ldquo;grey-zone&rdquo; harassment matters: it is coercion <b>below the threshold of war</b>, testing whether the US can respond when its forward posture is already vulnerable. The unifying thesis is one of <b>imperial overstretch</b> &mdash; an Iran war that &ldquo;depletes the Pentagon&rdquo; and a rare-earth chokehold are, in this reading, two faces of a single strategic miscalculation that hands Beijing the advantage.</p>
+    </div>
+  </section>
+
+  <section class="theme" id="t4">
+    <div class="theme-head">
+      <span class="theme-num">04</span>
+      <h2 class="theme-title">The Parsi Affair: When the War Comes Home</h2>
+    </div>
+    <p class="theme-intro">The sharpest emotional spike in the timeline is not a missile but a news report &mdash; that the administration had opened a deportation probe into anti-war commentator Trita Parsi. For Policy Tensor it crystallises a fear that <b>dissent on the Iran war is being criminalised at home.</b></p>
+
+    <div class="tweet lead">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-user">@policytensor</span>
+        <span class="t-id">2064980004006461505</span>
+        <span class="t-date"><a href="https://x.com/policytensor/status/2064980004006461505">11 Jun 07:56 UTC</a></span>
+      </div>
+      <div class="t-body"><p>The lobby&rsquo;s attack on @tparsi is an import test of the survival of our civilization.</p></div>
+      <div class="nest">
+        <span class="nest-label quote">Quoted</span>
+        <div class="t-head">
+          <span class="t-author">Policy Tensor</span>
+          <span class="t-user">@policytensor</span>
+          <span class="t-id">2064973762131288238</span>
+          <span class="t-date"><a href="https://x.com/policytensor/status/2064973762131288238">11 Jun 07:31 UTC</a></span>
+        </div>
+        <div class="t-body"><p>Get the fuck out of here. Are you for real? This cannot be tolerated.</p></div>
+      </div>
+    </div>
+
+    <div class="tweet">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-user">@policytensor</span>
+        <span class="t-id">2064973762131288238</span>
+        <span class="t-date"><a href="https://x.com/policytensor/status/2064973762131288238">11 Jun 07:31 UTC</a></span>
+      </div>
+      <div class="t-body"><p>Get the fuck out of here. Are you for real? This cannot be tolerated.</p></div>
+      <div class="nest">
+        <span class="nest-label quote">Quoted</span>
+        <div class="t-head">
+          <span class="t-author">Rag&#305;p Soylu</span>
+          <span class="t-user">@ragipsoylu</span>
+          <span class="t-id">2064939124264505418</span>
+          <span class="t-date"><a href="https://x.com/ragipsoylu/status/2064939124264505418">11 Jun 05:13 UTC</a></span>
+        </div>
+        <div class="t-body"><p>WOW, Trump administration has launched a probe into Iran war critic Trita Parsi and is considering to cancel his Green Card and deport him out of the country, The Free Press reports</p></div>
+        <div class="media single"><img src="wow-trump-administration-has-launched-a-probe-into-iran-war-critic-trita-parsi-and-is-considering-to-cancel-his-green.jpg" alt="Report on probe into Trita Parsi"></div>
+      </div>
+    </div>
+
+    <div class="tweet">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-user">@policytensor</span>
+        <span class="t-id">2064983801244090868</span>
+        <span class="t-date"><a href="https://x.com/policytensor/status/2064983801244090868">11 Jun 08:11 UTC</a></span>
+      </div>
+      <div class="t-body"><p>If @tparsi is not safe. Who is?</p></div>
+    </div>
+
+    <div class="tweet">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-user">@policytensor</span>
+        <span class="t-id">2064984223920935248</span>
+        <span class="t-date"><a href="https://x.com/policytensor/status/2064984223920935248">11 Jun 08:12 UTC</a></span>
+      </div>
+      <div class="t-body"><p>RT @policytensor: @ancientjake1 They can&rsquo;t possibly do this.</p></div>
+      <div class="nest">
+        <span class="nest-label repost">Reposted</span>
+        <div class="t-head">
+          <span class="t-author">Policy Tensor</span>
+          <span class="t-user">@policytensor</span>
+          <span class="t-id">2064976691311636709</span>
+          <span class="t-date"><a href="https://x.com/policytensor/status/2064976691311636709">11 Jun 07:43 UTC</a></span>
+        </div>
+        <div class="t-body"><p>@ancientjake1 They can&rsquo;t possibly do this.</p></div>
+      </div>
+    </div>
+
+    <div class="tweet">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-user">@policytensor</span>
+        <span class="t-id">2064769695811518725</span>
+        <span class="t-date"><a href="https://x.com/policytensor/status/2064769695811518725">10 Jun 18:00 UTC</a></span>
+      </div>
+      <div class="t-body"><p>Patty thinks the lobby got him. I disagree. In my latest dispatch, I lay out a different way to think about the process that is generating escalation in the Gulf.</p><p>Read the latest. Stay ahead of the curve.</p></div>
+      <div class="media single"><img src="patty-thinks-the-lobby-got-him-i-disagree-in-my-latest-dispatch-i-lay-out-a-different-way-to-think.jpg" alt="Policy Tensor dispatch on escalation"></div>
+    </div>
+
+    <div class="narrative">
+      <h4>The thread it sits inside</h4>
+      <p>The Parsi outburst is the emotional peak of a longer reflection on agency and causation. Policy Tensor had spent the prior day promoting his essay <a href="https://x.com/policytensor/status/2064769783074037768">&ldquo;Did they get him?&rdquo;</a> &mdash; a meditation on whether escalation is being driven by a pro-war &ldquo;lobby&rdquo; or by deeper structural forces, a debate he frames against &ldquo;Patty&rdquo; (Robert Pape). His self-deprecating <a href="https://x.com/policytensor/status/2064882667418444008">&ldquo;Why did I lose my wager to Pape?&rdquo;</a> shows the same intellectual honesty he applies to the battlefield: a willingness to mark his own forecasts to market even as the news enrages him.</p>
+    </div>
+
+    <div class="context">
+      <h4>Analytical Context</h4>
+      <p>This theme links <b>foreign-policy escalation to domestic political repression</b> &mdash; the claim that war abroad is accompanied by a narrowing of permissible dissent at home. The reference to &ldquo;the lobby&rdquo; invokes the long-running Mearsheimer&ndash;Walt argument about the influence of pro-Israel advocacy on US policy; Trita Parsi, founder of the National Iranian American Council, is its most prominent target here. Whether or not one accepts that frame, the reported use of <b>immigration status as a tool against a green-card-holding critic</b> is what triggers Policy Tensor&rsquo;s &ldquo;survival of our civilization&rdquo; language.</p>
+      <p>Note the tension he is openly negotiating: a <b>structural</b> theory of escalation (his &ldquo;different way to think about the process&rdquo;) versus an <b>agency</b>-driven &ldquo;the lobby got him&rdquo; account. His refusal to fully collapse into either &mdash; conceding a wager to Pape while still naming the lobby &mdash; is the analytical signature of the whole feed.</p>
+    </div>
+  </section>
+
+  <section class="theme" id="t5">
+    <div class="theme-head">
+      <span class="theme-num">05</span>
+      <h2 class="theme-title">Off the Front Line: Casualty Math, Markets &amp; Mordant Humour</h2>
+    </div>
+    <p class="theme-intro">Between war bulletins the feeds widen out &mdash; a running fight over Ukraine casualty statistics, a swipe at elite economics, IPO euphoria, film criticism and dark jokes. The connective tissue is an <b>epistemic posture: distrust the official numbers, read the data yourself.</b></p>
+
+    <div class="tweet lead">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-user">@policytensor</span>
+        <span class="t-id">2064803677483712887</span>
+        <span class="t-date"><a href="https://x.com/policytensor/status/2064803677483712887">10 Jun 20:15 UTC</a></span>
+      </div>
+      <div class="t-body"><p>Wow. Russian losses have fallen dramatically. This is the opposite of the pattern suggested by Western intelligence plants in the papers.</p></div>
+      <div class="media grid">
+        <img src="wow-russian-losses-have-fallen-dramatically-this-is-the-opposite-of-the-pattern-suggested-by-western-intelligence-plants-in-the-1.jpg" alt="Russian losses chart 1">
+        <img src="wow-russian-losses-have-fallen-dramatically-this-is-the-opposite-of-the-pattern-suggested-by-western-intelligence-plants-in-the-2.jpg" alt="Russian losses chart 2">
+      </div>
+      <div class="nest">
+        <span class="nest-label quote">Quoted</span>
+        <div class="t-head">
+          <span class="t-author">Absorber the Geek</span>
+          <span class="t-user">@AbsorberTheGeek</span>
+          <span class="t-id">2064704210432643370</span>
+          <span class="t-date"><a href="https://x.com/AbsorberTheGeek/status/2064704210432643370">10 Jun 13:40 UTC</a></span>
+        </div>
+        <div class="t-body"><p>@policytensor BBC/Mediazona study.</p><p>The BBC ignores its own findings preferring instead to report the higher figures from the various propaganda outlets. &#129315;</p></div>
+      </div>
+    </div>
+
+    <div class="tweet">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-user">@policytensor</span>
+        <span class="t-id">2064918457355817059</span>
+        <span class="t-date"><a href="https://x.com/policytensor/status/2064918457355817059">11 Jun 03:51 UTC</a></span>
+      </div>
+      <div class="t-body"><p>Thank you for the correction!</p></div>
+      <div class="nest">
+        <span class="nest-label quote">Quoted</span>
+        <div class="t-head">
+          <span class="t-author">Dave Frenkel</span>
+          <span class="t-user">@merr1k</span>
+          <span class="t-id">2064868517975912885</span>
+          <span class="t-date"><a href="https://x.com/merr1k/status/2064868517975912885">11 Jun 00:33 UTC</a></span>
+        </div>
+        <div class="t-body"><p>@policytensor hey, Mediazona author here. it has nothing to do with &ldquo;losses fallen dramatically&rdquo;, just the obvious fact that it takes time for deaths to become public, so the less time passed since death, the less deaths we know of. same chart from 2024: same &ldquo;dramatic fall&rdquo;. it peak now there</p></div>
+        <div class="media single"><img src="policytensor-hey-mediazona-author-here-it-has-nothing-to-do-with-losses-fallen-dramatically-just-the-obvious-fact-that-it.jpg" alt="Mediazona author correction chart"></div>
+      </div>
+    </div>
+
+    <div class="tweet">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-user">@policytensor</span>
+        <span class="t-id">2064589931486257556</span>
+        <span class="t-date"><a href="https://x.com/policytensor/status/2064589931486257556">10 Jun 06:06 UTC</a></span>
+      </div>
+      <div class="t-body"><p>I told you I don&rsquo;t buy the numbers peddled by British intelligence. But what is a good estimate of fatalities on both sides of the Ukraine war?</p><p>Kobak et al. (2024) estimated 58,500 Russian excess male deaths in 2022-2023. ACLED reports 80,306 fatalities in Ukraine for&hellip;</p></div>
+    </div>
+
+    <div class="tweet">
+      <div class="t-head">
+        <span class="t-author">Nicole Grajewski</span>
+        <span class="t-user">@NicoleGrajewski</span>
+        <span class="t-id">2064736123025310065</span>
+        <span class="t-date"><a href="https://x.com/NicoleGrajewski/status/2064736123025310065">10 Jun 15:47 UTC</a></span>
+      </div>
+      <div class="t-body"><p>RT @shashj: My colleagues model the growing spread and depth of Ukrainian strikes inside Russia.</p></div>
+      <div class="nest">
+        <span class="nest-label repost">Reposted</span>
+        <div class="t-head">
+          <span class="t-author">Shashank Joshi</span>
+          <span class="t-user">@shashj</span>
+          <span class="t-id">2064656099748229271</span>
+          <span class="t-date"><a href="https://x.com/shashj/status/2064656099748229271">10 Jun 10:29 UTC</a></span>
+        </div>
+        <div class="t-body"><p>My colleagues model the growing spread and depth of Ukrainian strikes inside Russia.</p></div>
+        <div class="media single"><img src="my-colleagues-model-the-growing-spread-and-depth-of-ukrainian-strikes-inside-russia-https-t-co-wtkxs60jsx-https-t-co-dxvmmadytc.jpg" alt="Model of Ukrainian strikes inside Russia"></div>
+      </div>
+    </div>
+
+    <div class="tweet">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-user">@policytensor</span>
+        <span class="t-id">2064795824903643605</span>
+        <span class="t-date"><a href="https://x.com/policytensor/status/2064795824903643605">10 Jun 19:44 UTC</a></span>
+      </div>
+      <div class="t-body"><p>The big three IPOs are going to mint something like 10,000 millionaires.</p></div>
+    </div>
+
+    <div class="tweet">
+      <div class="t-head">
+        <span class="t-author">Policy Tensor</span>
+        <span class="t-user">@policytensor</span>
+        <span class="t-id">2064585262257021364</span>
+        <span class="t-date"><a href="https://x.com/policytensor/status/2064585262257021364">10 Jun 05:47 UTC</a></span>
+      </div>
+      <div class="t-body"><p>Life is wonderful here, mama. You must come visit!</p></div>
+      <div class="media single"><img src="life-is-wonderful-here-mama-you-must-come-visit-https-t-co-bfboutvkl9.jpg" alt="Life is wonderful here, mama"></div>
+      <div class="nest">
+        <span class="nest-label quote">Quoted</span>
+        <div class="t-head">
+          <span class="t-author">Pop Base</span>
+          <span class="t-user">@PopBase</span>
+          <span class="t-id">2064507350346793062</span>
+          <span class="t-date"><a href="https://x.com/PopBase/status/2064507350346793062">10 Jun 00:38 UTC</a></span>
+        </div>
+        <div class="t-body"><p>Gwyneth Paltrow stars in new campaign for Israel luxury housing development &lsquo;51PARK&rsquo; in Herzliya.</p></div>
+        <div class="media grid">
+          <img src="gwyneth-paltrow-stars-in-new-campaign-for-israel-luxury-housing-development-51park-in-herzliya-https-t-co-otqlxbemwk-1.jpg" alt="51PARK campaign 1">
+          <img src="gwyneth-paltrow-stars-in-new-campaign-for-israel-luxury-housing-development-51park-in-herzliya-https-t-co-otqlxbemwk-2.jpg" alt="51PARK campaign 2">
+        </div>
+      </div>
+    </div>
+
+    <div class="narrative">
+      <h4>The lighter register</h4>
+      <p>The same skeptical eye turns on intellectual and cultural authority. On economics, Policy Tensor agrees there is an &ldquo;emperor&rsquo;s new clothes&rdquo; problem at the top of the field, naming his candidate bluntly: <a href="https://x.com/policytensor/status/2064788931514716175">&ldquo;the real emperor with no clothes&hellip; is obviously Autor.&rdquo;</a> On film, a rare unguarded enthusiasm: <a href="https://x.com/policytensor/status/2064960037320052841">&ldquo;Nightcrawler is one of the best media film ever made.&rdquo;</a> The gallows humour runs throughout &mdash; the &ldquo;here we go again, where my coffee&rdquo; meme greeting a fresh round of war, and the absurdist <a href="https://x.com/NicoleGrajewski/status/2064537683846697142">&ldquo;Lawrence, Kansas, the Algeria of the Midwest&rdquo;</a> bit. On hardware, Grajewski flags the practical counter-trend to expensive air defence: <a href="https://x.com/jillrussia/status/2064596334141735416">Ukraine building a cheap alternative to Patriot missiles</a>.</p>
+    </div>
+
+    <div class="context">
+      <h4>Analytical Context</h4>
+      <p>What unifies this grab-bag is a consistent <b>epistemology of suspicion toward official and prestige sources</b>. The Russian-casualty exchange is the cleanest example: Policy Tensor leaps on a chart suggesting losses &ldquo;fell,&rdquo; is corrected by the <b>Mediazona</b> author himself &mdash; the apparent drop is a <b>right-censoring artefact</b> (recent deaths simply aren&rsquo;t public yet) &mdash; and credits the correction. It is motivated reasoning caught, and walked back, in real time, and it pairs with his preference for peer-reviewed excess-mortality estimates (Kobak et al.) over &ldquo;British intelligence&rdquo; figures.</p>
+      <p>The cultural notes rhyme with the geopolitics: <em>Nightcrawler</em> as a parable of media incentives mirrors his distrust of how war is reported; the &ldquo;emperor has no clothes&rdquo; jab at a marquee economist mirrors his contempt for unexamined elite consensus; and the Gwyneth Paltrow / 51PARK juxtaposition &mdash; luxury-housing glamour against the backdrop of regional war &mdash; is deployed as pointed irony. Even the IPO &ldquo;10,000 millionaires&rdquo; line lands as a comment on <b>who prospers while the Gulf burns.</b></p>
+    </div>
+  </section>
+
+  <footer>
+    <p><b>Compiled from raw Twitter/X timeline exports.</b> Themes, narrative summaries and analytical context are editorial syntheses of the captured posts; quoted tweets reproduce the source text. All dates link to the original status on x.com. Images are local captures referenced by relative path.</p>
+    <p>Primary voices: <b>Policy Tensor</b> (@policytensor) &middot; <b>Nicole Grajewski</b> (@NicoleGrajewski). Capture window <b>2026-06-09 &rarr; 2026-06-11 UTC</b>.</p>
+  </footer>
+
+</div>
+</body>
+</html>
