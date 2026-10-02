@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Szafa wnękowa · Preact</title>
+<meta name="color-scheme" content="light dark" />
+<link rel="stylesheet" href="style.css" />
+<script type="importmap">
+{ "imports": {
+  "preact":        "./vendor/preact.module.js",
+  "preact/hooks":  "./vendor/hooks.module.js",
+  "htm":           "./vendor/htm.module.js",
+  "three":         "./vendor/three.module.js"
+} }
+</script>
+</head>
+<body>
+<div id="app"></div>
+<noscript><p style="padding:2em">Ta strona liczy model szafy w przeglądarce i potrzebuje JavaScriptu.</p></noscript>
+<script type="module">
+  import { render } from 'preact';
+  import { html } from './widgets.js';
+  import { App } from './ui.js';
+  render(html`<${App} />`, document.getElementById('app'));
+</script>
+</body>
+</html>
