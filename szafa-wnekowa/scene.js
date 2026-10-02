@@ -205,7 +205,8 @@ export function wardrobeGroup(model, { fronts=true, open=0, explode=0 } = {}){
         holder.userData.isFront = true; holder.visible = fronts;
         if (ang && pn.hinge) {
           const pivot = new THREE.Group(); pivot.userData.isFront = true; pivot.visible = fronts;
-          const hx = pn.hinge === 'L' ? org[0] : org[0] + pn.Lg;
+          const wX = Math.abs(pn.ex[0])*pn.Lg + Math.abs(pn.ey[0])*pn.Wd;   // szerokość frontu w osi x
+          const hx = pn.hinge === 'L' ? org[0] : org[0] + wX;
           pivot.position.set(hx, org[1], 0);
           holder.matrix.setPosition(org[0]-hx, 0, org[2]);
           /* pion to lokalne z, nie y – osie prostuje dopiero SWAP na korzeniu */

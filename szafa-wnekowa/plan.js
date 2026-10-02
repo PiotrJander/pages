@@ -1,4 +1,5 @@
-import { r0, edgeText, featBadge } from './core.js';
+import { r0, edgeText, featBadge, drillText } from './core.js';
+import { useState } from 'preact/hooks';
 import * as K from './content.js';
 import { html, Table as Tbl, CopyBox } from './widgets.js';
 
@@ -8,7 +9,7 @@ const GRP = {
   korpus: 'Korpusy i półki', plecy: 'Plecy HDF', nisza: 'Nisza',
   front: 'Fronty', blenda: 'Blendy, cokół, listwa' };
 
-function CutTable({ panels, stage, onPanel }) {
+function CutTable({ panels, stage, onPanel, mode }) {
   return html`${Object.keys(GRP).map(g => {
     const rows = panels.filter(q => q.grp === g && q.stage === stage);
     if (!rows.length) return null;
@@ -18,21 +19,76 @@ function CutTable({ panels, stage, onPanel }) {
         ${rows.map(q => html`<tr>
           <td>${q.code}</td><td class="a">${q.name}</td>
           <td class="n">${r0(q.Lg)} × ${r0(q.Wd)}</td><td class="n">${q.qty}</td>
-          <td class="n">${edgeText(q)}</td><td class="n">${featBadge(q)}</td>
+          <td class="n">${edgeText(q)}</td><td class="n">${featBadge(mode==='shop' ? K.shopOnly(q) : q)}</td>
           <td class="n"><button class="pbtn" onClick=${() => onPanel(q.code)}>3D</button></td>
         </tr>`)}
       </table>`;
   })}`;
 }
 
-export function PlanTab({ model, T, onPanel }) {
-  const { p, g, panels } = model;
+/* Arkusz w skali: pasy wzdłuż słojów, formatki w pasach. */
+function SheetSvg({ sh, S, i, of }) {
+  const k = S.trim;
+  return html`<figure class="sheet">
+    <svg viewBox="0 0 ${S.L} ${S.W}" role="img" aria-label=${`Arkusz ${i} z ${of}`}>
+      <rect x="0" y="0" width=${S.L} height=${S.W} class="sh-bg" />
+      ${sh.strips.map(st => st.parts.map(pt => { const fs = Math.min(64, pt.w*0.42, pt.l/(pt.code.length*0.65));
+        return html`<g>
+        <rect x=${k+pt.x} y=${k+st.y} width=${pt.l} height=${pt.w} class="sh-pt" />
+        ${fs >= 24 && html`<text x=${k+pt.x+pt.l/2} y=${k+st.y+pt.w/2}
+          font-size=${fs} class="sh-tx">${pt.code}</text>`}
+      </g>`; }))}
+    </svg>
+    <figcaption>Arkusz ${i}/${of} · słoje poziomo, wzdłuż 2800 mm</figcaption>
+  </figure>`;
+}
+
+function Nesting({ T, nest, together, setTogether }) {
+  const key = together ? ['p18_all'] : ['p18_1','p18_2'];
+  const zl = (a,b) => Math.round(a) === Math.round(b) ? `${PLN(a)} zł` : `${PLN(a)}–${PLN(b)} zł`;
+  return html`
+    <div class="seg">
+      <button aria-pressed=${together} onClick=${() => setTogether(true)}>Jedno zamówienie</button>
+      <button aria-pressed=${!together} onClick=${() => setTogether(false)}>Dwa etapy</button>
+    </div>
+    <div class="sum">
+      <div><span>Płyta 18 mm</span><b>${key.reduce((a,k2)=>a+nest[k2].n,0)} ark.</b></div>
+      <div><span>HDF 3 mm</span><b>${nest.hdf_all.n} ark.</b></div>
+      <div><span>Wykorzystanie</span><b>${together ? Math.round(nest.p18_all.util*100) : Math.round((nest.p18_1.area+nest.p18_2.area)/((nest.p18_1.n+nest.p18_2.n)*5.796)*100)}%</b></div>
+    </div>
+    ${key.map(k2 => html`
+      ${!together && html`<h4>${k2==='p18_1' ? 'Etap 1 – korpusy' : 'Etap 2 – elementy widoczne'}</h4>`}
+      <div class="sheets">${nest[k2].sheets.map((sh,i) =>
+        html`<${SheetSvg} sh=${sh} S=${nest[k2].S} i=${i+1} of=${nest[k2].n} />`)}</div>`)}
+    <p class="note">Formatki płyty laminowanej się nie obraca (słoje); HDF tak. Odjęte 10 mm obrzynku z każdej krawędzi arkusza i 4,4 mm na rzaz.
+      To prosta heurystyka – optymalizator w zakładzie zrobi tyle samo albo lepiej.</p>
+    ${!together && (() => { const extra = nest.p18_1.n + nest.p18_2.n - nest.p18_all.n, dec = v => v.toFixed(1).replace('.',',');
+      return html`<p class=${extra ? 'warn' : 'note'}>${extra
+        ? `Dwa etapy kosztują ${extra === 1 ? 'jeden arkusz' : extra + ' arkusze'} więcej: etap 1 to ${dec(nest.p18_1.area)} m² na ${nest.p18_1.n} ark., a etap 2 – ${dec(nest.p18_2.area)} m² na osobnym arkuszu.`
+        : 'Podział na etapy nie zmienia liczby arkuszy.'}</p>`; })()}
+    <h4>Wycena według cenników z maili</h4>
+    ${K.PRICE.shops.map(shop => { const q = K.quote(T, nest, shop, together);
+      return html`<h4 class="shop">${shop.n} · <b>${zl(q.lo, q.hi)}</b></h4>
+        <${Tbl} head=${['Pozycja','Koszt']} rows=${[...q.lines.map(l => [l[0], zl(l[1], l[2])])]} />
+        <p class="note">${shop.note}</p>`; })}
+    <p class="note">Cena arkusza przyjęta ${PLN(K.PRICE.sheet18[0])}–${PLN(K.PRICE.sheet18[1])} zł (biały podstawowy → dekor drewnopodobny),
+      HDF ${K.PRICE.sheetHdf[0]}–${K.PRICE.sheetHdf[1]} zł – żaden zakład jej nie podał, zależy od dekoru.</p>`;
+}
+
+const polki = n => n === 1 ? 'półka'
+  : (n%10 >= 2 && n%10 <= 4 && (n%100 < 12 || n%100 > 14)) ? 'półki' : 'półek';
+
+export function PlanTab({ model, T, nest, onPanel }) {
+  const { p, g, panels, layout } = model;
+  const [mode, setMode] = useState('shop');
+  const [together, setTogether] = useState(true);
   const cnt = s => panels.filter(q => q.stage === s).reduce((a,q) => a+q.qty, 0);
   const zl = (a,b) => `${PLN(a)}–${PLN(b)} zł`;
-  const cost = {
-    p18:[T.m18*95, T.m18*160], hdf:[T.mHdf*35, T.mHdf*55],
-    edge:[T.mb*3, T.mb*6], cut:[160,320], hw:[700,1400] };
-  const tot = [0,1].map(i => Object.values(cost).reduce((a,c) => a+c[i], 0));
+  const q0 = K.quote(T, nest, K.PRICE.shops[0], together);
+  const hw = [700, 1400], tot = [q0.lo + hw[0], q0.hi + hw[1]];
+  const selfRows = panels.filter(q => q.stage === 1)
+    .map(q => [q.code, drillText({ ...q, feats: q.feats.filter(f => !['cup35','groove'].includes(f.t)) }).join('<br>'), String(q.qty)])
+    .filter(r => r[1]);
   const bayL = g.carc.L[1]-g.carc.L[0];
 
   return html`<section>
@@ -41,8 +97,9 @@ export function PlanTab({ model, T, onPanel }) {
 
     <details open><summary>1 · Proponowany układ</summary>
       <ul class="bul">
-        <li><b>Lewa skrzynia</b> (${r0(bayL)} mm, ${r0(g.depth-3)} mm światła w głąb) to część wieszakowa: drążek w poprzek na ${r0(p.railZ)} mm, nad nim półka, niżej półka na buty.</li>
-        <li><b>Prawa skrzynia</b> (${r0(g.carc.R[1]-g.carc.R[0])} mm) zostaje półkowa – na wieszaki w poprzek jest za wąska.</li>
+        <li><b>Lewa skrzynia</b> (${r0(bayL)} mm, ${r0(g.depth-3)} mm światła w głąb) to część wieszakowa: drążek w poprzek na ${r0(layout.rail.z)} mm, ${p.railGap} mm pod wieńcem (miejsce na haczyk wieszaka), pod nim ${r0(layout.rail.clearBelow)} mm do półki na buty. Bez półki nad drążkiem – zostawała po niej szpara 89 mm, do niczego.</li>
+        <li><b>Prawa skrzynia</b> (${r0(g.carc.R[1]-g.carc.R[0])} mm) zostaje półkowa: ${layout.bays.RD.n} ${polki(layout.bays.RD.n)}, komory ${Math.min(...layout.bays.RD.gaps)}–${Math.max(...layout.bays.RD.gaps)} mm.</li>
+        <li><b>Górne skrzynie</b> bez półek – ${layout.bays.LG.inner} mm prześwitu na walizki i pościel.</li>
         <li><b>Nisza między skrzyniami</b>: ${r0(g.nW)} × ${r0(g.nDep)} mm, do ${r0(g.nTop)} mm, gdzie zamyka ją podciąg. Szerokość wyznaczają boki skrzyń, nie ściana, ale to prognoza – zmierz po ustawieniu korpusów.</li>
         <li>Szafa wychodzi <b>${r0(g.depth+p.gapBack-p.D_stub)} mm przed występ</b>. To cena za wieszaki.</li>
       </ul>
@@ -70,17 +127,41 @@ export function PlanTab({ model, T, onPanel }) {
       </ul>
       <p class="note">Przycisk <b>3D</b> przy formatce otwiera jej podgląd z nawiertami – to dla Ciebie, nie dla zakładu.</p>
 
+      <h4>Zakres usług w zamówieniu</h4>
+      <div class="seg">
+        <button aria-pressed=${mode==='shop'} onClick=${() => setMode('shop')}>Cięcie + oklejanie + puszki</button>
+        <button aria-pressed=${mode==='full'} onClick=${() => setMode('full')}>Z nawiertami systemowymi</button>
+      </div>
+      <p class="note">${mode==='shop'
+        ? 'Tak pracują FH Drewno i Famero: zakład wierci tylko puszki zawiasów. Konfirmaty i kołki półek wiercisz sam – lista niżej.'
+        : 'Wersja dla zakładu, który wierci wszystko. Plecy wtedy możesz zamówić w rowku.'}</p>
+
       <h3>Etap 1 — korpusy (${cnt(1)} szt.)</h3>
       <p class="note">Zamawiasz teraz, w ciemno. Wymiary wynikają wyłącznie z listy, nie z muru. Partia dekoru nieistotna.</p>
-      <${CutTable} panels=${panels} stage=${1} onPanel=${onPanel} />
-      <${CopyBox} text=${K.orderText(model,1)} label="Skopiuj zamówienie — etap 1" rows=6 />
-      <${CopyBox} text=${K.orderCSV(model,1)} label="CSV etap 1" rows=4 />
+      <${CutTable} panels=${panels} stage=${1} onPanel=${onPanel} mode=${mode} />
+      <${CopyBox} text=${K.orderText(model,1,mode)} label="Skopiuj zamówienie — etap 1" rows=6 />
+      <${CopyBox} text=${K.orderCSV(model,1,mode)} label="CSV etap 1" rows=4 />
 
       <h3>Etap 2 — wszystko widoczne (${cnt(2)} szt.)</h3>
       <p class="note">Zamawiasz po ustawieniu i wypoziomowaniu skrzyń. <b>Wszystkie pozycje z jednej partii dekoru.</b></p>
-      <${CutTable} panels=${panels} stage=${2} onPanel=${onPanel} />
-      <${CopyBox} text=${K.orderText(model,2)} label="Skopiuj zamówienie — etap 2" rows=6 />
-      <${CopyBox} text=${K.orderCSV(model,2)} label="CSV etap 2" rows=4 />
+      <${CutTable} panels=${panels} stage=${2} onPanel=${onPanel} mode=${mode} />
+      <${CopyBox} text=${K.orderText(model,2,mode)} label="Skopiuj zamówienie — etap 2" rows=6 />
+      <${CopyBox} text=${K.orderCSV(model,2,mode)} label="CSV etap 2" rows=4 />
+
+      ${mode==='shop' && html`<h3>Do wywiercenia samemu</h3>
+        <p class="note">${T.konfirmaty} par konfirmatowych i ${T.holes.hole5} otworów pod kołki – tylko tam, gdzie stoi półka.
+          Pozycje kołków leżą na siatce 32 mm, więc szablon systemowy pozwoli kiedyś dowiercić półkę pośrednią.
+          Do tego ${T.holes.plate} pilotów ⌀3 pod prowadniki zawiasów, po dwa na prowadnik, w linii 37 mm od przodu.
+          Ich wysokości są dobrane tak, żeby prowadnik omijał każdą półkę (min. 40 mm od osi).
+          Konfirmat: oba elementy ściśnięte, wiertło stopniowe przez bok w czoło wieńca za jednym razem.</p>
+        <${Tbl} head=${['Kod','Otwory','Szt.']} rows=${selfRows} />`}
+    </details>
+
+    <details open><summary>2a · Rozkrój i wycena</summary>
+      <${Nesting} T=${T} nest=${nest} together=${together} setTogether=${setTogether} />
+      <h4>CSV do optymalizatora rozkroju</h4>
+      <p class="note">Długość = wzdłuż słojów, kolumna Grain mówi, czego nie obracać. Wklej do CutList Optimizer, OptiCutter albo konfiguratora zakładu.</p>
+      <${CopyBox} text=${K.optimizerCSV(model)} label="Skopiuj CSV (całość)" rows=5 />
     </details>
 
     <details open><summary>3 · Gdzie to zamówić i jak zapytać</summary>
@@ -89,13 +170,7 @@ export function PlanTab({ model, T, onPanel }) {
       <h4>Gotowe zapytanie wstępne</h4>
       <p class="note">Liczby przeliczają się z modelu. Bez listy formatek – na tym etapie zakład jej nie potrzebuje.</p>
       <${CopyBox} text=${K.enquiryMail(model)} label="Skopiuj zapytanie" rows=11 />
-      <h4>Czego się spodziewać w wycenie</h4>
-      <${Tbl} head=${['Pozycja','Stawka','Przy naszym zamówieniu']} rows=${[
-        ['Cięcie','1,3–5 zł/mb','zależy od rozkroju'],
-        ['Oklejanie ABS 2 mm','3–6 zł/mb',`${Math.ceil(T.mb)} mb → ${zl(T.mb*3, T.mb*6)}`],
-        ['Nawierty <b>za otwór</b>','1–3 zł/szt',`${T.holesTotal} szt. → ${zl(T.holesTotal, T.holesTotal*3)}`],
-        ['Nawierty <b>za element</b>','10–20 zł/szt',`${T.drilled} elem. → ${zl(T.drilled*10, T.drilled*20)}`]]} />
-      <p class="warn">Te dwa wiersze to ta sama robota wyceniona dwoma modelami. Różnica jest kilkukrotna, więc zapytaj o to wprost, zanim wyślesz listę.</p>
+      <p class="note">Odpowiedzi z września: FH Drewno i Famero sprzedają tylko pełne arkusze i liczą cięcie od arkusza; żaden nie wierci otworów systemowych ani konfirmatów. Quest czeka na listę formatek, MAGO – na wizytę po dekor.</p>
     </details>
 
     <details open><summary>4 · Okucia i drobnica</summary>
@@ -108,10 +183,9 @@ export function PlanTab({ model, T, onPanel }) {
 
     <details><summary>6 · Budżet orientacyjny</summary>
       <${Tbl} head=${['Pozycja','Koszt']} rows=${[
-        ['Płyta 18 mm', zl(...cost.p18)], ['HDF 3 mm', zl(...cost.hdf)],
-        ['Obrzeże ABS', zl(...cost.edge)], ['Cięcie, oklejanie, wiercenie', zl(...cost.cut)],
-        ['Okucia i drobnica', zl(...cost.hw)], ['<b>Razem</b>', `<b>${zl(...tot)}</b>`]]} />
-      <p class="note">Bez narzędzi do dokupienia (ok. 400–700 zł). Wiersz „cięcie, oklejanie, wiercenie” zakłada wycenę nawiertów za element.</p>
+        [`Formatki z zakładu (${K.PRICE.shops[0].n}, ${together ? 'jedno zamówienie' : 'dwa etapy'})`, zl(q0.lo, q0.hi)],
+        ['Okucia i drobnica', zl(...hw)], ['<b>Razem</b>', `<b>${zl(...tot)}</b>`]]} />
+      <p class="note">Bez narzędzi do dokupienia (ok. 400–700 zł, w tym szablon 32 mm). Szczegóły w punkcie 2a.</p>
     </details>
 
     <details open><summary>7 · Pierwszy weekend — same skrzynie</summary>

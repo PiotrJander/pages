@@ -5,8 +5,8 @@ import * as S3 from './scene.js';
 import { PlanTab } from './plan.js';
 import { html, Check, Table, Pad, Dialog } from './widgets.js';
 
-const { P: p, MODEL: model, T, WARNINGS: warns, SHEET: meas, r0 } = core;
-const g = model.g;
+const { P: p, SHEET: meas, r0 } = core;
+const g = core.MODEL.g;   // geometria nie zależy od wariantu wnętrza
 const DEFS = measureDefs(p).filter(d => typeof meas[d.id] === 'number');
 
 /* ============ ramka podglądu 3D ============ */
@@ -89,7 +89,7 @@ const ExplodeControls = ({ view, setView, compact }) => {
 };
 
 /* ============ zakładka MODEL ============ */
-function ModelTab({ view, setView }) {
+function ModelTab({ view, setView, model }) {
   const viewer = useRef(null);
 
   useEffect(() => {
@@ -102,7 +102,7 @@ function ModelTab({ view, setView }) {
     root.add(S3.measureGroup(DEFS, meas, GROUPS, { showTodo:false, shown:view.shown }).group);
     v.scene.add(root);
     v.frame(root, v.camera.aspect > 1.3 ? 1.1 : 1.32);
-  }, [view.fronts, view.open, view.shown]);
+  }, [view.fronts, view.open, view.shown, model]);
 
   useEffect(() => {
     const v = viewer.current; if (!v) return;
@@ -110,7 +110,7 @@ function ModelTab({ view, setView }) {
       if (o.userData?.isWall) o.visible = view.walls;
       if (o.name === 'meas') o.visible = view.measOn;
     });
-  }, [view.walls, view.measOn, view.fronts, view.open, view.shown]);
+  }, [view.walls, view.measOn, view.fronts, view.open, view.shown, model]);
 
   const chips = view.measOn && html`<div class="chips">${Object.entries(GROUPS).map(([k,gr]) => {
     const on = view.shown[k] !== false;
@@ -125,7 +125,7 @@ function ModelTab({ view, setView }) {
 }
 
 /* ============ zakładka ROZSTRZELONY ============ */
-function ExplodeTab({ view, setView }) {
+function ExplodeTab({ view, setView, model }) {
   const viewer = useRef(null);
   const items = useRef([]); const jointRefs = useRef([]); const ctr = useRef([0,0,0]);
   const lastK = useRef(0);
@@ -159,7 +159,7 @@ function ExplodeTab({ view, setView }) {
     v.frame(root, 1.25);
     v.dolly(1 + view.explode/100*1.4);
     lastK.current = view.explode/100*1.4;
-  }, [view.feats]);
+  }, [view.feats, model]);
 
   useEffect(() => {
     const v = viewer.current;
@@ -180,7 +180,7 @@ function ExplodeTab({ view, setView }) {
       j.ln.geometry.attributes.position.needsUpdate = true;
       j.ln.geometry.computeBoundingSphere();
     });
-  }, [view.explode, view.joints, view.feats]);
+  }, [view.explode, view.joints, view.feats, model]);
 
   return html`<section>
     <h2>Widok rozstrzelony</h2>
@@ -190,12 +190,12 @@ function ExplodeTab({ view, setView }) {
     <${ExplodeControls} view=${view} setView=${setView} />
     <div class="leg">${Object.values(core.HOLE).map(hl => html`
       <span><i style=${{background:hl.color}}></i>${hl.label}</span>`)}
-      <span><i style=${{background:'#6b6f74'}}></i>rowek 4×10 – plecy HDF</span></div>
+      </div>
   </section>`;
 }
 
 /* ============ podgląd pojedynczej formatki ============ */
-function PanelDialog({ code, onClose }) {
+function PanelDialog({ code, onClose, model }) {
   const pn = model.panels.find(q => q.code === code);
   const viewer = useRef(null);
   const [face, setFace] = useState('A');
@@ -253,7 +253,7 @@ const FINDINGS = [
 FINDINGS.push(`Głębokość korpusu ${r0(g.depth+p.gapBack)} mm, wnętrze ${r0(g.depth-3)} mm`);
 FINDINGS.push(`Nisza: ${r0(g.nW)} × ${r0(g.nDep)} mm, do wysokości ${r0(g.nTop)} mm`);
 
-const PART_ROWS = (() => {
+const partRows = model => {
   const rows = [];
   for (const [k,nm] of [['L','lewy'],['R','prawy']]) {
     const w = g.carc[k][1]-g.carc[k][0], zT = g.zTop(k);
@@ -264,13 +264,38 @@ const PART_ROWS = (() => {
   model.panels.filter(q => q.grp === 'front').forEach(q => {
     const key = `${r0(q.Lg)} × ${r0(q.Wd)}`; fr[key] = (fr[key]||0)+q.qty; });
   Object.entries(fr).forEach(([k,n]) => { const [a,b] = k.split(' × ');
-    rows.push([`Front ×${n}`, a, b, p.t]); });
+    rows.push([`Front ×${n}`, b, a, p.t]); });
   return rows;
-})();
+};
 
 const MEAS_ROWS = DEFS.map(d => [d.id, d.desc, meas[d.id] + ' mm']);
 
 const TABS = [['model','Model'],['exp','Rozstrzelony'],['plan','Plan i materiały']];
+
+/* ============ wnętrze ============ */
+export const polki = n => n === 1 ? 'półka'
+  : (n%10 >= 2 && n%10 <= 4 && (n%100 < 12 || n%100 > 14)) ? 'półki' : 'półek';
+
+function Interior({ model }) {
+  const { layout: L, g } = model, d = r0(g.depth - 25);
+  const R = L.bays.RD, up = L.bays.LG, H = L.hinges;
+  const lo = Math.min(...R.gaps), hi = Math.max(...R.gaps);
+  const mm = a => a.map(v => r0(v)).join(' · ') + ' mm';
+  return html`<details open><summary>Wnętrze</summary>
+    <${Table} head=${['Komora','Układ','Prześwit']} rows=${[
+      ['Lewa dolna', `drążek na ${r0(L.rail.z)} mm od podłogi, półka na buty`,
+        `${r0(L.rail.clearBelow)} mm pod drążkiem`],
+      ['Prawa dolna', `${R.n} ${polki(R.n)}, głębokość ${d} mm`, `${lo}–${hi} mm`],
+      ['Obie górne', 'bez półek – walizki, pościel, sezonowe', `${up.inner} mm`],
+    ]} />
+    <p class="note">Dolna półka prawej skrzyni stoi równo z półką na buty w lewej: ${r0(L.bays.RD.shelfZ[0])} mm od podłogi
+      (spód półki), pozostałe w równym rozstawie na siatce 32 mm. Spody półek prawej skrzyni: ${mm(R.shelfZ)}.
+      Komory od dołu: ${R.gaps.map(v => v + ' mm').join(' · ')}.</p>
+    <p class="note">Osie zawiasów od podłogi – dolne fronty: ${mm(H.low)}; górne: ${mm(H.up)}.
+      Każda oś jest co najmniej 40 mm od półki i od otworu pod jej kołek, więc prowadnik
+      nie trafi w półkę. Rozstaw na froncie jest symetryczny, a wysokości są te same we wszystkich drzwiach rzędu.</p>
+  </details>`;
+}
 
 /* ============ aplikacja ============ */
 export function App() {
@@ -278,11 +303,12 @@ export function App() {
   const [view, setView] = useState({ walls:true, fronts:true, measOn:false,
                                      open:0, explode:30, feats:true, joints:true, shown:{} });
   const [dlgPanel, setDlgPanel] = useState(null);
+  const { model, T, warnings: warns, nest } = core.makeModel();
 
   useEffect(() => { scrollTo({ top:0 }); }, [tab]);
 
   return html`
-    ${tab === 'model' && html`<${ModelTab} view=${view} setView=${setView} />`}
+    ${tab === 'model' && html`<${ModelTab} view=${view} setView=${setView} model=${model} />`}
     <main>
       <div class="tabs" role="tablist">
         ${TABS.map(([k,t]) => html`<button role="tab" aria-selected=${tab === k}
@@ -301,8 +327,10 @@ export function App() {
 
         <details open><summary>Korpusy i fronty</summary>
           ${warns.map(w => html`<p class="warn">${w}</p>`)}
-          <${Table} head=${['Element','Szer.','Wys.','Głęb.']} rows=${PART_ROWS} />
+          <${Table} head=${['Element','Szer.','Wys.','Głęb.']} rows=${partRows(model)} />
         </details>
+
+        <${Interior} model=${model} />
 
         <details><summary>Pomiary — protokół</summary>
           <p class="note">Odczyty z lasera, ${MEAS_ROWS.length} pozycji. Projekt jest na nich zamrożony:
@@ -311,9 +339,9 @@ export function App() {
         </details>
       </section>`}
 
-      ${tab === 'exp'  && html`<${ExplodeTab} view=${view} setView=${setView} />`}
-      ${tab === 'plan' && html`<${PlanTab} model=${model} T=${T} onPanel=${setDlgPanel} />`}
+      ${tab === 'exp'  && html`<${ExplodeTab} view=${view} setView=${setView} model=${model} />`}
+      ${tab === 'plan' && html`<${PlanTab} model=${model} T=${T} nest=${nest} onPanel=${setDlgPanel} />`}
     </main>
 
-    <${PanelDialog} code=${dlgPanel} onClose=${() => setDlgPanel(null)} />`;
+    <${PanelDialog} code=${dlgPanel} model=${model} onClose=${() => setDlgPanel(null)} />`;
 }

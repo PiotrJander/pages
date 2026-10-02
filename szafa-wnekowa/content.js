@@ -1,5 +1,5 @@
 /* content.js — treść planu. Dane, nie komponenty. */
-import { r0, drillText, edgeText, totals } from './core.js';
+import { r0, drillText, edgeText, totals, SHOP_FEATS } from './core.js';
 
 export const PLN = n => Math.round(n).toLocaleString('pl-PL');
 
@@ -11,8 +11,8 @@ export const TOOLS = [
   ['Masz już','Odkurzacz warsztatowy','podłącz do pilarki, płyta pyli bardzo'],
   ['Dokupić','Wiertarko-wkrętarka + bity T20/T25','konfirmaty mają torx'],
   ['Dokupić','Wiertło stopniowe do konfirmatów 4,5/7 mm','ok. 30–50 zł'],
-  ['Dokupić','Wiertło ⌀5 mm z ogranicznikiem głębokości','otwory pod półki'],
-  ['Dokupić','Szablon do otworów systemowych 32 mm','tylko jeśli nie zamówisz nawiertów'],
+  ['Dokupić','Wiertło ⌀5 mm z ogranicznikiem głębokości','otwory pod kołki półek – wiercisz sam'],
+  ['Dokupić','Szablon do otworów systemowych 32 mm','ok. 60–150 zł; pozwala później dowiercić pozycję pośrednią'],
   ['Dokupić','Kątownik montażowy / ścisk kątowy (2 szt.)','trzyma korpus pod 90° przy skręcaniu'],
   ['Dokupić','Ściski stolarskie 2 × 300 mm',''],
   ['Dokupić','Cyrkiel traserski (scribe)','do dopasowania blend – kluczowy'],
@@ -29,10 +29,10 @@ export const hardware = T => ([
   ['Nóżki regulowane 100 mm + klipsy cokołu', '8 szt. + 6 klipsów', 'kup je PRZED zamówieniem cokołu – wysokość cokołu musi być równa wysokości nóżki plus grubość podkładki'],
   ['Podkładki pod nóżki 100×100 mm', '8 szt.', 'sklejka 6–10 mm. Rozkładają nacisk na wykładzinie mniej więcej dziesięciokrotnie. Grubość odejmij od nastawy nóżki.'],
   ['Zawias puszkowy 110° z cichym domykiem + prowadnik', `${T.zawiasy} kpl.`, 'tyle, ile puszek ⌀35 w liście formatek'],
-  ['Podpórki półek ⌀5 mm', `${T.polek*4} szt. (+ zapas)`, 'metalowe, nie plastikowe'],
+  ['Podpórki półek ⌀5 mm', `${T.polekKorpus*4} szt. + ok. 28 do niszy`, `metalowe, nie plastikowe; ${T.polekKorpus} półek w skrzyniach × 4`],
   ['Kątowniki meblowe + kołki 6×40', '8 kompletów', 'kotwienie do ściany'],
   ['Wkręty 4×30 do skręcania korpusów', '8 szt.', 'górna skrzynia w dolną, od środka'],
-  ['Gwoździki 1,4×25 albo zszywki do HDF', 'paczka', 'jeśli plecy nakładane zamiast w rowku'],
+  ['Gwoździki 1,4×25 albo zszywki do HDF', 'paczka', 'plecy nakładane na tył skrzyni, co 100–150 mm'],
   ['Drążek owalny stalowy + uchwyty', '1 kpl.', 'lewa skrzynia'],
   ['Uchwyty', `${T.frontow} szt.`, 'albo push-to-open'],
   ['Zderzaki silikonowe', '20 szt.', ''],
@@ -54,7 +54,7 @@ export const BOX_STEPS = [
   'To samo z wieńcem górnym. Masz literę „U”.',
   'Nałóż drugi bok, ściśnij, wkręć 6 konfirmatów.',
   '<b>Zmierz obie przekątne.</b> Różnica ponad 2 mm — popchnij skrzynię po podłodze za róg, aż się zrównają.',
-  'Wsuń plecy w rowek (albo przykręć na wierzch). Od tego momentu kąt jest zablokowany na stałe.',
+  'Przybij plecy HDF do tylnych krawędzi: najpierw jeden róg, potem sąsiedni bok, kontrola przekątnych, reszta co 100–150 mm. Od tego momentu kąt jest zablokowany na stałe.',
 ];
 
 export const BOX_RISKS = [
@@ -145,7 +145,7 @@ Pełną listę formatek z wymiarami, oklejaniem i opisem nawiertów prześlę od
 Pozdrawiam`;
 }
 
-export function orderText(model, stage){
+export function orderText(model, stage, mode='shop'){
   const { panels, joints, g } = model;
   const sel = panels.filter(q => !stage || q.stage === stage);
   const head = [
@@ -159,34 +159,75 @@ export function orderText(model, stage){
 '· Wszystkie wymiary są GOTOWE, po oklejeniu. Pierwszy wymiar = długość (wzdłuż usłojenia dekoru).',
 '· Krawędzie: D1 i D2 mają długość równą pierwszemu wymiarowi; S1 i S2 — drugiemu.',
 '· W elementach korpusu D2 jest zawsze krawędzią PRZEDNIĄ (widoczną).',
-'· Lico A = strona z nawiertami ⌀5, skierowana do wnętrza skrzyni.',
+mode==='shop' ? '· Nawierty: TYLKO puszki zawiasów ⌀35×13. Pozostałe otwory wykonam sam.' : '· Lico A = strona z nawiertami ⌀5, skierowana do wnętrza skrzyni.',
 '· Tolerancja cięcia ±0,5 mm, kąt prosty.',
 stage===1 ? '· Ten etap to wnętrze szafy – dopuszczalna inna partia dekoru niż elementy widoczne.' : '',
 stage===2 ? '· UWAGA: wszystkie pozycje w tym etapie muszą pochodzić z JEDNEJ PARTII dekoru.' : '',
 '', 'FORMATKI'].filter(Boolean).join('\n');
   const body = sel.map((pn,i) => {
-    const d = drillText(pn);
+    const d = drillText(mode==='shop' ? shopOnly(pn) : pn);
     return [`${String(i+1).padStart(2,'0')}. [${pn.code}] ${pn.name}`,
       `    ${r0(pn.Lg)} × ${r0(pn.Wd)} mm · ${pn.qty} szt. · ${pn.mat}`,
       `    Obrzeże 2 mm: ${edgeText(pn)}`,
       d.length ? `    Nawierty: ${d.join('\n               ')}` : '    Nawierty: brak',
-      pn.faceNote ? `    Uwaga: ${pn.faceNote}` : ''].filter(Boolean).join('\n');
+      pn.faceNote && !(mode==='shop' && pn.grp==='korpus') ? `    Uwaga: ${pn.faceNote}` : ''].filter(Boolean).join('\n');
   }).join('\n\n');
   const tail = `\n\nPODSUMOWANIE\n· formatek: ${sel.reduce((a,q)=>a+q.qty,0)} szt.\n`
-    + (stage !== 2 ? `· konfirmatów wynikających z nawiertów: ${joints.length} szt.\n` : '')
+    + (stage !== 2 && mode!=='shop' ? `· konfirmatów wynikających z nawiertów: ${joints.length} szt.\n` : '')
     + `· front łącznie: ${r0(g.X_right-g.X_left)} × ${r0(g.zF)} mm, głębokość ${r0(g.depth+model.p.gapBack)} mm`;
   return head + '\n\n' + body + tail;
 }
 
-export function orderCSV(model, stage){
-  const rows = [['etap','dlugosc_mm','szerokosc_mm','sztuk','material','obrzeze_D1','obrzeze_D2','obrzeze_S1','obrzeze_S2','kod','nazwa','nawierty']];
+/* Zakład wierci tylko puszki – reszta otworów znika z zamówienia. */
+export const shopOnly = pn => ({ ...pn, feats: (pn.feats||[]).filter(f => SHOP_FEATS.includes(f.t)) });
+
+export function orderCSV(model, stage, mode='shop'){
+  const rows = [['etap','dlugosc_mm (wzdluz slojow)','szerokosc_mm','sztuk','material','obrzeze_D1','obrzeze_D2','obrzeze_S1','obrzeze_S2','kod','nazwa','nawierty']];
   model.panels.filter(q => !stage || q.stage === stage).forEach(pn => {
     const e = pn.edges || {};
     rows.push([pn.stage, r0(pn.Lg), r0(pn.Wd), pn.qty, pn.mat,
       e.D1?'2mm ABS':'', e.D2?'2mm ABS':'', e.S1?'2mm ABS':'', e.S2?'2mm ABS':'',
-      pn.code, pn.name, drillText(pn).join(' | ') || 'brak']);
+      pn.code, pn.name, drillText(mode==='shop' ? shopOnly(pn) : pn).join(' | ') || 'brak']);
   });
   return rows.map(r => r.map(v => {
     const s = String(v); return /[;\n"]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s;
   }).join(';')).join('\n');
+}
+
+/* Plik dla optymalizatorów rozkroju (CutList Optimizer, OptiCutter, Opti-Cut…):
+   przecinki, kropka dziesiętna, jedna pozycja na wiersz. */
+export function optimizerCSV(model, stage){
+  const rows = [['Length','Width','Qty','Label','Material','Grain']];
+  model.panels.filter(q => !stage || q.stage === stage).forEach(pn => {
+    const hdf = pn.mat.includes('HDF');
+    rows.push([r0(pn.Lg), r0(pn.Wd), pn.qty, pn.code, hdf ? 'HDF 3' : 'PLYTA 18', hdf ? 'none' : 'length']);
+  });
+  return rows.map(r => r.join(',')).join('\n');
+}
+
+/* Cenniki z odpowiedzi zakładów (wrzesień 2026) + rynkowa cena arkusza,
+   bo żaden zakład nie podał ceny płyty – zależy od dekoru. */
+export const PRICE = {
+  sheet18: [250, 450],    // arkusz 2800×2070: biały podstawowy → dekor drewnopodobny
+  sheetHdf: [55, 125],
+  shops: [
+    { n:'FH Drewno (Rokicińska)', cut:60, edge2:8, cup:6,
+      note:'cięcie do 30 formatek z arkusza; obrzeże 2 mm zamawiają pod dekor i zabierasz całą rolkę; odbiór własny, 7–10 dni' },
+    { n:'Famero', cut:69, edge2:8.5, cup:null,
+      note:'nawierty tylko przez famero.erozkroje.pl, cena otworu nieznana (przyjęto 6 zł); obrzeże 2 mm nie do każdego dekoru; ok. 10 dni' },
+  ],
+};
+
+export function quote(T, nest, shop, together){
+  const s18 = together ? nest.p18_all.n : nest.p18_1.n + nest.p18_2.n;
+  const sH = nest.hdf_all.n, cup = shop.cup ?? 6, sh = s18 + sH;
+  const lines = [
+    [`Płyta 18 mm · ${s18} ark.`, s18*PRICE.sheet18[0], s18*PRICE.sheet18[1]],
+    [`HDF 3 mm · ${sH} ark.`, sH*PRICE.sheetHdf[0], sH*PRICE.sheetHdf[1]],
+    [`Cięcie · ${sh} ark. × ${shop.cut} zł`, sh*shop.cut, sh*shop.cut],
+    [`Obrzeże 2 mm · ${Math.ceil(T.mb)} mb × ${String(shop.edge2).replace('.',',')} zł`, T.mb*shop.edge2, T.mb*shop.edge2],
+    [`Puszki zawiasów · ${T.holes.cup35} × ${cup} zł`, T.holes.cup35*cup, T.holes.cup35*cup],
+  ];
+  return { s18, sH, lines,
+    lo: lines.reduce((a,l)=>a+l[1],0), hi: lines.reduce((a,l)=>a+l[2],0) };
 }
