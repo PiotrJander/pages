@@ -244,6 +244,7 @@ const FINDINGS = [
   ['Głębokość przy lewej ścianie', ['C1','C2','C3']],
   ['Głębokość przy drzwiach', ['C10','C11','C12']],
   ['Czoło występu', ['G1d','G1s','G1g']],
+  ['Zwis: sufit → spód', ['G2Lw','G2Lf','G2Rw','G2Rf']],
   ['Sufit nad lewą wnęką', ['EL1','EL2','EL3','EL4']],
   ['Sufit nad prawą wnęką', ['ER1','ER2','ER3','ER4']],
 ].map(([n, ids]) => { const s = spread(meas, ids);
@@ -251,6 +252,7 @@ const FINDINGS = [
 ['F1','F2'].forEach(id => { if (typeof meas[id] === 'number')
   FINDINGS.push(`Wysokość z przekątnej ${id}: ${r0(Math.sqrt(Math.max(0, meas[id]**2 - p.W_L**2)))} mm (kontrola pomiaru E)`); });
 FINDINGS.push(`Głębokość korpusu ${r0(g.depth+p.gapBack)} mm, wnętrze ${r0(g.depth-3)} mm`);
+FINDINGS.push(`Spód zwisu (najniższy punkt): ${r0(p.BZ)} mm od podłogi`);
 FINDINGS.push(`Nisza: ${r0(g.nW)} × ${r0(g.nDep)} mm, do wysokości ${r0(g.nTop)} mm`);
 
 const partRows = model => {

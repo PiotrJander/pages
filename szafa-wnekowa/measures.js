@@ -5,7 +5,7 @@ export const GROUPS = {
   C:{ color:'#1f5fd6', name:'C – głębokość' },
   E:{ color:'#1a9e3a', name:'E – wysokość podłoga → sufit' },
   F:{ color:'#ff8c00', name:'F – przekątne otworu' },
-  G:{ color:'#00898c', name:'G – występ i podciąg' },
+  G:{ color:'#00898c', name:'G – występ i zwis (podciąg)' },
 };
 const AT = ['przy podłodze','w środku','u góry'];
 
@@ -38,8 +38,11 @@ export function measureDefs(p){
   const bd = D + p.beamProj*0.5;
   add('BZL','G','Lewa: podłoga → spód podciągu (pomiar bezpośredni)',[S0-40,bd,0],[S0-40,bd,p.BZ_L],true);
   add('BZR','G','Prawa: podłoga → spód podciągu (pomiar bezpośredni)',[S1+40,bd,0],[S1+40,bd,p.BZ_R],true);
-  add('G2L','G','Lewa: sufit → dolna krawędź podciągu',[S0-40,bd,p.H_C_L],[S0-40,bd,p.BZ_L]);
-  add('G2R','G','Prawa: sufit → dolna krawędź podciągu',[S1+40,bd,p.H_C_R],[S1+40,bd,p.BZ_R]);
+  const yw = p.D_stub + 30, yf = p.D_stub + p.beamProj - 15, bp = p.BZ_pts ?? {};
+  add('G2Lw','G','Zwis, lewy bok: sufit → spód, przy ścianie',[S0-15,yw,p.H_C_L],[S0-15,yw,bp.Lw ?? p.BZ_L]);
+  add('G2Lf','G','Zwis, lewy bok: sufit → spód, w płaszczyźnie czoła',[S0-15,yf,p.H_C_L],[S0-15,yf,bp.Lf ?? p.BZ_L]);
+  add('G2Rw','G','Zwis, prawy bok: sufit → spód, przy ścianie',[S1+15,yw,p.H_C_R],[S1+15,yw,bp.Rw ?? p.BZ_R]);
+  add('G2Rf','G','Zwis, prawy bok: sufit → spód, w płaszczyźnie czoła',[S1+15,yf,p.H_C_R],[S1+15,yf,bp.Rf ?? p.BZ_R]);
   add('G3L','G','Lewa: głębokość podciągu (przód → tył)',[S0/2,p.D_stub,p.BZ_L-10],[S0/2,p.D_stub+p.beamProj,p.BZ_L-10],true);
 
   add('F1','F','Lewa, front: dół przy ścianie → góra przy występie',[0,D,0],[S0,D,p.H_C_L]);

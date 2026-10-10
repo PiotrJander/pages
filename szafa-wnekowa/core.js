@@ -7,7 +7,7 @@ export const FIXED = { t:18, plinth:80, gapBack:10, gapTop:12, beamClear:10, fg:
 
 /** Pomiary z kartki (mm). null = nie zmierzone. */
 export const SHEET = {
-  A1:935, A2:944, A3:941, A4:913, A5:913, A6:909,
+  A1:932, A2:945, A3:941, A4:906, A5:914, A6:916,   // dokładniejszy pomiar (październik)
   B1:536, B2:538, B3:532, B4:542, B5:535, B6:527,
   C1:411, C2:421, C3:418, C4:396, C5:385, C6:394,
   C7:392, C8:396, C9:400, C10:385, C11:390, C12:392,
@@ -15,7 +15,8 @@ export const SHEET = {
   EL1:2422, EL2:2433, EL3:2432, EL4:2443,
   ER1:2438, ER2:2442, ER3:2435, ER4:2439,
   F1:2606, F2:2610,
-  G2L:369, G2R:350,
+  // zwis (podciąg przed występem): sufit → spód, przy ścianie (w) i na czole (f)
+  G2Lw:348, G2Lf:365, G2Rw:356, G2Rf:350,
 };
 
 /* Decyzje konstrukcyjne – zamknięte. Były suwakami, dopóki wymiary nie były
@@ -67,8 +68,15 @@ export function derive(meas, set){
   p.T_S     = mx(G1) ?? 300;       p.T_S_min = mn(G1) ?? p.T_S;
   p.H_C_L   = mn(EL) ?? 2422;      p.H_C_L_max = mx(EL) ?? p.H_C_L;
   p.H_C_R   = mn(ER) ?? 2435;      p.H_C_R_max = mx(ER) ?? p.H_C_R;
-  p.BZ_L = num(meas,'BZL') ?? (p.H_C_L_max - (num(meas,'G2L') ?? 360));
-  p.BZ_R = num(meas,'BZR') ?? (p.H_C_R_max - (num(meas,'G2R') ?? 360));
+  /* Spód zwisu = sufit przy występie (przód) minus zmierzony spadek.
+     Sufit bierzemy z najbliższego punktu E (przód, przy występie), a z dwóch
+     spadków na stronę – większy, czyli najniższy punkt spodu belki. */
+  const cL = num(meas,'EL4') ?? p.H_C_L_max, cR = num(meas,'ER3') ?? p.H_C_R_max;
+  const dL = list(meas,['G2Lw','G2Lf']), dR = list(meas,['G2Rw','G2Rf']);
+  p.BZ_pts = { Lw: cL - (num(meas,'G2Lw') ?? 360), Lf: cL - (num(meas,'G2Lf') ?? 360),
+               Rw: cR - (num(meas,'G2Rw') ?? 360), Rf: cR - (num(meas,'G2Rf') ?? 360) };
+  p.BZ_L = num(meas,'BZL') ?? (cL - (mx(dL) ?? 360));
+  p.BZ_R = num(meas,'BZR') ?? (cR - (mx(dR) ?? 360));
   p.BZ   = Math.min(p.BZ_L, p.BZ_R);
   return p;
 }
@@ -263,7 +271,7 @@ export function buildPanels(p, opts = DEFAULT_OPTS){
   /* nisza */
   if (g.deep && g.nW > 60 && g.nDep > 60) {
     add({ grp:'nisza', code:'NIS-PLE', name:'Nisza – plecy', Lg:g.nTop, Wd:g.nW-4,
-      edges:{D1:0,D2:2,S1:0,S2:2}, faceNote:'DRUGI ETAP – zmierz po ustawieniu skrzyń. Słoje pionowo: przy 2064 mm w poprzek arkusza (2070) by się nie zmieściła',
+      edges:{D1:0,D2:2,S1:0,S2:2}, faceNote:`DRUGI ETAP – zmierz po ustawieniu skrzyń. Słoje pionowo: przy ${r0(g.nTop)} mm w poprzek arkusza (2070) by się nie zmieściła`,
       origin:[g.nx[0]+2,g.nD0,0], ex:[0,0,1], ey:[1,0,0], ez:[0,1,0] });
     const inst = [[g.nx[0], g.nD0+t, p.plinth]];
     for (let i=1;i<=p.nicheN;i++)
@@ -410,8 +418,11 @@ export function warnings(model, meas){
     const near = Math.min(Math.abs(p.H_C_L-h), Math.abs(p.H_C_L_max-h));
     if (near > 12) w.push(`Przekątna ${id} (${r(v)} mm) daje wysokość ${r(h)} mm, a zmierzone sufity to ${r(p.H_C_L)}–${r(p.H_C_L_max)} mm. Rozbieżność ${r(near)} mm.`);
   });
-  if (Math.abs(p.BZ_L-p.BZ_R) > 10)
-    w.push(`Dolna krawędź podciągu wychodzi na różnej wysokości: ${r(p.BZ_L)} po lewej, ${r(p.BZ_R)} po prawej. Liczona jako sufit minus G2, więc kumuluje dwa błędy – zmierz ją raz bezpośrednio od podłogi.`);
+  if (p.BZ_pts) {
+    const v = Object.values(p.BZ_pts), lo = Math.min(...v), hi = Math.max(...v);
+    if (hi - lo > 10)
+      w.push(`Spód zwisu nie jest płaski: wychodzi ${r(lo)}–${r(hi)} mm od podłogi (lewa ${r(p.BZ_pts.Lw)} przy ścianie / ${r(p.BZ_pts.Lf)} na czole, prawa ${r(p.BZ_pts.Rw)} / ${r(p.BZ_pts.Rf)}). Nisza liczona od najniższego punktu, ${r(p.BZ)} mm. To sufit minus spadek, więc dwa błędy w jednym – przed docięciem pleców niszy zmierz spód zwisu raz laserem od podłogi.`);
+  }
   if (p.H_LOW - p.plinth > 2100) w.push('Dolne fronty wyższe niż 2100 mm – ryzyko wypaczenia.');
   const sL = model.layout.bays.LD?.shelfZ[0], sR = model.layout.bays.RD?.shelfZ[0];
   if (sL !== undefined && sR !== undefined && sL !== sR)
