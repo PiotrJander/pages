@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Wenecja w długim trwaniu</title>
+<meta name="description" content="Literacko-historyczny przewodnik po Wenecji: mapa z katastru 1808, eseje w duchu Braudela i podróżników, trasy na pół dnia.">
+<meta name="theme-color" content="#eef1ec" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121817" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;500;600&family=Cardo:ital,wght@0,400;0,700;1,400&display=swap">
+<link rel="stylesheet" href="vendor/leaflet.css?v=4">
+<link rel="stylesheet" href="assets/app.css?v=4">
+</head>
+<body>
+<div class="app">
+  <div id="map" role="application" aria-label="Mapa Wenecji i laguny"></div>
+  <div class="mapctl">
+    <button class="mapbtn" id="btn-loc" aria-pressed="false" aria-label="Pokaż moją lokalizację"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3"/><circle cx="12" cy="12" r="7"/></svg></button>
+    <button class="mapbtn txt" id="btn-osm" aria-pressed="false" aria-label="Włącz dzisiejszą mapę OpenStreetMap">OSM</button>
+    <button class="mapbtn" id="btn-fit" aria-label="Pokaż całe miasto albo całą trasę"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+    <button class="mapbtn" id="btn-zin" aria-label="Przybliż"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+    <button class="mapbtn" id="btn-zout" aria-label="Oddal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14"/></svg></button>
+  </div>
+  <div id="toast" class="toast" role="status" hidden></div>
+  <section class="panel" id="panel" aria-label="Przewodnik">
+    <button class="grip" id="grip" aria-label="Rozwiń albo zwiń panel"><span></span></button>
+    <header class="head" id="head">
+      <div class="brand">
+        <h1><i>Wenecja</i> w długim trwaniu</h1>
+        <span class="sub">przewodnik literacko-historyczny</span>
+      </div>
+      <nav class="tabs" role="tablist" aria-label="Widoki">
+        <button class="tab" role="tab" data-tab="miejsca">Miejsca</button>
+        <button class="tab" role="tab" data-tab="trasy">Trasy</button>
+        <button class="tab" role="tab" data-tab="o">O przewodniku</button>
+      </nav>
+      <div class="days" id="days" role="group" aria-label="Dzień zwiedzania"></div>
+    </header>
+    <div class="body" id="body"></div>
+  </section>
+</div>
+<script src="vendor/leaflet.js?v=4"></script>
+<script src="data/basemap.js?v=4"></script>
+<script src="data/places.js?v=4"></script>
+<script src="data/routes.js?v=4"></script>
+<script src="assets/basemap.js?v=4"></script>
+<script src="assets/app.js?v=4"></script>
+</body>
+</html>
