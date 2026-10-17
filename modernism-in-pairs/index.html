@@ -398,7 +398,7 @@ footer { padding-block: 30px 50px; color: var(--muted); font-size: .9rem; border
     <div class="lb-actions">
       <button id="lb-zoom" type="button">Zoom</button>
       <a id="lb-orig" target="_blank" rel="noopener">Original file ↗</a>
-      <a id="lb-commons" target="_blank" rel="noopener">Commons page ↗</a>
+      <a id="lb-commons" target="_blank" rel="noopener">Source page ↗</a>
       <button id="lb-prev" type="button" aria-label="Previous painting">←</button>
       <button id="lb-next" type="button" aria-label="Next painting">→</button>
       <button id="lb-close" type="button" aria-label="Close viewer">Close ✕</button>
@@ -476,7 +476,9 @@ const MUS = {
 /* ---------- Content ----------
    Work fields: id, t title, y display date, yr numeric year, m museum key, f Commons file,
    a artist (when it differs from the section), c EU public-domain year (in copyright),
-   n note on location, u external page (when no Commons file), w Wikipedia article title. */
+   n note on location, u external page (when no Commons file), w Wikipedia article title.
+   img: paste a direct image URL you are licensed to use (e.g. "https://…/guernica.jpg").
+   When img is set, the card shows that image instead of the text placard, and the viewer can enlarge it. */
 const SECTIONS = [
 {
   id: "cezanne", name: "Paul Cézanne", kind: "Painter", dates: "1839–1906", life: [1839, 1906], span: [1860, 1906],
@@ -563,12 +565,12 @@ const SECTIONS = [
   pig: ["Madder lake", "#9a2d3c"],
   intro: "The enfant terrible of Viennese Expressionism; a critic at the 1908 Kunstschau called him the “Oberwildling”, the chief wild man. His early portraits seemed to expose the sitter’s nerves. He lived until 1980, so his work stays in copyright in the EU until 2051 and these cards link out.",
   works: [
-    { id: "kk1", t: "Portrait of Adolf Loos", y: "1909", yr: 1909, m: "nng", c: 2051, w: "Oskar Kokoschka" },
-    { id: "kk2", t: "Hans Tietze and Erica Tietze-Conrat", y: "1909", yr: 1909.4, m: "moma", c: 2051, w: "Hans Tietze and Erica Tietze-Conrat" },
-    { id: "kk3", t: "The Bride of the Wind", y: "1913–14", yr: 1913.6, m: "basel", c: 2051, w: "The Bride of the Wind" },
-    { id: "kk4", t: "Knight Errant", y: "1915", yr: 1915, m: "gugg", c: 2051, w: "Oskar Kokoschka" },
-    { id: "kk5", t: "The Power of Music", y: "1918–20", yr: 1919, m: "vanabbe", c: 2051, w: "Oskar Kokoschka" },
-    { id: "kk6", t: "Self-Portrait of a “Degenerate Artist”", y: "1937", yr: 1937, m: "sngma", n: "on long-term loan", c: 2051, w: "Oskar Kokoschka" }
+    { img: "", id: "kk1", t: "Portrait of Adolf Loos", y: "1909", yr: 1909, m: "nng", c: 2051, w: "Oskar Kokoschka" },
+    { img: "", id: "kk2", t: "Hans Tietze and Erica Tietze-Conrat", y: "1909", yr: 1909.4, m: "moma", c: 2051, w: "Hans Tietze and Erica Tietze-Conrat" },
+    { img: "", id: "kk3", t: "The Bride of the Wind", y: "1913–14", yr: 1913.6, m: "basel", c: 2051, w: "The Bride of the Wind" },
+    { img: "", id: "kk4", t: "Knight Errant", y: "1915", yr: 1915, m: "gugg", c: 2051, w: "Oskar Kokoschka" },
+    { img: "", id: "kk5", t: "The Power of Music", y: "1918–20", yr: 1919, m: "vanabbe", c: 2051, w: "Oskar Kokoschka" },
+    { img: "", id: "kk6", t: "Self-Portrait of a “Degenerate Artist”", y: "1937", yr: 1937, m: "sngma", n: "on long-term loan", c: 2051, w: "Oskar Kokoschka" }
   ],
   pairs: [
     ["kk1", "kk2", "His champion was the architect Adolf Loos, author of the polemic Ornament and Crime, which made the young painter an anti-Klimt almost by default. Loos found him sitters and promised to buy any portrait they rejected. Look at the hands in both pictures: oversized, nervous and scratched into the wet paint, sometimes with the end of the brush or a fingernail. The art historians Hans and Erica Tietze sit side by side yet don’t meet, their hands almost touching in a flickering, scraped void. The psychology is in the surface."],
@@ -625,16 +627,16 @@ const SECTIONS = [
   pig: ["Prussian blue", "#22385c"],
   intro: "The great shape-shifter, who said he painted things as he thought them rather than as he saw them. Picasso died in 1973, so his paintings are in copyright in the EU until 1 January 2044; these cards link to Wikipedia, where most of them are shown.",
   works: [
-    { id: "p1", t: "Le Moulin de la Galette", y: "1900", yr: 1900, m: "gugg", c: 2044, w: "Le Moulin de la Galette (Picasso)" },
-    { id: "p2", t: "The Old Guitarist", y: "1903–04", yr: 1903.5, m: "aic", c: 2044, w: "The Old Guitarist" },
-    { id: "p3", t: "Family of Saltimbanques", y: "1905", yr: 1905, m: "nga", c: 2044, w: "Family of Saltimbanques" },
-    { id: "p4", t: "Portrait of Gertrude Stein", y: "1905–06", yr: 1906, m: "met", c: 2044, w: "Portrait of Gertrude Stein" },
-    { id: "p5", t: "Les Demoiselles d’Avignon", y: "1907", yr: 1907, m: "moma", c: 2044, w: "Les Demoiselles d'Avignon" },
-    { id: "p6", t: "Portrait of Ambroise Vollard", y: "1910", yr: 1910, m: "pushkin", c: 2044, w: "Portrait of Ambroise Vollard (Picasso)" },
-    { id: "p7", t: "Three Musicians", y: "1921", yr: 1921.4, m: "moma", c: 2044, w: "Three Musicians" },
-    { id: "p8", t: "Three Women at the Spring", y: "1921", yr: 1921.6, m: "moma", c: 2044, w: "Three Women at the Spring" },
-    { id: "p9", t: "Girl before a Mirror", y: "1932", yr: 1932, m: "moma", c: 2044, w: "Girl before a Mirror" },
-    { id: "p10", t: "Guernica", y: "1937", yr: 1937, m: "reina", c: 2044, w: "Guernica (Picasso)" }
+    { img: "", id: "p1", t: "Le Moulin de la Galette", y: "1900", yr: 1900, m: "gugg", c: 2044, w: "Le Moulin de la Galette (Picasso)" },
+    { img: "", id: "p2", t: "The Old Guitarist", y: "1903–04", yr: 1903.5, m: "aic", c: 2044, w: "The Old Guitarist" },
+    { img: "", id: "p3", t: "Family of Saltimbanques", y: "1905", yr: 1905, m: "nga", c: 2044, w: "Family of Saltimbanques" },
+    { img: "", id: "p4", t: "Portrait of Gertrude Stein", y: "1905–06", yr: 1906, m: "met", c: 2044, w: "Portrait of Gertrude Stein" },
+    { img: "", id: "p5", t: "Les Demoiselles d’Avignon", y: "1907", yr: 1907, m: "moma", c: 2044, w: "Les Demoiselles d'Avignon" },
+    { img: "", id: "p6", t: "Portrait of Ambroise Vollard", y: "1910", yr: 1910, m: "pushkin", c: 2044, w: "Portrait of Ambroise Vollard (Picasso)" },
+    { img: "", id: "p7", t: "Three Musicians", y: "1921", yr: 1921.4, m: "moma", c: 2044, w: "Three Musicians" },
+    { img: "", id: "p8", t: "Three Women at the Spring", y: "1921", yr: 1921.6, m: "moma", c: 2044, w: "Three Women at the Spring" },
+    { img: "", id: "p9", t: "Girl before a Mirror", y: "1932", yr: 1932, m: "moma", c: 2044, w: "Girl before a Mirror" },
+    { img: "", id: "p10", t: "Guernica", y: "1937", yr: 1937, m: "reina", c: 2044, w: "Guernica (Picasso)" }
   ],
   pairs: [
     ["p1", "p2", "On his first trip to Paris, at nineteen, Picasso painted the famous dance hall in the manner of Toulouse-Lautrec and Steinlen: gaslit faces, black silhouettes, worldly swagger. Three years later, after the suicide of his friend Carles Casagemas and months of poverty, he was painting in blue. The Old Guitarist is long-limbed and angular like an El Greco saint, folded into the frame, the blue almost liturgical. Infrared images show a woman’s face and other figures underneath. He was too poor to buy new canvases and painted over old ones."],
@@ -650,12 +652,12 @@ const SECTIONS = [
   intro: "Picasso’s partner in inventing Cubism, slower and more methodical, trained as a decorator and house painter, which is where he learned the faux-wood graining and stencilled letters he brought into fine art. He died in 1963, so his work is in copyright in the EU until 2034.",
   manifesto: "Albert Gleizes and Jean Metzinger, Du “Cubisme” (1912), the first book-length theory of the style, written by painters outside the Picasso–Braque partnership.",
   works: [
-    { id: "b1", t: "Landscape at La Ciotat", y: "1907", yr: 1907, m: "moma", c: 2034, w: "Georges Braque" },
-    { id: "b2", t: "Houses at L’Estaque", y: "1908", yr: 1908, m: "bern", n: "Hermann and Margrit Rupf Foundation", c: 2034, w: "Houses at l'Estaque" },
-    { id: "b3", t: "Violin and Candlestick", y: "1910", yr: 1910, m: "sfmoma", c: 2034, w: "Violin and Candlestick" },
-    { id: "b4", t: "Fruit Dish and Glass", y: "1912", yr: 1912, m: "met", c: 2034, w: "Fruit Dish and Glass" },
-    { id: "b5", t: "Canephorae", y: "1922", yr: 1922, m: "pompidou", c: 2034, w: "Georges Braque" },
-    { id: "b6", t: "The Round Table", y: "1929", yr: 1929, m: "phillips", c: 2034, w: "Georges Braque" }
+    { img: "", id: "b1", t: "Landscape at La Ciotat", y: "1907", yr: 1907, m: "moma", c: 2034, w: "Georges Braque" },
+    { img: "", id: "b2", t: "Houses at L’Estaque", y: "1908", yr: 1908, m: "bern", n: "Hermann and Margrit Rupf Foundation", c: 2034, w: "Houses at l'Estaque" },
+    { img: "", id: "b3", t: "Violin and Candlestick", y: "1910", yr: 1910, m: "sfmoma", c: 2034, w: "Violin and Candlestick" },
+    { img: "", id: "b4", t: "Fruit Dish and Glass", y: "1912", yr: 1912, m: "met", c: 2034, w: "Fruit Dish and Glass" },
+    { img: "", id: "b5", t: "Canephorae", y: "1922", yr: 1922, m: "pompidou", c: 2034, w: "Georges Braque" },
+    { img: "", id: "b6", t: "The Round Table", y: "1929", yr: 1929, m: "phillips", c: 2034, w: "Georges Braque" }
   ],
   pairs: [
     ["b1", "b2", "In 1907 Braque was a minor Fauve, and La Ciotat is all pink, violet and orange, loose and decorative. After the Cézanne retrospective and a visit to Picasso’s studio to see the Demoiselles, he went to L’Estaque, Cézanne’s own motif, and painted houses as ochre blocks stacked up a hill, trees bent into arcs, with no horizon and barely any sky. The Salon d’Automne jury rejected these pictures. When they were shown at Kahnweiler’s gallery in November 1908, Vauxcelles wrote that Braque reduced everything to cubes. The name stuck."],
@@ -670,10 +672,10 @@ const SECTIONS = [
   manifesto: "Manifesto of the Futurist Painters and the Technical Manifesto of Futurist Painting (both 1910), signed by Boccioni, Carrà, Russolo, Balla and Severini.",
   works: [
     { id: "f1", a: "Umberto Boccioni", t: "The City Rises", y: "1910", yr: 1910.5, m: "moma", f: "The City Rises by Umberto Boccioni 1910.jpg" },
-    { id: "f2", a: "Giacomo Balla", t: "Dynamism of a Dog on a Leash", y: "1912", yr: 1912.2, m: "akg", c: 2029, w: "Dynamism of a Dog on a Leash" },
+    { img: "", id: "f2", a: "Giacomo Balla", t: "Dynamism of a Dog on a Leash", y: "1912", yr: 1912.2, m: "akg", c: 2029, w: "Dynamism of a Dog on a Leash" },
     { id: "f3", a: "Umberto Boccioni", t: "States of Mind I: The Farewells", y: "1911", yr: 1911.8, m: "moma", f: "States of Mind- The Farewells by Umberto Boccioni, 1911.jpeg" },
-    { id: "f4", a: "Gino Severini", t: "Dynamic Hieroglyphic of the Bal Tabarin", y: "1912", yr: 1912.5, m: "moma", c: 2037, w: "Dynamic Hieroglyphic of the Bal Tabarin" },
-    { id: "f5", a: "Carlo Carrà", t: "Funeral of the Anarchist Galli", y: "1910–11", yr: 1911, m: "moma", c: 2037, w: "Funeral of the Anarchist Galli" },
+    { img: "", id: "f4", a: "Gino Severini", t: "Dynamic Hieroglyphic of the Bal Tabarin", y: "1912", yr: 1912.5, m: "moma", c: 2037, w: "Dynamic Hieroglyphic of the Bal Tabarin" },
+    { img: "", id: "f5", a: "Carlo Carrà", t: "Funeral of the Anarchist Galli", y: "1910–11", yr: 1911, m: "moma", c: 2037, w: "Funeral of the Anarchist Galli" },
     { id: "f6", a: "Luigi Russolo", t: "Dynamism of a Car", y: "1912–13", yr: 1913, m: "pompidou", f: "Luigi Russolo dynamism-of-a-car-1913.jpg" },
     { id: "f7", a: "Umberto Boccioni", t: "Dynamism of a Cyclist", y: "1913", yr: 1913.5, m: "pgc", n: "Gianni Mattioli Collection, long-term loan", f: "Umberto Boccioni, 1913, Dynamism of a Cyclist (Dinamismo di un ciclista), oil on canvas, 70 x 95 cm, Gianni Mattioli Collection, on long-term loan to the Peggy Guggenheim Collection, Venice.jpg" },
     { id: "f8", a: "Umberto Boccioni", t: "Portrait of Ferruccio Busoni", y: "1916", yr: 1916.5, m: "gnam", f: "Umberto boccioni, ritratto del maestro busoni, 1916.jpg" }
@@ -691,12 +693,12 @@ const SECTIONS = [
   intro: "A short-lived Moscow movement invented by Mikhail Larionov and Natalia Goncharova, partners in life and art. They argued that we see the rays of light reflected from objects rather than the objects themselves, so painting should depict the rays. Both lived into the 1960s, so their work remains in copyright in the EU, Goncharova’s until 2033 and Larionov’s until 2035.",
   manifesto: "“Rayonists and Futurists: A Manifesto”, published in the 1913 Moscow miscellany The Donkey’s Tail and Target.",
   works: [
-    { id: "r1", a: "Natalia Goncharova", t: "Peasants Picking Apples", y: "1911", yr: 1911, m: "tretyakov", c: 2033, w: "Natalia Goncharova" },
-    { id: "r2", a: "Mikhail Larionov", t: "Soldier on a Horse", y: "c. 1911", yr: 1911.4, m: "tate", c: 2035, w: "Mikhail Larionov" },
-    { id: "r3", a: "Mikhail Larionov", t: "Glass", y: "1912", yr: 1912, m: "gugg", c: 2035, w: "Rayonism" },
-    { id: "r4", a: "Natalia Goncharova", t: "The Cyclist", y: "1913", yr: 1913, m: "rusmus", c: 2033, w: "Natalia Goncharova" },
-    { id: "r5", a: "Mikhail Larionov", t: "Rayonist Composition: Domination of Red", y: "1912–13", yr: 1912.8, m: "moma", c: 2035, w: "Rayonism" },
-    { id: "r6", a: "Natalia Goncharova", t: "Cats (rayist percep[tion] in rose, black and yellow)", y: "1913", yr: 1913.5, m: "gugg", c: 2033, w: "Natalia Goncharova" }
+    { img: "", id: "r1", a: "Natalia Goncharova", t: "Peasants Picking Apples", y: "1911", yr: 1911, m: "tretyakov", c: 2033, w: "Natalia Goncharova" },
+    { img: "", id: "r2", a: "Mikhail Larionov", t: "Soldier on a Horse", y: "c. 1911", yr: 1911.4, m: "tate", c: 2035, w: "Mikhail Larionov" },
+    { img: "", id: "r3", a: "Mikhail Larionov", t: "Glass", y: "1912", yr: 1912, m: "gugg", c: 2035, w: "Rayonism" },
+    { img: "", id: "r4", a: "Natalia Goncharova", t: "The Cyclist", y: "1913", yr: 1913, m: "rusmus", c: 2033, w: "Natalia Goncharova" },
+    { img: "", id: "r5", a: "Mikhail Larionov", t: "Rayonist Composition: Domination of Red", y: "1912–13", yr: 1912.8, m: "moma", c: 2035, w: "Rayonism" },
+    { img: "", id: "r6", a: "Natalia Goncharova", t: "Cats (rayist percep[tion] in rose, black and yellow)", y: "1913", yr: 1913.5, m: "gugg", c: 2033, w: "Natalia Goncharova" }
   ],
   pairs: [
     ["r1", "r2", "Before the rays came Neo-Primitivism. Goncharova’s peasants are massive, flat and boldly outlined, drawn from icons, lubki (popular woodcut prints) and ancient stone idols of the steppe: a deliberate turn away from Paris toward Russian sources. Larionov’s soldier is drawn like a child’s picture or barrack-wall graffiti, flat colour and a deliberately clumsy horse. Both were rejecting academic polish as a Western import. In 1910 police removed nudes by Goncharova from a Moscow exhibition, and she was prosecuted for obscenity and acquitted."],
@@ -762,7 +764,7 @@ const SECTIONS = [
     { id: "cs3", a: "Lyubov Popova", t: "Painterly Architectonics", y: "c. 1917", yr: 1917, m: "dma", f: "Lyubov Popova - Painterly Architectonics - 1982.10 - Dallas Museum of Art.jpg" },
     { id: "cs4", a: "Lyubov Popova", t: "Space-Force Construction", y: "1920–21", yr: 1921, m: "momus", f: "Liubov Popova, Spatial Force Construction, 1920-21.jpg" },
     { id: "cs5", a: "El Lissitzky", t: "Proun 99", y: "c. 1923–25", yr: 1924, m: "yale", f: "El Lissitzky - Proun 99 - 1941.548 - Yale University Art Gallery.jpg" },
-    { id: "cs6", a: "Alexander Rodchenko", t: "Non-Objective Painting no. 80 (Black on Black)", y: "1918", yr: 1918.5, m: "moma", c: 2027, w: "Alexander Rodchenko" }
+    { img: "", id: "cs6", a: "Alexander Rodchenko", t: "Non-Objective Painting no. 80 (Black on Black)", y: "1918", yr: 1918.5, m: "moma", c: 2027, w: "Alexander Rodchenko" }
   ],
   pairs: [
     ["cs1", "cs2", "Tatlin really had been a sailor, and his self-portrait in a sailor’s cap is built like an icon, flat ochres and blues around a rounded, sculptural head. In 1914 he visited Picasso’s studio in Paris and saw his cardboard and sheet-metal guitars. Back home he gave up painting for counter-reliefs: iron, wood, rope and wire strung across the corner of a room, the place of the icon. At the 0,10 exhibition they shared the show with Malevich’s Black Square, and the two men’s rivalry split it in two: pure feeling against real materials."],
@@ -778,12 +780,12 @@ const SECTIONS = [
   works: [
     { id: "d1", a: "Francis Picabia", t: "I See Again in Memory My Dear Udnie", y: "1914", yr: 1914, m: "moma", f: "Francis Picabia, I See Again in Memory My Dear Udnie (50393140728).jpg" },
     { id: "d2", a: "Francis Picabia", t: "Very Rare Picture on the Earth", y: "1915", yr: 1915.5, m: "pgc", f: "Francis Picabia, 1915 - Très rare tableau sur la terre.jpg" },
-    { id: "d3", a: "Hans Arp", t: "Untitled (Collage with Squares Arranged according to the Law of Chance)", y: "1916–17", yr: 1916.6, m: "moma", c: 2037, w: "Jean Arp" },
+    { img: "", id: "d3", a: "Hans Arp", t: "Untitled (Collage with Squares Arranged according to the Law of Chance)", y: "1916–17", yr: 1916.6, m: "moma", c: 2037, w: "Jean Arp" },
     { id: "d4", a: "Sophie Taeuber-Arp", t: "Composition Dada (Head with Plate)", y: "1920", yr: 1920, m: "pompidou", f: "Sophie Taeuber-Arp Composition Dada 1920.jpg" },
     { id: "d5", a: "Kurt Schwitters", t: "Das Undbild (The And-Picture)", y: "1919", yr: 1919, m: "stuttgart", f: "DasUndbild.jpg" },
-    { id: "d6", a: "Hannah Höch", t: "Cut with the Kitchen Knife Dada through the Last Weimar Beer-Belly Cultural Epoch of Germany", y: "1919–20", yr: 1919.7, m: "nng", c: 2049, w: "Cut with the Kitchen Knife" },
+    { img: "", id: "d6", a: "Hannah Höch", t: "Cut with the Kitchen Knife Dada through the Last Weimar Beer-Belly Cultural Epoch of Germany", y: "1919–20", yr: 1919.7, m: "nng", c: 2049, w: "Cut with the Kitchen Knife" },
     { id: "d7", a: "Francis Picabia", t: "Portrait of Cézanne, Portrait of Rembrandt, Portrait of Renoir (Still Lifes)", y: "1920", yr: 1920.3, m: null, n: "Lost; known from its reproduction in the review Cannibale, 1920", f: "Francis Picabia, 1920, Portrait of Cézanne, Portrait of Renoir, Portrait of Rembrandt.jpg" },
-    { id: "d8", a: "Max Ernst", t: "Celebes", y: "1921", yr: 1921, m: "tate", c: 2047, w: "Celebes (painting)" }
+    { img: "", id: "d8", a: "Max Ernst", t: "Celebes", y: "1921", yr: 1921, m: "tate", c: 2047, w: "Celebes (painting)" }
   ],
   pairs: [
     ["d1", "d2", "Before Dada, Picabia was an Orphic Cubist. Udnie is a swirl of soft, organic forms, half dancer, half machine part, prompted by a dancer he met on the ship taking him to New York for the 1913 Armory Show. In New York he discovered the machine as a subject and began his “mechanomorphs”. Very Rare Picture on the Earth is a deadpan diagram of cylinders and pistons, finished in silver and gold, a machine with no purpose. Look at the gilding. It mocks the precious object while making one."],
@@ -797,12 +799,12 @@ const SECTIONS = [
   pig: ["Yellow ochre", "#b6862f"],
   intro: "Duchamp ran through Cézanne, Fauvism, Cubism and Futurism in about four years and then all but gave up painting, arguing for an art of the mind against what he called “retinal” art. He died in 1968. His pre-1931 works are public domain in the US but in copyright in the EU until 2039, which is why Wikimedia Commons cannot host them.",
   works: [
-    { id: "du1", t: "Portrait of the Artist’s Father", y: "1910", yr: 1910, m: "pma", c: 2039, w: "Marcel Duchamp" },
-    { id: "du2", t: "Portrait of Chess Players", y: "1911", yr: 1911.8, m: "pma", c: 2039, w: "Portrait of Chess Players" },
-    { id: "du3", t: "Sad Young Man on a Train", y: "1911–12", yr: 1911.95, m: "pgc", c: 2039, w: "Sad Young Man on a Train" },
-    { id: "du4", t: "Nude Descending a Staircase, No. 2", y: "1912", yr: 1912.05, m: "pma", c: 2039, w: "Nude Descending a Staircase, No. 2" },
-    { id: "du5", t: "The Bride Stripped Bare by Her Bachelors, Even (The Large Glass)", y: "1915–23", yr: 1919, m: "pma", c: 2039, w: "The Bride Stripped Bare by Her Bachelors, Even" },
-    { id: "du6", t: "Tu m’", y: "1918", yr: 1918, m: "yale", c: 2039, w: "Tu m'" }
+    { img: "", id: "du1", t: "Portrait of the Artist’s Father", y: "1910", yr: 1910, m: "pma", c: 2039, w: "Marcel Duchamp" },
+    { img: "", id: "du2", t: "Portrait of Chess Players", y: "1911", yr: 1911.8, m: "pma", c: 2039, w: "Portrait of Chess Players" },
+    { img: "", id: "du3", t: "Sad Young Man on a Train", y: "1911–12", yr: 1911.95, m: "pgc", c: 2039, w: "Sad Young Man on a Train" },
+    { img: "", id: "du4", t: "Nude Descending a Staircase, No. 2", y: "1912", yr: 1912.05, m: "pma", c: 2039, w: "Nude Descending a Staircase, No. 2" },
+    { img: "", id: "du5", t: "The Bride Stripped Bare by Her Bachelors, Even (The Large Glass)", y: "1915–23", yr: 1919, m: "pma", c: 2039, w: "The Bride Stripped Bare by Her Bachelors, Even" },
+    { img: "", id: "du6", t: "Tu m’", y: "1918", yr: 1918, m: "yale", c: 2039, w: "Tu m'" }
   ],
   pairs: [
     ["du1", "du2", "Duchamp came from a family of artists: his brothers Jacques Villon and Raymond Duchamp-Villon and his sister Suzanne all exhibited. The 1910 portrait of his father is open homage to Cézanne, solid and constructive. A year later, at the Cubist gatherings in his brothers’ studio at Puteaux, he painted two of them playing chess, working by gaslight, in transparent overlapping planes. The players dissolve into their own thinking. Cubism here is used to show thought rather than objects, a first hint of where he was going."],
@@ -880,14 +882,14 @@ const SECTIONS = [
   pig: ["Cerulean", "#3d8ec4"],
   intro: "A Hasidic Jew from Vitebsk who reached Paris in 1910 and fused Cubist structure and Fauve colour with the folk memory of the shtetl. Chagall worked until his death in 1985, so his work is in copyright in the EU until 2056 and these cards link out.",
   works: [
-    { id: "ch1", t: "The Dead Man", y: "1908", yr: 1908, m: "pompidou", c: 2056, w: "Marc Chagall" },
-    { id: "ch2", t: "I and the Village", y: "1911", yr: 1911, m: "moma", c: 2056, w: "I and the Village" },
-    { id: "ch3", t: "The Fiddler", y: "1912–13", yr: 1912.6, m: "stedelijk", c: 2056, w: "The Fiddler (Chagall)" },
-    { id: "ch4", t: "Paris Through the Window", y: "1913", yr: 1913, m: "gugg", c: 2056, w: "Paris Through the Window" },
-    { id: "ch5", t: "Over the Town", y: "1914–18", yr: 1915.5, m: "tretyakov", c: 2056, w: "Over the Town" },
-    { id: "ch6", t: "The Birthday", y: "1915", yr: 1915.2, m: "moma", c: 2056, w: "Birthday (Chagall)" },
-    { id: "ch7", t: "The Falling Angel", y: "1923–47", yr: 1933, m: "basel", c: 2056, w: "Marc Chagall" },
-    { id: "ch8", t: "White Crucifixion", y: "1938", yr: 1938, m: "aic", c: 2056, w: "White Crucifixion" }
+    { img: "", id: "ch1", t: "The Dead Man", y: "1908", yr: 1908, m: "pompidou", c: 2056, w: "Marc Chagall" },
+    { img: "", id: "ch2", t: "I and the Village", y: "1911", yr: 1911, m: "moma", c: 2056, w: "I and the Village" },
+    { img: "", id: "ch3", t: "The Fiddler", y: "1912–13", yr: 1912.6, m: "stedelijk", c: 2056, w: "The Fiddler (Chagall)" },
+    { img: "", id: "ch4", t: "Paris Through the Window", y: "1913", yr: 1913, m: "gugg", c: 2056, w: "Paris Through the Window" },
+    { img: "", id: "ch5", t: "Over the Town", y: "1914–18", yr: 1915.5, m: "tretyakov", c: 2056, w: "Over the Town" },
+    { img: "", id: "ch6", t: "The Birthday", y: "1915", yr: 1915.2, m: "moma", c: 2056, w: "Birthday (Chagall)" },
+    { img: "", id: "ch7", t: "The Falling Angel", y: "1923–47", yr: 1933, m: "basel", c: 2056, w: "Marc Chagall" },
+    { img: "", id: "ch8", t: "White Crucifixion", y: "1938", yr: 1938, m: "aic", c: 2056, w: "White Crucifixion" }
   ],
   pairs: [
     ["ch1", "ch2", "The Dead Man, painted while he studied in St Petersburg, is a Vitebsk street at night: a corpse ringed by candles, a mourning woman, a fiddler on a rooftop. The colour is dark and earthy, but the dream logic is already there. In Paris, soon living at La Ruche, the beehive-shaped studio building for poor émigré artists, he met Cubism and Delaunay’s colour. I and the Village sets a green-faced man and a cow’s head nose to nose inside a wheel of prismatic planes, with a milkmaid inside the cow’s head and a peasant woman walking upside down. Cubism here tells a fairy tale."],
@@ -904,9 +906,9 @@ const SECTIONS = [
     { id: "ks1", a: "Roman Kramsztyk", t: "Portrait of Mojżesz Kisling", y: "1913", yr: 1913, m: "mnk", f: "Kramsztyk, Roman (1885-1942) - Portrait of Mojżesz Kisling - MNK II-b-294 - National Museum Kraków.jpg" },
     { id: "ks2", a: "Amedeo Modigliani", t: "Portrait of Moïse Kisling", y: "1915", yr: 1915, m: "brera", f: "Amedeo Modigliani (1884-1920) - Ritratto del pittore Moisè Kisling (1915) - Pinacoteca di Brera - Milano.jpg" },
     { id: "ks3", t: "La Sieste à Saint-Tropez (Kisling with Renée)", y: "1916", yr: 1916, m: null, n: "Collection not publicly listed", f: "Moise Kisling, 1916, La Sieste à Saint-Tropez, Kisling avec Renée.jpg" },
-    { id: "ks4", t: "Kiki de Montparnasse", y: "1924", yr: 1924, m: "chimei", ns: true, u: "https://collections.culture.tw/chimei_collectionsweb/en/collection.aspx?GID=M60ZM6" },
-    { id: "ks5", t: "Portrait of Madame Renée Kisling", y: "1920", yr: 1920, m: "nagoya", ns: true, u: "https://artsandculture.google.com/asset/ewFPGyLVMfmYSA" },
-    { id: "ks6", t: "Woman with a Polish Shawl", y: "c. 1928", yr: 1928, m: "pompidou", n: "on deposit at the Musée d’art et d’histoire du Judaïsme, Paris", ns: true, u: "https://www.centrepompidou.fr/en/ressources/oeuvre/cqG57Ek" }
+    { img: "", id: "ks4", t: "Kiki de Montparnasse", y: "1924", yr: 1924, m: "chimei", ns: true, u: "https://collections.culture.tw/chimei_collectionsweb/en/collection.aspx?GID=M60ZM6" },
+    { img: "", id: "ks5", t: "Portrait of Madame Renée Kisling", y: "1920", yr: 1920, m: "nagoya", ns: true, u: "https://artsandculture.google.com/asset/ewFPGyLVMfmYSA" },
+    { img: "", id: "ks6", t: "Woman with a Polish Shawl", y: "c. 1928", yr: 1928, m: "pompidou", n: "on deposit at the Musée d’art et d’histoire du Judaïsme, Paris", ns: true, u: "https://www.centrepompidou.fr/en/ressources/oeuvre/cqG57Ek" }
   ],
   pairs: [
     ["ks1", "ks2", "Start with how his friends saw him. Roman Kramsztyk, a Warsaw-born Polish-Jewish painter who also worked in Paris, painted him in a solid, classicising manner: a stocky young man with a direct gaze. Two years later Modigliani painted him with a low fringe and a broad, flat face simplified into a mask. Kisling lent Modigliani studio space and, in 1920, organised his funeral. These two portraits frame the world he moved between: the sober realism of the Polish school and the stylisation of Montparnasse."],
@@ -920,16 +922,16 @@ const SECTIONS = [
   intro: "André Breton’s Manifesto of Surrealism defined it as “pure psychic automatism”, thought dictated without the control of reason. Its painters split between two methods: automatism, letting the hand run free, and dream illusionism, painting the impossible with academic precision. Most of its stars lived long, so nearly all of this section is still in copyright.",
   manifesto: "André Breton, Manifesto of Surrealism (October 1924); Second Manifesto of Surrealism (1929).",
   works: [
-    { id: "s1", a: "Giorgio de Chirico", t: "The Song of Love", y: "1914", yr: 1914, m: "moma", c: 2049, w: "The Song of Love" },
-    { id: "s2", a: "René Magritte", t: "The Treachery of Images", y: "1929", yr: 1929, m: "lacma", c: 2038, w: "The Treachery of Images" },
-    { id: "s3", a: "Joan Miró", t: "The Tilled Field", y: "1923–24", yr: 1923.6, m: "gugg", c: 2054, w: "The Tilled Field" },
-    { id: "s4", a: "Joan Miró", t: "Harlequin’s Carnival", y: "1924–25", yr: 1924.7, m: "akg", c: 2054, w: "Harlequin's Carnival" },
-    { id: "s5", a: "André Masson", t: "Battle of Fishes", y: "1926", yr: 1926, m: "moma", c: 2058, w: "André Masson" },
-    { id: "s6", a: "Max Ernst", t: "Forest and Dove", y: "1927", yr: 1927, m: "tate", c: 2047, w: "Max Ernst" },
+    { img: "", id: "s1", a: "Giorgio de Chirico", t: "The Song of Love", y: "1914", yr: 1914, m: "moma", c: 2049, w: "The Song of Love" },
+    { img: "", id: "s2", a: "René Magritte", t: "The Treachery of Images", y: "1929", yr: 1929, m: "lacma", c: 2038, w: "The Treachery of Images" },
+    { img: "", id: "s3", a: "Joan Miró", t: "The Tilled Field", y: "1923–24", yr: 1923.6, m: "gugg", c: 2054, w: "The Tilled Field" },
+    { img: "", id: "s4", a: "Joan Miró", t: "Harlequin’s Carnival", y: "1924–25", yr: 1924.7, m: "akg", c: 2054, w: "Harlequin's Carnival" },
+    { img: "", id: "s5", a: "André Masson", t: "Battle of Fishes", y: "1926", yr: 1926, m: "moma", c: 2058, w: "André Masson" },
+    { img: "", id: "s6", a: "Max Ernst", t: "Forest and Dove", y: "1927", yr: 1927, m: "tate", c: 2047, w: "Max Ernst" },
     { id: "s7", a: "Yves Tanguy", t: "Mama, Papa Is Wounded!", y: "1927", yr: 1927.4, m: "moma", f: "Mama, Papa is Wounded!.jpg" },
-    { id: "s8", a: "Salvador Dalí", t: "The Persistence of Memory", y: "1931", yr: 1931, m: "moma", c: 2060, w: "The Persistence of Memory" },
-    { id: "s9", a: "Salvador Dalí", t: "Soft Construction with Boiled Beans (Premonition of Civil War)", y: "1936", yr: 1936, m: "pma", c: 2060, w: "Soft Construction with Boiled Beans (Premonition of Civil War)" },
-    { id: "s10", a: "Max Ernst", t: "The Robing of the Bride", y: "1940", yr: 1940, m: "pgc", c: 2047, w: "The Robing of the Bride" }
+    { img: "", id: "s8", a: "Salvador Dalí", t: "The Persistence of Memory", y: "1931", yr: 1931, m: "moma", c: 2060, w: "The Persistence of Memory" },
+    { img: "", id: "s9", a: "Salvador Dalí", t: "Soft Construction with Boiled Beans (Premonition of Civil War)", y: "1936", yr: 1936, m: "pma", c: 2060, w: "Soft Construction with Boiled Beans (Premonition of Civil War)" },
+    { img: "", id: "s10", a: "Max Ernst", t: "The Robing of the Bride", y: "1940", yr: 1940, m: "pgc", c: 2047, w: "The Robing of the Bride" }
   ],
   pairs: [
     ["s1", "s2", "De Chirico’s metaphysical paintings, made in Paris before the war, are the founding images of Surrealism. Here a plaster head of the Apollo Belvedere, a red rubber glove and a green ball sit beside an arcade under a deep green sky. Magritte said that seeing a reproduction of this picture in the early 1920s moved him to tears and showed him what painting could do. In The Treachery of Images he paints a pipe as plainly as a shop sign and writes beneath it that this is not a pipe. Both use a flat, almost illustrative technique to make ordinary things strange."],
@@ -1012,16 +1014,18 @@ function figureHTML(w) {
   const showArtist = !!w.a || w.sec.kind === "Movement";
   const alt = `${w.t} by ${w.artist}, ${w.y}`;
   let frame;
-  if (w.f) {
+  if (w.f || w.img) {
+    const src = w.img || thumbURL(w.f, 800);
+    const ph = w.f ? pageURL(w.f) : (w.u || wikiURL(w.w || `${w.t} ${w.artist}`));
     frame = `<div class="frame">
       <button class="frame-btn" type="button" data-open="${w.id}" aria-label="Enlarge ${esc(w.t)}">
-        <img class="thumb" loading="lazy" decoding="async" src="${thumbURL(w.f, 800)}" alt="${esc(alt)}">
+        <img class="thumb" loading="lazy" decoding="async" src="${esc(src)}" alt="${esc(alt)}">
       </button>
-      <a class="placard" href="${pageURL(w.f)}" target="_blank" rel="noopener">
-        <span class="p-rights pd">Public domain · Wikimedia Commons</span>
+      <a class="placard" href="${esc(ph)}" target="_blank" rel="noopener">
+        <span class="p-rights ${w.f ? "pd" : r.cls}">${w.f ? "Public domain · Wikimedia Commons" : "Image could not load"}</span>
         <span class="p-title">${esc(w.t)}</span>
         <span class="p-sub">${esc(w.artist)}, ${esc(w.y)}</span>
-        <span class="p-go">Open the full-resolution file ↗</span>
+        <span class="p-go">${w.f ? "Open the full-resolution file ↗" : "Open the source page ↗"}</span>
       </a></div>`;
   } else {
     const href = w.u || wikiURL(w.w || `${w.t} ${w.artist}`);
@@ -1237,17 +1241,17 @@ $("#mus-filter").addEventListener("input", e => filterMuseums(e.target.value));
 /* ---------- Lightbox ---------- */
 const lb = $("#lb"), lbImg = $("#lb-img"), stage = $("#lb-stage");
 let lbList = [], lbIdx = 0, zoomed = false, lastFocus = null;
-function viewable() { return WORKS.filter(w => w.f && !document.querySelector(`#w-${w.id} .frame.failed`)); }
+function viewable() { return WORKS.filter(w => (w.f || w.img) && !document.querySelector(`#w-${w.id} .frame.failed`)); }
 function setLB() {
   const w = lbList[lbIdx];
   zoomed = false; stage.classList.remove("zoom");
   $("#lb-zoom").textContent = "Zoom";
-  lbImg.src = thumbURL(w.f, 1920);
+  lbImg.src = w.img || thumbURL(w.f, 1920);
   lbImg.alt = `${w.t} by ${w.artist}, ${w.y}`;
   $("#lb-title").textContent = w.t;
   $("#lb-meta").textContent = `${w.artist} · ${w.y} · ${whereText(w)} · ${lbIdx + 1} of ${lbList.length}`;
-  $("#lb-orig").href = origURL(w.f);
-  $("#lb-commons").href = pageURL(w.f);
+  $("#lb-orig").href = w.img || origURL(w.f);
+  $("#lb-commons").href = w.f ? pageURL(w.f) : (w.u || wikiURL(w.w || `${w.t} ${w.artist}`));
 }
 function openLB(id) {
   lbList = viewable();
@@ -1264,7 +1268,7 @@ function toggleZoom() {
   zoomed = !zoomed;
   stage.classList.toggle("zoom", zoomed);
   $("#lb-zoom").textContent = zoomed ? "Fit to screen" : "Zoom";
-  lbImg.src = thumbURL(w.f, zoomed ? 3840 : 1920);
+  if (!w.img) lbImg.src = thumbURL(w.f, zoomed ? 3840 : 1920);
   if (zoomed) stage.scrollTo(0, 0);
 }
 $("#lb-close").addEventListener("click", closeLB);
