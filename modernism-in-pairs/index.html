@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@400;500;600;700&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..800;1,6..96,400..700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
 <style>
-/* Layout: one catalogue column (max 1120px) under a sticky tab bar. Works hang in pairs inside grey "wall" frames, two-up on desktop and stacked on phones. The timeline is a horizontally scrolling chart. */
+/* Layout: full-width catalogue (text columns capped near 70ch) under a sticky tab bar. Works hang in pairs inside grey "wall" frames, two-up on desktop and stacked on phones. The timeline is a horizontally scrolling chart. */
 :root {
   --paper: #f6f7f5;
   --wall: #e6e8e4;
@@ -63,9 +63,9 @@ button { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .wrap {
-  max-width: 1120px; margin: 0 auto;
-  padding-left: max(16px, env(safe-area-inset-left, 0px));
-  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  max-width: none; margin: 0 auto;
+  padding-left: max(16px, 2.5vw, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, 2.5vw, env(safe-area-inset-right, 0px));
 }
 .label {
   font-family: var(--font-label); text-transform: uppercase; letter-spacing: .09em;
@@ -137,6 +137,7 @@ button { font: inherit; color: inherit; }
 .pair-head { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; }
 .pair-head .yrs { font-family: var(--font-label); font-size: .9rem; color: var(--ink); font-variant-numeric: tabular-nums; }
 .figs { display: grid; grid-template-columns: 1fr; gap: 22px; }
+@media (min-width: 1400px) { .frame-btn, .placard { inset: 26px; } .pair-text { font-size: 1.08rem; } }
 @media (min-width: 760px) { .figs { grid-template-columns: 1fr 1fr; gap: 26px; } }
 .pair-text { margin: 0; max-width: 70ch; text-wrap: pretty; }
 
@@ -1019,7 +1020,7 @@ function figureHTML(w) {
     const ph = w.f ? pageURL(w.f) : (w.u || wikiURL(w.w || `${w.t} ${w.artist}`));
     frame = `<div class="frame">
       <button class="frame-btn" type="button" data-open="${w.id}" aria-label="Enlarge ${esc(w.t)}">
-        <img class="thumb" loading="lazy" decoding="async" src="${esc(src)}" alt="${esc(alt)}">
+        <img class="thumb" loading="lazy" decoding="async" src="${esc(src)}"${w.img ? "" : ` srcset="${esc(thumbURL(w.f, 800))} 800w, ${esc(thumbURL(w.f, 1280))} 1280w, ${esc(thumbURL(w.f, 1920))} 1920w" sizes="(min-width: 760px) 50vw, 100vw"`} alt="${esc(alt)}">
       </button>
       <a class="placard" href="${esc(ph)}" target="_blank" rel="noopener">
         <span class="p-rights ${w.f ? "pd" : r.cls}">${w.f ? "Public domain · Wikimedia Commons" : "Image could not load"}</span>
