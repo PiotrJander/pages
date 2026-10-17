@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Policy Tensor — Timeline Digest (11–12 Jun 2026)</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --surface: #171a21;
+    --surface-2: #1d212b;
+    --border: #2a2f3a;
+    --text: #e6e8ec;
+    --muted: #9aa3b2;
+    --accent: #4ea1f7;
+    --accent-soft: rgba(78,161,247,0.12);
+    --quote: #f5b955;
+    --repost: #5ad6a8;
+    --maxw: 820px;
+    --radius: 14px;
+    font-synthesis: none;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: radial-gradient(1200px 600px at 50% -10%, #1a1e29 0%, var(--bg) 60%) no-repeat;
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  header.page {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: 56px 20px 28px;
+    text-align: center;
+  }
+  header.page .kicker {
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 0.72rem;
+    color: var(--accent);
+    font-weight: 700;
+  }
+  header.page h1 {
+    font-size: clamp(1.9rem, 5vw, 2.9rem);
+    line-height: 1.1;
+    margin: 0.4em 0 0.3em;
+    letter-spacing: -0.02em;
+  }
+  header.page .sub {
+    color: var(--muted);
+    font-size: 1.02rem;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  .meta-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 22px;
+  }
+  .pill {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  .pill strong { color: var(--text); font-weight: 600; }
+
+  nav.toc {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: rgba(15,17,21,0.82);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    margin: 26px 0 0;
+  }
+  nav.toc ul {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: 10px 16px;
+    display: flex;
+    gap: 8px;
+    list-style: none;
+    overflow-x: auto;
+  }
+  nav.toc a {
+    white-space: nowrap;
+    font-size: 0.82rem;
+    color: var(--muted);
+    padding: 5px 11px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+  }
+  nav.toc a:hover { color: var(--text); background: var(--surface); border-color: var(--border); text-decoration: none; }
+
+  main { max-width: var(--maxw); margin: 0 auto; padding: 10px 20px 80px; }
+
+  section.theme { margin-top: 56px; scroll-margin-top: 64px; }
+  .theme-head {
+    border-left: 3px solid var(--accent);
+    padding-left: 16px;
+    margin-bottom: 8px;
+  }
+  .theme-head .theme-num {
+    font-size: 0.74rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .theme-head h2 {
+    font-size: clamp(1.4rem, 3.4vw, 1.95rem);
+    margin: 4px 0 0;
+    letter-spacing: -0.015em;
+  }
+  .theme-intro {
+    color: var(--muted);
+    margin: 14px 2px 26px;
+    font-size: 1rem;
+  }
+
+  /* Tweet card */
+  .tweet {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin: 16px 0;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.02), 0 12px 28px -20px rgba(0,0,0,0.8);
+  }
+  .tweet-head {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+    margin-bottom: 10px;
+  }
+  .author { font-weight: 700; color: var(--text); }
+  .handle { color: var(--muted); font-size: 0.9rem; }
+  .tweet-head .date {
+    margin-left: auto;
+    font-size: 0.84rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .tweet-head .date a { color: var(--muted); }
+  .tweet-head .date a:hover { color: var(--accent); }
+  .tid {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1px 7px;
+  }
+  .tweet-body { white-space: pre-wrap; word-wrap: break-word; }
+  .tweet-body p { margin: 0 0 10px; }
+
+  /* Nested (quote / repost) */
+  .nested {
+    margin-top: 14px;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--quote);
+    border-radius: 10px;
+    padding: 12px 15px;
+    background: var(--surface-2);
+  }
+  .nested.repost { border-left-color: var(--repost); }
+  .nested .nested-label {
+    display: inline-block;
+    font-size: 0.66rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--quote);
+    margin-bottom: 8px;
+  }
+  .nested.repost .nested-label { color: var(--repost); }
+  .nested .nested.level2 { background: #11141b; }
+
+  /* Images */
+  figure { margin: 14px 0 4px; }
+  .img-single img {
+    display: block;
+    max-width: 100%;
+    margin: 0 auto;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+  .img-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 8px;
+  }
+  .img-grid img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    aspect-ratio: 4 / 3;
+  }
+  .nested img { border-radius: 8px; }
+
+  /* Analytical context */
+  .context {
+    margin-top: 22px;
+    background: linear-gradient(180deg, var(--accent-soft), rgba(78,161,247,0.03));
+    border: 1px solid rgba(78,161,247,0.25);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+  }
+  .context h3 {
+    margin: 0 0 8px;
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .context p { margin: 0 0 10px; color: #d4dae4; font-size: 0.96rem; }
+  .context p:last-child { margin-bottom: 0; }
+
+  footer.page {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: 40px 20px 60px;
+    color: var(--muted);
+    font-size: 0.85rem;
+    text-align: center;
+    border-top: 1px solid var(--border);
+  }
+  @media (max-width: 560px) {
+    .tweet-head .date { margin-left: 0; width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<header class="page">
+  <div class="kicker">Timeline Digest · @policytensor</div>
+  <h1>The Iran War in Real Time, the Science of Winning It, and the China Question Underneath</h1>
+  <p class="sub">A thematic reading of Policy Tensor's feed as a U.S.–Israel–Iran ceasefire is negotiated, Iranian missiles strike Gulf radar sites, and the conversation keeps circling back to the only adversary that matters: China.</p>
+  <div class="meta-bar">
+    <span class="pill">Window: <strong>11 Jun 12:00 CEST → 12 Jun 06:52 UTC</strong></span>
+    <span class="pill"><strong>36</strong> main tweets</span>
+    <span class="pill">5 themes</span>
+    <span class="pill">Source: <strong>x.com/policytensor</strong></span>
+  </div>
+</header>
+
+<nav class="toc">
+  <ul>
+    <li><a href="#t1">1 · The War, Hour by Hour</a></li>
+    <li><a href="#t2">2 · Iran's Leverage</a></li>
+    <li><a href="#t3">3 · The Science of War</a></li>
+    <li><a href="#t4">4 · The China Question</a></li>
+    <li><a href="#t5">5 · Home Front &amp; Dispatches</a></li>
+  </ul>
+</nav>
+
+<main>
+
+  <!-- ============ THEME 1 ============ -->
+  <section class="theme" id="t1">
+    <div class="theme-head">
+      <div class="theme-num">Theme 01 · Live</div>
+      <h2>The War, Hour by Hour: Strikes, Radars, and a Ceasefire That Won't Settle</h2>
+    </div>
+    <p class="theme-intro">The dominant story, told chronologically as it broke. Over roughly fifteen hours, Iranian missiles are reported hitting U.S.-linked radar installations across the Gulf (Bahrain, then Jordan, then Kuwait), the UAE and Iran open back-channel talks, and Washington floats a ceasefire whose terms Tehran publicly disowns. Policy Tensor reads each fragment for what it reveals about escalation control, protection payments, and who actually holds the initiative.</p>
+
+    <!-- 16:10 -->
+    <article class="tweet">
+      <div class="tweet-head">
+        <span class="author">Policy Tensor</span>
+        <span class="handle">@policytensor</span>
+        <span class="tid">2065104460028813502</span>
+        <span class="date"><a href="https://x.com/policytensor/status/2065104460028813502">11 Jun 2026 · 16:10 UTC</a></span>
+      </div>
+      <div class="tweet-body"><p>RT @business: Senior national security officials from the United Arab Emirates and Iran held a face-to-face meeting for the first time sinc…</p></div>
+      <div class="nested repost">
+        <span class="nested-label">↻ Reposted</span>
+        <div class="tweet-head">
+          <span class="author">Bloomberg</span>
+          <span class="handle">@business</span>
+          <span class="tid">2065069056592371990</span>
+          <span class="date"><a href="https://x.com/business/status/2065069056592371990">11 Jun 2026 · 13:50 UTC</a></span>
+        </div>
+        <div class="tweet-body"><p>Senior national security officials from the United Arab Emirates and Iran held a face-to-face meeting for the first time since the start of the US-Israeli war against Tehran, sources say https://t.co/bHZaeBnjDI</p></div>
+      </div>
+    </article>
+
+    <!-- 18:54 Sy / nuking moved? No: keep war-nuclear here at 20:47 -->
+
+    <!-- 20:47 -->
+    <article class="tweet">
+      <div class="tweet-head">
+        <span class="author">Policy Tensor</span>
+        <span class="handle">@policytensor</span>
+        <span class="tid">2065174053585830109</span>
+        <span class="date"><a href="https://x.com/policytensor/status/2065174053585830109">11 Jun 2026 · 20:47 UTC</a></span>
+      </div>
+      <div class="tweet-body"><p>Not surprised in the least to hear Sy say He brought up nuking the underground missiles cities.</p></div>
+    </article>
+
+    <!-- 21:59 AR-327 -->
+    <article class="tweet">
+      <div class="tweet-head">
+        <span class="author">Policy Tensor</span>
+        <span class="handle">@policytensor</span>
+        <span class="tid">2065192166956171365</span>
+        <span class="date"><a href="https://x.com/policytensor/status/2065192166956171365">11 Jun 2026 · 21:59 UTC</a></span>
+      </div>
+      <div class="tweet-body"><p>This is a significant operational achievement for Iran. The AR-327 radar at Bahrain's highest point is a very important piece of the regional missile defense and battlefield awareness architecture. What you need to realize to see the significance of this hit is this:
+
+Radars are https://t.co/9YaBfaIMyW</p></div>
+      <figure class="img-grid">
+        <img src="this-is-a-significant-operational-achievement-for-iran-the-ar-327-radar-at-bahrain-s-highest-point-is-a-very-important-piece-1.jpg" alt="AR-327 radar strike, Bahrain (1)">
+        <img src="this-is-a-significant-operational-achievement-for-iran-the-ar-327-radar-at-bahrain-s-highest-point-is-a-very-important-piece-2.jpg" alt="AR-327 radar strike, Bahrain (2)">
+        <img src="this-is-a-significant-operational-achievement-for-iran-the-ar-327-radar-at-bahrain-s-highest-point-is-a-very-important-piece-3.jpg" alt="AR-327 radar strike, Bahrain (3)">
+      </figure>
+      <div class="nested">
+        <span class="nested-label">❝ Quoted</span>
+        <div class="tweet-head">
+          <span class="author">Drop Site</span>
+          <span class="handle">@DropSiteNews</span>
+          <span class="tid">2065127514146807900</span>
+          <span class="date"><a href="https://x.com/DropSiteNews/status/2065127514146807900">11 Jun 2026 · 17:42 UTC</a></span>
+        </div>
+        <div class="tweet-body"><p>In Bahrain, the Iranian military said it struck communications antennas and radar facilities associated with the U.S. Fifth Fleet's Patriot air defense network. Open-source analysts have geolocated images of the strike to the Jabal al-Dukhan (translated as the "Mountain of</p></div>
+      </div>
+    </article>
+
+    <!-- 23:36 Jordan radar -->
+    <article class="tweet">
+      <div class="tweet-head">
+        <span class="author">Policy Tensor</span>
+        <span class="handle">@policytensor</span>
+        <span class="tid">2065216636160765960</span>
+        <span class="date"><a href="https://x.com/policytensor/status/2065216636160765960">11 Jun 2026 · 23:36 UTC</a></span>
+      </div>
+      <div class="tweet-body"><p>We may find out that they hit a radar in Jordan too.</p></div>
+    </article>
+
+    <!-- 23:45 Saudis/Emiratis paying -->
+    <article class="tweet">
+      <div class="tweet-head">
+        <span class="author">Policy Tensor</span>
+        <span class="handle">@policytensor</span>
+        <span class="tid">2065218940100284826</span>
+        <span class="date"><a href="https://x.com/policytensor/status/2065218940100284826">11 Jun 2026 · 23:45 UTC</a></span>
+      </div>
+      <div class="tweet-body"><p>Are the Saudis and Emiratis paying Iran for protection as Pape suggests?</p></div>
+    </article>
+
+    <!-- 00:08 Good report -->
+    <article class="tweet">
+      <div class="tweet-head">
+        <span class="author">Policy Tensor</span>
+        <span class="handle">@policytensor</span>
+        <span class="tid">2065224676972941761</span>
+        <span class="date"><a href="https://x.com/policytensor/status/2065224676972941761">12 Jun 2026 · 00:08 UTC</a></span>
+      </div>
+      <div class="tweet-body"><p>Good report. https://t.co/vjkbxmkVR2</p></div>
+      <div class="nested">
+        <span class="nested-label">❝ Quoted (self)</span>
+        <div class="tweet-head">
+          <span class="author">Policy Tensor</span>
+          <span class="handle">@policytensor</span>
+          <span class="tid">2065192166956171365</span>
+          <span class="date"><a href="https://x.com/policytensor/status/2065192166956171365">11 Jun 2026 · 21:59 UTC</a></span>
+        </div>
+        <div class="tweet-body"><p>This is a significant operational achievement for Iran. The AR-327 radar at Bahrain's highest point is a very important piece of the regional missile defense and battlefield awareness architecture. What you need to realize to see the significance of this hit is this:
+
+Radars are https://t.co/9YaBfaIMyW</p></div>
+      </div>
+    </article>
+
+    <!-- 00:33 Lebanon redline -->
+    <article class="tweet">
+      <div class="tweet-head">
+        <span class="author">Policy Tensor</span>
+        <span class="handle">@policytensor</span>
+        <span class="tid">2065230898396622987</span>
+        <span class="date"><a href="https://x.com/policytensor/status/2065230898396622987">12 Jun 2026 · 00:33 UTC</a></span>
+      </div>
+      <div class="tweet-body"><p>Not implausible. But if Iran has to walk back its redline in Lebanon, this would hardly be an unambiguous victory for Iran.</p></div>
+      <div class="nested">
+        <span class="nested-label">❝ Quoted</span>
+        <div class="tweet-head">
+          <span class="author">Shaiel Ben-Ephraim</span>
+          <span class="handle">@academic_la</span>
+          <span class="tid">2065205873509908774</span>
+          <span class="date"><a href="https://x.com/academic_la/status/2065205873509908774">11 Jun 2026 · 22:53 UTC</a></span>
+        </div>
+        <div class="tweet-body"><p>We are receiving leaks about what is in the agreement and what is out. According to reports this is what is shaping up:
+
+What's IN the agreement:
+
+* 60 days of negotiations on the Iranian nuclear program
+* Strait of Hormuz opens, military operations cease
+* The US lifts its</p></div>
+      </div>
+    </article>
+
+    <!-- 00:46 wait for confirmation -->
+    <article class="tweet">
+      <div class="tweet-head">
+        <span class="author">Policy Tensor</span>
+        <span class="handle">@policytensor</span>
+        <span class="tid">2065234201163538742</span>
+        <span class="date"><a href="https://x.com/policytensor/status/2065234201163538742">12 Jun 2026 · 00:46 UTC</a></span>
+      </div>
+      <div class="tweet-body"><p>As always, we wait for confirmation from Tehran.</p></div>
+    </article>
+
+    <!-- 01:47 Kharg -->
+    <article class="tweet">
+      <div class="tweet-head">
+        <span class="author">Policy Tensor</span>
+        <span class="handle">@policytensor</span>
+        <span class="tid">2065249476038557754</span>
+        <span class="date"><a href="https://x.com/policytensor/status/2065249476038557754">12 Jun 2026 · 01:47 UTC</a></span>
+      </div>
+      <div class="tweet-body"><p>He's just throwing it out there. There is no military case for seizing Kharg.</p></div>
+      <div class="nested">
+        <span class="nested-label">❝ Quoted</span>
+        <div class="tweet-head">
+          <span class="author">Edward Luce</span>
+          <span class="handle">@EdwardGLuce</span>
+          <span class="tid">2065073352746623167</span>
+          <span class="date"><a href="https://x.com/EdwardGLuce/status/2065073352746623167">11 Jun 2026 · 14:07 UTC</a></span>
+        </div>
+        <div class="tweet-body"><p>What exactly would taking Kharg Island accomplish? It's nowhere near the strait and would offer Iranians a juicy target. They can export oil overland and via Caspian Sea.</p></div>
+      </div>
+    </article>
+
+    <!-- 01:47 Iran FM rejects -->
+    <article class="tweet">
+      <div class="tweet-head">
+        <span class="author">Policy Tensor</span>
+        <span class="handle">@policytensor</span>
+        <span class="tid">2065249633048096857</span>
+        <span class="date"><a href="https://x.com/policytensor/status/2065249633048096857">12 Jun 2026 · 01:47 UTC</a></span>
+      </div>
+      <div class="tweet-body"><p>RT @HormuzLetter: BREAKING: Iran's Foreign Ministry directly rejects Trump's new claim that "everyone in Iran has approved the deal," inclu…</p></div>
+      <div class="nested repost">
+        <span class="nested-label">↻ Reposted</span>
+        <div class="tweet-head">
+          <span class="author">The Hormuz Letter</span>
+          <span class="handle">@HormuzLetter</span>
+          <span class="tid">2065186182946766878</span>
+          <span class="date"><a href="https://x.com/HormuzLetter/status/2065186182946766878">11 Jun 2026 · 21:35 UTC</a></span>
+        </div>
+        <div class="tweet-body"><p>BREAKING: Iran's Foreign Ministry directly rejects Trump's new claim that "everyone in Iran has approved the deal," including the Supreme Leader, saying no one has accepted it, and "no agreement has been reached," per Fars.
+
+Any agreement requires the US to "accept every demand"</p></div>
+      </div>
+    </article>
+
+    <!-- 02:13 Kuwait radar -->
+    <article class="tweet">
+      <div class="tweet-head">
+        <span class="author">Policy Tensor</span>
+        <span class="handle">@policytensor</span>
+        <span class="tid">2065256163248091191</span>
+        <span class="date"><a href="https://x.com/policytensor/status/2065256163248091191">12 Jun 2026 · 02:13 UTC</a></span>
+      </div>
+      <div class="tweet-body"><p>Looks like they bagged a radar in Kuwait too.</p></div>
+      <div class="nested">
+        <span class="nested-label">❝ Quoted</span>
+        <div class="tweet-head">
+          <span class="author">Drop Site</span>
+          <span class="handle">@DropSiteNews</span>
+          <span class="tid">2065249982349812068</span>
+          <span class="date"><a href="https://x.com/DropSiteNews/status/2065249982349812068">12 Jun 2026 · 01:49 UTC</a></span>
+        </div>
+        <div class="tweet-body"><p>🇮🇷🇰🇼 Kuwait's Civil Aviation Authority says an Iranian strike targeting radar facilities at Kuwait International Airport earlier Thursday caused injuries and significant damage to equipment linked to air traffic management.
+
+The announcement follows an earlier IRGC statement</p></div>
+      </div>
+    </article>
+
+    <!-- 03:02 one giant airfield -->
+    <article class="tweet">
+      <div class="tweet-head">
+        <span class="author">Policy Tensor</span>
+        <span class="handle">@policytensor</span>
+        <span class="tid">2065268579717579151</span>
+        <span class="date"><a href="https://x.com/policytensor/status/2065268579717579151">12 Jun 2026 · 03:02 UTC</a></span>
+      </div>
+      <div class="tweet-body"><p>One of the things we've learnt is that practically the entire region around Iran is one giant air field for the eagles.</p></div>
+      <div class="nested">
+        <span class="nested-label">❝ Quoted</span>
+        <div class="tweet-head">
+          <span class="author">Aᴍɪʀ</span>
+          <span class="handle">@AmirIGM</span>
+          <span class="tid">2065110161098744141</span>
+          <span class="date"><a href="https://x.com/AmirIGM/status/2065110161098744141">11 Jun 2026 · 16:33 UTC</a></span>
+        </div>
+        <div class="tweet-body"><p>Poor innocent Jordan just days before the Americans and Zios launched their war of aggression on Iran:
+
+Dozens of American F-15s and F-35s were moved to Jordan in February and were used in the attack against Iran. https://t.co/Vql4inQzwu</p></div>
+        <figure class="img-single"><img src="poor-innocent-jordan-just-days-before-the-americans-and-zios-launched-their-war-of-aggression-on-iran-dozens-of-american.jpg" alt="US F-15s and F-35s moved to Jordan"></figure>
+      </div>
+    </article>
+
+    <!-- 04:50 Wait for Tehran ceasefire breakdown -->
+    <article class="tweet">
+      <div class="tweet-head">
+        <span class="author">Policy Tensor</span>
+        <span class="handle">@policytensor</span>
+        <span class="tid">2065295530612105441</span>
+        <span class="date"><a href="https://x.com/policytensor/status/2065295530612105441">12 Jun 2026 · 04:50 UTC</a></span>
+      </div>
+      <div class="tweet-body"><p>Wait for Tehran.</p></div>
+      <div class="nested">
+        <span class="nested-label">❝ Quoted</span>
+        <div class="tweet-head">
+          <span class="author">Sulaiman Ahmed</span>
+          <span class="handle">@ShaykhSulaiman</span>
+          <span class="tid">2065288528909443087</span>
+          <span class="date"><a href="https://x.com/ShaykhSulaiman/status/2065288528909443087">12 Jun 2026 · 04:22 UTC</a></span>
+        </div>
+        <div class="tweet-body"><p>U.S-IRAN CEASEFIRE DEAL BREAKDOWN
+
+NUCLEAR
+✅ Iran commits to never acquire a nuclear weapon
+✅ Iran be open to down-blending their highly enriched uranium inside Iran under supervision of UN inspectors.
+✅ Steps on Iran's nuclear program would only take place if a second deal https://t.co/wl2T8XitF0</p></div>
+        <figure class="img-single"><img src="u-s-iran-ceasefire-deal-breakdown-nuclear-iran-commits-to-never-acquire-a-nuclear-weapon-iran-be-open-to-down-blending.jpg" alt="U.S.–Iran ceasefire deal breakdown"></figure>
+      </div>
+    </article>
+
+    <!-- 05:01 Saddam Kuwait -->
+    <article class="tweet">
+      <div class="tweet-head">
+        <span class="author">Policy Tensor</span>
+        <span class="handle">@policytensor</span>
+        <span class="tid">2065298484136165651</span>
+        <span class="date"><a href="https://x.com/policytensor/status/2065298484136165651">12 Jun 2026 · 05:01 UTC</a></span>
+      </div>
+      <div class="tweet-body"><p>I recall that Saddam had demanded $10 billion from Kuwait in 1990. The Saudis got it done. But he invaded anyway after he thought he had the green light from the US ambassador.
+
+April Glaspie had been instructed to signal that the US would tolerate an Iraqi conquest of two https://t.co/J7JqUKizeA</p></div>
+      <figure class="img-single"><img src="i-recall-that-saddam-had-demanded-10-billion-from-kuwait-in-1990-the-saudis-got-it-done-but-he-invaded.png" alt="Saddam, Kuwait 1990, April Glaspie"></figure>
+      <div class="nested">
+        <span class="nested-label">❝ Quoted (self)</span>
+        <div class="tweet-head">
+          <span class="author">Policy Tensor</span>
+          <span class="handle">@policytensor</span>
+          <span class="tid">2065218940100284826</span>
+          <span class="date"><a href="https://x.com/policytensor/status/2065218940100284826">11 Jun 2026 · 23:45 UTC</a></span>
+        </div>
+        <div class="tweet-body"><p>Are the Saudis and Emiratis paying Iran for protection as Pape suggests?</p></div>
+      </div>
+    </article>
+
+    <!-- 05:58 UAE payment -->
+    <article class="tweet">
+      <div class="tweet-head">
+        <span class="author">Policy Tensor</span>
+        <span class="handle">@policytensor</span>
+        <span class="tid">2065312671549866492</span>
+        <span class="date"><a href="https://x.com/policytensor/status/2065312671549866492">12 Jun 2026 · 05:58 UTC</a></span>
+      </div>
+      <div class="tweet-body"><p>$50 billion? $100 billion? How much did Abu Dhabi agree to pay Tehran?</p></div>
+      <div class="nested">
+        <span class="nested-label">❝ Quoted</span>
+        <div class="tweet-head">
+          <span class="author">Drop Site</span>
+          <span class="handle">@DropSiteNews</span>
+          <span class="tid">2065304108957909330</span>
+          <span class="date"><a href="https://x.com/DropSiteNews/status/2065304108957909330">12 Jun 2026 · 05:24 UTC</a></span>
+        </div>
+        <div class="tweet-body"><p>🇦🇪🇮🇷 UAE, Iran Security Officials Hold First Face-to-Face Talks Since War
+
+Senior national security officials from the United Arab Emirates and Iran met in person this week for the first time since the U.S.-Israeli war on Iran began in late February, Bloomberg reported, in what</p></div>
+      </div>
+    </article>
+
+    <div class="context">
+      <h3>Analytical Context</h3>
+      <p>The through-line here is <strong>escalation control</strong>. Iran's reported strikes target sensors — the AR-327 long-range radar on Bahrain's Jabal al-Dukhan, air-traffic/defense radars in Kuwait, possibly Jordan — rather than killing large numbers of personnel or hitting Israel's Ben Gurion directly. Going after the adversary's "eyes" (battlefield awareness and missile-defense cueing) is a high-value, comparatively de-escalatory move: it degrades capability while leaving room to climb down. Policy Tensor's repeated "wait for Tehran / wait for confirmation" is methodological caution against fog-of-war claims from partisan accounts.</p>
+      <p>The second thread is <strong>protection economics</strong>. The questions about Saudi and Emirati payments to Iran, framed through Robert Pape's argument and the 1990 Saddam–Kuwait analogy, treat the Gulf monarchies as paying for security against a power that can now reach them. The April Glaspie reference is a warning: side payments did not deter Saddam once he believed the US had signaled tolerance — i.e., money without credible deterrence can fail catastrophically.</p>
+      <p>Finally, the gap between Trump's claim that "everyone in Iran has approved the deal" and Tehran's flat denial illustrates a classic <strong>two-level bargaining</strong> problem: a leader advertising domestic consent that does not exist, while the actual terms (60-day nuclear talks, Hormuz reopening, no weaponization) remain contested and reversible.</p>
+    </div>
+  </section>
+
+  <!-- ============ THEME 2 ============ -->
+  <section class="theme" id="t2">
+    <div class="theme-head">
+      <div class="theme-num">Theme 02 · Economics of Coercion</div>
+      <h2>Iran's Leverage: Oil, the Hormuz Cliff, and Time as an Ally</h2>
+    </div>
+    <p class="theme-intro">Why Tehran may prefer to "kick the can." The feed converges on Robert Pape's thesis — that Iran's bargaining power rises as Western oil inventories fall toward a midsummer cliff — set against the puzzle of oil trading below $100 and the social cost of the war rippling across South Asia.</p>
+
+    <!-- 22:00 oil -->
+    <article class="tweet">
+      <div class="tweet-head">
+        <span class="author">Policy Tensor</span>
+        <span class="handle">@policytensor</span>
+        <span class="tid">2065192458326016412</span>
+        <span class="date"><a href="https://x.com/policytensor/status/2065192458326016412">11 Jun 2026 · 22:00 UTC</a></span>
+      </div>
+      <div class="tweet-body"><p>RT @JavierBlas: COLUMN: Why oil is below $100 a barrel?
+
+I take a look at the top-10 reasons; some are structural, but most are ephemeral.…</p></div>
+      <div class="nested repost">
+        <span class="nested-label">↻ Reposted</span>
+        <div class="tweet-head">
+          <span class="author">Javier Blas</span>
+          <span class="handle">@JavierBlas</span>
+          <span class="tid">2064987180183740829</span>
+          <span class="date"><a href="https://x.com/JavierBlas/status/2064987180183740829">11 Jun 2026 · 08:24 UTC</a></span>
+        </div>
+        <div class="tweet-body"><p>COLUMN: Why oil is below $100 a barrel?
+
+I take a look at the top-10 reasons; some are structural, but most are ephemeral.
+
+The single most important? China, China and China. Beijing is bailing out the global economy — and US President Trump.
+
+@Opinion https://t.co/FAJNjmLLvL</p></div>
+      </div>
+    </article>
+
+    <!-- 22:24 ACLED -->
+    <article class="tweet">
+      <div class="tweet-head">
+        <span class="author">Policy Tensor</span>
+        <span class="handle">@policytensor</span>
+        <span class="tid">2065198455241261259</span>
+        <span class="date"><a href="https://x.com/policytensor/status/2065198455241261259">11 Jun 2026 · 22:24 UTC</a></span>
+      </div>
+      <div class="tweet-body"><p>"ACLED records more than 1,200 demonstrations across South Asia related to the economic impact of the Iran war, including over a shortage of cooking gas and fuel and the rising cost of living." https://t.co/pvykKA1IBF https://t.co/hg4wIGzIy8</p></div>
+      <figure class="img-single"><img src="acled-records-more-than-1-200-demonstrations-across-south-asia-related-to-the-economic-impact-of-the-iran-war-including-over.jpg" alt="ACLED: 1,200+ demonstrations across South Asia"></figure>
+    </article>
+
+    <!-- 23:18 respect for Pape -->
+    <article class="tweet">
+      <div class="tweet-head">
+        <span class="author">Policy Tensor</span>
+        <span class="handle">@policytensor</span>
+        <span class="tid">2065212136242966534</span>
+        <span class="date"><a href="https://x.com/policytensor/status/2065212136242966534">11 Jun 2026 · 23:18 UTC</a></span>
+      </div>
+      <div class="tweet-body"><p>My respect for Pape has increased considerably. Watching his show. He's saying that Iran has good reasons to kick the can down the road.
+
+Indeed. Time is Iran's great power ally. The US is racing against time. There is only so long the Chinese can bail the US out.</p></div>
+      <div class="nested">
+        <span class="nested-label">❝ Quoted (self)</span>
+        <div class="tweet-head">
+          <span class="author">Policy Tensor</span>
+          <span class="handle">@policytensor</span>
+          <span class="tid">2064769783074037768</span>
+          <span class="date"><a href="https://x.com/policytensor/status/2064769783074037768">10 Jun 2026 · 18:00 UTC</a></span>
+        </div>
+        <div class="tweet-body"><p>Did they get him?, by @policytensor. https://t.co/enFG6a4GiC</p></div>
+      </div>
+    </article>
+
+    <!-- 23:25 nukes -->
+    <article class="tweet">
+      <div class="tweet-head">
+        <span class="author">Policy Tensor</span>
+        <span class="handle">@policytensor</span>
+        <span class="tid">2065213876308672758</span>
+        <span class="date"><a href="https://x.com/policytensor/status/2065213876308672758">11 Jun 2026 · 23:25 UTC</a></span>
+      </div>
+      <div class="tweet-body"><p>He thinks Iran needs a month to make 11-16 nukes. 👀</p></div>
+    </article>
+
+    <!-- 23:34 inventory cliff -->
+    <article class="tweet">
+      <div class="tweet-head">
+        <span class="author">Policy Tensor</span>
+        <span class="handle">@policytensor</span>
+        <span class="tid">2065216113906942296</span>
+        <span class="date"><a href="https://x.com/policytensor/status/2065216113906942296">11 Jun 2026 · 23:34 UTC</a></span>
+      </div>
+      <div class="tweet-body"><p>Inventory cliff coming end of July, Pape says.</p></div>
+    </article>
+
+    <!-- 05:05 bold call -->
+    <article class="tweet">
+      <div class="tweet-head">
+        <span class="author">Policy Tensor</span>
+        <span class="handle">@policytensor</span>
+        <span class="tid">2065299487984165373</span>
+        <span class="date"><a href="https://x.com/policytensor/status/2065299487984165373">12 Jun 2026 · 05:05 UTC</a></span>
+      </div>
+      <div class="tweet-body"><p>A very bold call by @ProfessorPape.</p></div>
+      <div class="nested">
+        <span class="nested-label">❝ Quoted</span>
+        <div class="tweet-head">
+          <span class="author">Acyn</span>
+          <span class="handle">@Acyn</span>
+          <span class="tid">2065272518962020712</span>
+          <span class="date"><a href="https://x.com/Acyn/status/2065272518962020712">12 Jun 2026 · 03:18 UTC</a></span>
+        </div>
+        <div class="tweet-body"><p>Pape: We're about to enter the period of maximum leverage for Iran. When we hit the oil inventory cliff, as we're going to do in the middle of July, end of July, that means when our inventories go down, Iran's leverage goes up and will stay up through the midterms.
+
+So that is https://t.co/mAiibRq6An</p></div>
+        <figure class="img-single"><img src="pape-we-re-about-to-enter-the-period-of-maximum-leverage-for-iran-when-we-hit-the-oil-inventory-cliff-as.jpg" alt="Pape on Iran's period of maximum leverage"></figure>
+      </div>
+    </article>
+
+    <div class="context">
+      <h3>Analytical Context</h3>
+      <p>This theme is a compact model of <strong>coercive bargaining under a depletion constraint</strong>. Pape's argument, which Policy Tensor amplifies, is that strategic petroleum stocks act as a buffer with a finite floor: as Western inventories draw down toward an "oil inventory cliff" around late July, the marginal value of restored Iranian/Gulf supply rises, and with it Iran's leverage — conveniently timed to peak through the U.S. midterms. Hence "time is Iran's great power ally": delay is itself a weapon.</p>
+      <p>The apparent paradox — oil <em>below</em> $100 during a Gulf war — is resolved in Blas's framing: most price-suppressing factors are "ephemeral," with China the decisive structural buyer-of-last-resort propping up global demand and, indirectly, the U.S. position. That makes the war's economic clock partly a function of Beijing's willingness to keep bailing things out, a point that feeds directly into Theme 4.</p>
+      <p>The ACLED data and the "11–16 nukes in a month" line mark the two boundaries of the leverage story: the <strong>downside social cost</strong> (1,200+ cost-of-living protests rippling across South Asia) and the <strong>upside escalation risk</strong> (a near-term breakout capability that would transform Iran's bargaining hand entirely).</p>
+    </div>
+  </section>
+
+  <!-- ============ THEME 3 ============ -->
+  <section class="theme" id="t3">
+    <div class="theme-head">
+      <div class="theme-num">Theme 03 · Theory</div>
+      <h2>The Science of War: Attrition, Learning Systems, and Lanchester</h2>
+    </div>
+    <p class="theme-intro">The intellectual spine of the feed. Between live updates, Policy Tensor returns to a theoretical claim: war-making is <em>skilled work</em>, extended wars are learning processes, and standard social-science models can't explain why winners often grow stronger through heavy losses. Lanchester's laws, Iwo Jima data, drone history, and modern reconnaissance-strike networks are marshaled as evidence.</p>
+
+    <!-- 00:29 Dark Eagle -->
+    <article class="tweet">
+      <div class="tweet-head">
+        <span class="author">Policy Tensor</span>
+        <span class="handle">@policytensor</span>
+        <span class="tid">2065229988253573477</span>
+        <span class="date"><a href="https://x.com/policytensor/status/2065229988253573477">12 Jun 2026 · 00:29 UTC</a></span>
+      </div>
+      <div class="tweet-body"><p>RT @sam_lair: I wrote something for @FPRI on CENTCOM's request for Dark Eagle. While not super useful in that theater, the flexibility its…</p></div>
+      <div class="nested repost">
+        <span class="nested-label">↻ Reposted</span>
+        <div class="tweet-head">
+          <span class="author">Sam Lair</span>
+          <span class="handle">@sam_lair</span>
+          <span class="tid">2059328555830710521</span>
+          <span class="date"><a href="https://x.com/sam_lair/status/2059328555830710521">26 May 2026 · 17:39 UTC</a></span>
+        </div>
+        <div class="tweet-body"><p>I wrote something for @FPRI on CENTCOM's request for Dark Eagle. While not super useful in that theater, the flexibility its range offers means such a deployment could pose issues for Moscow.
+
+Link below: https://t.co/MfbgPhXiYC</p></div>
+        <figure class="img-single"><img src="i-wrote-something-for-fpri-on-centcom-s-request-for-dark-eagle-while-not-super-useful-in-that-theater-the-flexibility.jpg" alt="FPRI piece on CENTCOM Dark Eagle request"></figure>
+      </div>
+    </article>
+
+    <!-- 01:53 Indeed -->
+    <article class="tweet">
+      <div class="tweet-head">
+        <span class="author">Policy Tensor</span>
+        <span class="handle">@policytensor</span>
+        <span class="tid">2065251004291883124</span>
+        <span class="date"><a href="https://x.com/policytensor/status/2065251004291883124">12 Jun 2026 · 01:53 UTC</a></span>
+      </div>
+      <div class="tweet-body"><p>Indeed. https://t.co/PkwFTQK5dS https://t.co/CqPK2Z191W</p></div>
+      <figure class="img-single"><img src="indeed-https-t-co-pkwftqk5ds-https-t-co-cqpk2z191w.jpg" alt="Indeed — learning systems"></figure>
+      <div class="nested">
+        <span class="nested-label">❝ Quoted</span>
+        <div class="tweet-head">
+          <span class="author">Balazs Jarabik</span>
+          <span class="handle">@BalazsJarabik</span>
+          <span class="tid">2065058359095558528</span>
+          <span class="date"><a href="https://x.com/BalazsJarabik/status/2065058359095558528">11 Jun 2026 · 13:07 UTC</a></span>
+        </div>
+        <div class="tweet-body"><p>4/ Systems matter more than platforms. Hornet drones, AI-assisted targeting, Starlink connectivity, reconnaissance-strike networks changing Ukraine's capabilities. Russia adapts too: Rassvet, Rubicon, electronic warfare, mass production. A competition between learning systems.</p></div>
+      </div>
+    </article>
+
+    <!-- 02:09 social scientific puzzles -->
+    <article class="tweet">
+      <div class="tweet-head">
+        <span class="author">Policy Tensor</span>
+        <span class="handle">@policytensor</span>
+        <span class="tid">2065255037580763395</span>
+        <span class="date"><a href="https://x.com/policytensor/status/2065255037580763395">12 Jun 2026 · 02:09 UTC</a></span>
+      </div>
+      <div class="tweet-body"><p>The social scientific theory generates insurmountable puzzles. Above all, why does the winning side become more powerful after considerable losses in a war of attrition? You can't resolve this puzzle without grasping war-making as skilled work and extended wars are learning https://t.co/IKLOcmnY5Q</p></div>
+      <figure class="img-single"><img src="the-social-scientific-theory-generates-insurmountable-puzzles-above-all-why-does-the-winning-side-become-more-powerful-after-considerable-losses.jpg" alt="War-making as skilled work; attrition puzzle"></figure>
+      <div class="nested">
+        <span class="nested-label">❝ Quoted (self)</span>
+        <div class="tweet-head">
+          <span class="author">Policy Tensor</span>
+          <span class="handle">@policytensor</span>
+          <span class="tid">2065251004291883124</span>
+          <span class="date"><a href="https://x.com/policytensor/status/2065251004291883124">12 Jun 2026 · 01:53 UTC</a></span>
+        </div>
+        <div class="tweet-body"><p>Indeed. https://t.co/PkwFTQK5dS https://t.co/CqPK2Z191W</p></div>
+      </div>
+    </article>
+
+    <!-- 02:51 Quester -->
+    <article class="tweet">
+      <div class="tweet-head">
+        <span class="author">Policy Tensor</span>
+        <span class="handle">@policytensor</span>
+        <span class="tid">2065265819018199120</span>
+        <span class="date"><a href="https://x.com/policytensor/status/2065265819018199120">12 Jun 2026 · 02:51 UTC</a></span>
+      </div>
+      <div class="tweet-body"><p>"Or men might instead simply be so stupid as to expect victory when their military ventures were sure to lead to defeat; when both sides to a war each expect to defeat the other on the battlefield, one of them at least should have studied the problem more carefully."  — Quester</p></div>
+    </article>
+
+    <!-- 04:48 Engel Lanchester -->
+    <article class="tweet">
+      <div class="tweet-head">
+        <span class="author">Policy Tensor</span>
+        <span class="handle">@policytensor</span>
+        <span class="tid">2065295103707513322</span>
+        <span class="date"><a href="https://x.com/policytensor/status/2065295103707513322">12 Jun 2026 · 04:48 UTC</a></span>
+      </div>
+      <div class="tweet-body"><p>Engel (1954)'s verification of Lanchester's square law using data from the Battle of Iwo Jima. https://t.co/q9PitX1cKz</p></div>
+      <figure class="img-single"><img src="engel-1954-s-verification-of-lanchester-s-square-law-using-data-from-the-battle-of-iwo-jima-https-t-co-q9pitx1ckz.png" alt="Engel (1954): Lanchester's square law at Iwo Jima"></figure>
+    </article>
+
+    <!-- 05:16 Kettering Bug -->
+    <article class="tweet">
+      <div class="tweet-head">
+        <span class="author">Policy Tensor</span>
+        <span class="handle">@policytensor</span>
+        <span class="tid">2065302160431067329</span>
+        <span class="date"><a href="https://x.com/policytensor/status/2065302160431067329">12 Jun 2026 · 05:16 UTC</a></span>
+      </div>
+      <div class="tweet-body"><p>Had not realized the first drones flew in the Great War. Meet the Kettering Bug from 1918! https://t.co/Xw25BOMV5W</p></div>
+      <figure class="img-single"><img src="had-not-realized-the-first-drones-flew-in-the-great-war-meet-the-kettering-bug-from-1918-https-t-co-xw25bomv5w.png" alt="The Kettering Bug, 1918 — early aerial drone"></figure>
+    </article>
+
+    <div class="context">
+      <h3>Analytical Context</h3>
+      <p><strong>Lanchester's square law</strong> (1916) formalizes why concentration of force matters under aimed fire: a unit's combat power scales with the <em>square</em> of its numbers times the per-unit effectiveness. Engel's 1954 study used Iwo Jima casualty data as one of the few empirical "validations." Policy Tensor invokes it to needle purely attritional, materialist models — because if outcomes were just numbers and firepower, you couldn't explain why the eventual winner often emerges <em>stronger</em> after absorbing heavy losses.</p>
+      <p>His resolution is the "war-making as skilled work" thesis: extended wars are <strong>learning systems</strong>. Each side iterates on tactics, organization, and technology faster than attrition degrades it. Jarabik's Ukraine observation — that "systems matter more than platforms" (recon-strike networks, AI-assisted targeting, Starlink) and that both sides adapt — is the contemporary instance. The Quester quote supplies the rationalist counterpoint: if war is so legible, why do both sides routinely expect to win? Mutual optimism (a core puzzle in bargaining theory) is exactly what skilled-work and learning dynamics make possible.</p>
+      <p>The Kettering Bug (a 1918 aerial torpedo) and the Dark Eagle hypersonic note bookend the argument in hardware: today's "drone revolution" has a century-old lineage, and long-range precision systems reshape deterrence calculations far from their intended theater — flexibility that "could pose issues for Moscow."</p>
+    </div>
+  </section>
+
+  <!-- ============ THEME 4 ============ -->
+  <section class="theme" id="t4">
+    <div class="theme-head">
+      <div class="theme-num">Theme 04 · Grand Strategy</div>
+      <h2>The China Question: Strategic Insolvency and the War That Matters</h2>
+    </div>
+    <p class="theme-intro">Beneath the Gulf headlines, Policy Tensor keeps redirecting attention to the real contest. The Iran war, on this reading, is a costly distraction that depletes U.S. capacity and resolve precisely when deterrence in the Western Pacific is what counts — and he is scathing about commentary that treats the Tehran campaign as a show of strength toward Beijing and Moscow.</p>
+
+    <!-- 18:54 stop publishing trash -->
+    <article class="tweet">
+      <div class="tweet-head">
+        <span class="author">Policy Tensor</span>
+        <span class="handle">@policytensor</span>
+        <span class="tid">2065145611586879907</span>
+        <span class="date"><a href="https://x.com/policytensor/status/2065145611586879907">11 Jun 2026 · 18:54 UTC</a></span>
+      </div>
+      <div class="tweet-body"><p>Stop publishing trash please.</p></div>
+      <div class="nested">
+        <span class="nested-label">❝ Quoted</span>
+        <div class="tweet-head">
+          <span class="author">Foreign Policy</span>
+          <span class="handle">@ForeignPolicy</span>
+          <span class="tid">2065056690140024955</span>
+          <span class="date"><a href="https://x.com/ForeignPolicy/status/2065056690140024955">11 Jun 2026 · 13:00 UTC</a></span>
+        </div>
+        <div class="tweet-body"><p>The war in the Persian Gulf has created global shock waves. But one of the most important and potentially destabilizing implications of this conflict has been to throw U.S. strategic insolvency into harsh relief, Hal Brands writes. https://t.co/x9Y6nfHTBs</p></div>
+      </div>
+    </article>
+
+    <!-- 19:03 D-Day -->
+    <article class="tweet">
+      <div class="tweet-head">
+        <span class="author">Policy Tensor</span>
+        <span class="handle">@policytensor</span>
+        <span class="tid">2065147856927826123</span>
+        <span class="date"><a href="https://x.com/policytensor/status/2065147856927826123">11 Jun 2026 · 19:03 UTC</a></span>
+      </div>
+      <div class="tweet-body"><p>The Chinese would take this deal in a heart beat. "D-Day casualties for the Allied side were relatively light. Despite the bloody encounter on Omaha Beach, the total killed in action on that fateful day totaled 4,414—less than 3 percent of the soldiers who landed."</p></div>
+      <div class="nested">
+        <span class="nested-label">❝ Quoted</span>
+        <div class="tweet-head">
+          <span class="author">Tom Shugart</span>
+          <span class="handle">@tshugart3</span>
+          <span class="tid">2065026716754465087</span>
+          <span class="date"><a href="https://x.com/tshugart3/status/2065026716754465087">11 Jun 2026 · 11:01 UTC</a></span>
+        </div>
+        <div class="tweet-body"><p>While I may not agree with the bottom-line conclusion favoring compromise, this is a solid article: the risk of a successful PLA invasion in the coming years is real, and dismissed far too easily by many.
+https://t.co/rsyPQO3gWK</p></div>
+      </div>
+    </article>
+
+    <!-- 21:00 ridiculous -->
+    <article class="tweet">
+      <div class="tweet-head">
+        <span class="author">Policy Tensor</span>
+        <span class="handle">@policytensor</span>
+        <span class="tid">2065177374841348291</span>
+        <span class="date"><a href="https://x.com/policytensor/status/2065177374841348291">11 Jun 2026 · 21:00 UTC</a></span>
+      </div>
+      <div class="tweet-body"><p>Is it going to be as ridiculous as your take on the Iran War?
+
+"The capabilities on display over Tehran—and U.S. President Donald Trump's penchant for military risk-taking—have surely been sobering for Washington's adversaries in Moscow and Beijing." 😂</p></div>
+      <div class="nested">
+        <span class="nested-label">❝ Quoted</span>
+        <div class="tweet-head">
+          <span class="author">Hal Brands</span>
+          <span class="handle">@HalBrands</span>
+          <span class="tid">2065089937708364099</span>
+          <span class="date"><a href="https://x.com/HalBrands/status/2065089937708364099">11 Jun 2026 · 15:13 UTC</a></span>
+        </div>
+        <div class="tweet-body"><p>I have a new edited collection coming out in a few weeks, on the geopolitics of AI. A terrific group of writers are involved, from academia, the tech world, and the policy community. See here for a teaser, which hits on some of the crucial themes:
+
+https://t.co/msBH4gd9zv</p></div>
+      </div>
+    </article>
+
+    <!-- 06:52 suicidal China -->
+    <article class="tweet">
+      <div class="tweet-head">
+        <span class="author">Policy Tensor</span>
+        <span class="handle">@policytensor</span>
+        <span class="tid">2065326315805217233</span>
+        <span class="date"><a href="https://x.com/policytensor/status/2065326315805217233">12 Jun 2026 · 06:52 UTC</a></span>
+      </div>
+      <div class="tweet-body"><p>The anxiety will go away once we fully commit to the suicidal policy of fighting China.</p></div>
+      <div class="nested">
+        <span class="nested-label">❝ Quoted</span>
+        <div class="tweet-head">
+          <span class="author">Bonnie Glaser / 葛來儀</span>
+          <span class="handle">@BonnieGlaser</span>
+          <span class="tid">2065204332400963881</span>
+          <span class="date"><a href="https://x.com/BonnieGlaser/status/2065204332400963881">11 Jun 2026 · 22:47 UTC</a></span>
+        </div>
+        <div class="tweet-body"><p>"Based on the sum total of what President Trump has said to the media, it seems like he has absorbed a great deal of Xi Jinping's thinking on Taiwan," said Bonnie S. Glaser, the managing director of the Indo-Pacific program at the German Marshall Fund. "People are anxious."</p></div>
+      </div>
+    </article>
+
+    <div class="context">
+      <h3>Analytical Context</h3>
+      <p>"<strong>Strategic insolvency</strong>" (a Hal Brands coinage) names the gap between U.S. global commitments and the finite forces, munitions, and political will available to honor them. The Iran war exposes that gap: stockpiles, air-defense interceptors, and carrier presence spent in the Gulf are not available for the Western Pacific. Policy Tensor's contempt ("stop publishing trash," "😂") is aimed at the inverse claim — that bombing Tehran <em>impressed</em> Beijing and Moscow. His view is the opposite: a costly, inconclusive war against a middle power signals overstretch, not strength.</p>
+      <p>The D-Day arithmetic reframes deterrence as a <strong>cost-tolerance</strong> problem. If a determined attacker treats single-day losses on the order of Omaha Beach as acceptable, then the implicit threat that an amphibious assault on Taiwan would be prohibitively bloody loses force — "the Chinese would take this deal in a heartbeat." Shugart's warning that a successful PLA invasion is "dismissed far too easily" is the bridge.</p>
+      <p>The closing Glaser quote raises the most destabilizing possibility: that the U.S. president has internalized <em>Xi's</em> framing on Taiwan. If accommodation is read into Washington's signals, allied "anxiety" becomes rational — and Policy Tensor's sardonic "fully commit to the suicidal policy of fighting China" captures the bind: neither drifting toward concession nor lurching into a great-power war looks survivable.</p>
+    </div>
+  </section>
+
+  <!-- ============ THEME 5 ============ -->
+  <section class="theme" id="t5">
+    <div class="theme-head">
+      <div class="theme-num">Theme 05 · Home Front</div>
+      <h2>Home Front &amp; Dispatches: Civil Liberties, Wages, and Albania</h2>
+    </div>
+    <p class="theme-intro">The non-war threads that nonetheless track the same anxieties about institutional decay. A deportation probe against an Iran-war critic, a minimum-wage natural experiment, a Kushner-linked resort igniting Albania's "Flamingo Revolution," and a couple of sharp methodological jabs round out the window.</p>
+
+    <!-- 01:06 Trita Parsi -->
+    <article class="tweet">
+      <div class="tweet-head">
+        <span class="author">Policy Tensor</span>
+        <span class="handle">@policytensor</span>
+        <span class="tid">2065239354021122444</span>
+        <span class="date"><a href="https://x.com/policytensor/status/2065239354021122444">12 Jun 2026 · 01:06 UTC</a></span>
+      </div>
+      <div class="tweet-body"><p>RT @RKelanic: Peak authoritarianism.
+
+US administration investigating Iran war critic Trita Parsi, says report https://t.co/08TRM9XzlB</p></div>
+      <div class="nested repost">
+        <span class="nested-label">↻ Reposted</span>
+        <div class="tweet-head">
+          <span class="author">Rosemary Kelanic</span>
+          <span class="handle">@RKelanic</span>
+          <span class="tid">2065093223089844323</span>
+          <span class="date"><a href="https://x.com/RKelanic/status/2065093223089844323">11 Jun 2026 · 15:26 UTC</a></span>
+        </div>
+        <div class="tweet-body"><p>Peak authoritarianism.
+
+US administration investigating Iran war critic Trita Parsi, says report https://t.co/08TRM9XzlB</p></div>
+      </div>
+    </article>
+
+    <!-- 21:09 minimum wage (3-level nest) -->
+    <article class="tweet">
+      <div class="tweet-head">
+        <span class="author">Policy Tensor</span>
+        <span class="handle">@policytensor</span>
+        <span class="tid">2065179517199520141</span>
+        <span class="date"><a href="https://x.com/policytensor/status/2065179517199520141">11 Jun 2026 · 21:09 UTC</a></span>
+      </div>
+      <div class="tweet-body"><p>RT @MortenStostad: Great piece, with striking figures.
+
+In states that raised minimum wages, pay has gone up -- but there has been no effe…</p></div>
+      <div class="nested repost">
+        <span class="nested-label">↻ Reposted</span>
+        <div class="tweet-head">
+          <span class="author">Morten N. Støstad</span>
+          <span class="handle">@MortenStostad</span>
+          <span class="tid">2065094707818991806</span>
+          <span class="date"><a href="https://x.com/MortenStostad/status/2065094707818991806">11 Jun 2026 · 15:32 UTC</a></span>
+        </div>
+        <div class="tweet-body"><p>Great piece, with striking figures.
+
+In states that raised minimum wages, pay has gone up -- but there has been no effect on the number of jobs. https://t.co/RnZjxvRKuK</p></div>
+        <figure class="img-single"><img src="great-piece-with-striking-figures-in-states-that-raised-minimum-wages-pay-has-gone-up-but-there-has-been.png" alt="Minimum wage: pay up, jobs unaffected"></figure>
+        <div class="nested level2">
+          <span class="nested-label">❝ Quoted</span>
+          <div class="tweet-head">
+            <span class="author">Arin Dube</span>
+            <span class="handle">@arindube</span>
+            <span class="tid">2065060512656703931</span>
+            <span class="date"><a href="https://x.com/arindube/status/2065060512656703931">11 Jun 2026 · 13:16 UTC</a></span>
+          </div>
+          <div class="tweet-body"><p>We've been running an unprecedented natural experiment running for a decade and half. 30 states have raised their minimum wages. 20 have not.
+
+What happened to pay? What happened to jobs? The good news is that it's pretty easy to figure out now.
+
+Link next post. https://t.co/zFxxjx4aYD</p></div>
+          <figure class="img-single"><img src="we-ve-been-running-an-unprecedented-natural-experiment-running-for-a-decade-and-half-30-states-have-raised-their-minimum-wages.jpg" alt="Natural experiment: 30 states raised minimum wages, 20 did not"></figure>
+        </div>
+      </div>
+    </article>
+
+    <!-- 02:57 JFK -->
+    <article class="tweet">
+      <div class="tweet-head">
+        <span class="author">Policy Tensor</span>
+        <span class="handle">@policytensor</span>
+        <span class="tid">2065267243076771953</span>
+        <span class="date"><a href="https://x.com/policytensor/status/2065267243076771953">12 Jun 2026 · 02:57 UTC</a></span>
+      </div>
+      <div class="tweet-body"><p>Every single security principal in the Kennedy-Johnson administrations was practically handpicked by JFK.</p></div>
+      <div class="nested">
+        <span class="nested-label">❝ Quoted</span>
+        <div class="tweet-head">
+          <span class="author">Sami Gold</span>
+          <span class="handle">@souljagoyteller</span>
+          <span class="tid">2065247639654871156</span>
+          <span class="date"><a href="https://x.com/souljagoyteller/status/2065247639654871156">12 Jun 2026 · 01:39 UTC</a></span>
+        </div>
+        <div class="tweet-body"><p>Reading this book for class and the fact that anyone believes that JFK would've pulled out of Vietnam if he hadn't been shot is hilarious https://t.co/aT3fVq1F34</p></div>
+        <figure class="img-single"><img src="reading-this-book-for-class-and-the-fact-that-anyone-believes-that-jfk-would-ve-pulled-out-of-vietnam-if-he.jpg" alt="Book on JFK and Vietnam"></figure>
+      </div>
+    </article>
+
+    <!-- 06:02 Albania (3-level nest) -->
+    <article class="tweet">
+      <div class="tweet-head">
+        <span class="author">Policy Tensor</span>
+        <span class="handle">@policytensor</span>
+        <span class="tid">2065313794339836196</span>
+        <span class="date"><a href="https://x.com/policytensor/status/2065313794339836196">12 Jun 2026 · 06:02 UTC</a></span>
+      </div>
+      <div class="tweet-body"><p>RT @DropSiteNews: 🇦🇱 Albania's "Flamingo Revolution" escalated Thursday, with protests against the roughly €5 billion luxury Jared Kushner…</p></div>
+      <div class="nested repost">
+        <span class="nested-label">↻ Reposted</span>
+        <div class="tweet-head">
+          <span class="author">Drop Site</span>
+          <span class="handle">@DropSiteNews</span>
+          <span class="tid">2065278888276537823</span>
+          <span class="date"><a href="https://x.com/DropSiteNews/status/2065278888276537823">12 Jun 2026 · 03:43 UTC</a></span>
+        </div>
+        <div class="tweet-body"><p>🇦🇱 Albania's "Flamingo Revolution" escalated Thursday, with protests against the roughly €5 billion luxury Jared Kushner and Ivanka Trump backed resort expanding into demands for the entire political establishment to step aside, Bloomberg reported.
+
+Now in their second week, the</p></div>
+        <div class="nested level2">
+          <span class="nested-label">❝ Quoted</span>
+          <div class="tweet-head">
+            <span class="author">Al Jazeera English</span>
+            <span class="handle">@AJEnglish</span>
+            <span class="tid">2065157421803212887</span>
+            <span class="date"><a href="https://x.com/AJEnglish/status/2065157421803212887">11 Jun 2026 · 19:41 UTC</a></span>
+          </div>
+          <div class="tweet-body"><p>A luxury resort linked to Donald Trump's son-in-law Jared Kushner has sparked some of the biggest protests Albania has seen in years.
+
+Al Jazeera's Ava Warriner explains why the project has become one of Albania's most divisive political issues. https://t.co/j8TIUzETth</p></div>
+          <figure class="img-single"><img src="a-luxury-resort-linked-to-donald-trump-s-son-in-law-jared-kushner-has-sparked-some-of-the-biggest-protests-albania-has-seen.jpg" alt="Kushner-linked resort protests in Albania"></figure>
+        </div>
+      </div>
+    </article>
+
+    <!-- 06:03 Hickel -->
+    <article class="tweet">
+      <div class="tweet-head">
+        <span class="author">Policy Tensor</span>
+        <span class="handle">@policytensor</span>
+        <span class="tid">2065314119553515952</span>
+        <span class="date"><a href="https://x.com/policytensor/status/2065314119553515952">12 Jun 2026 · 06:03 UTC</a></span>
+      </div>
+      <div class="tweet-body"><p>Credentialist bullshit. Why don't you make an actual point? This is not admissible.</p></div>
+      <div class="nested">
+        <span class="nested-label">❝ Quoted</span>
+        <div class="tweet-head">
+          <span class="author">Jason Kerwin</span>
+          <span class="handle">@jt_kerwin</span>
+          <span class="tid">2064962290894667854</span>
+          <span class="date"><a href="https://x.com/jt_kerwin/status/2064962290894667854">11 Jun 2026 · 06:45 UTC</a></span>
+        </div>
+        <div class="tweet-body"><p>Periodic reminder that Jason Hickel has a PhD in anthropology, and there is no evidence that he has ever taken an economics course in his life https://t.co/cUit3rfzHt</p></div>
+        <figure class="img-single"><img src="periodic-reminder-that-jason-hickel-has-a-phd-in-anthropology-and-there-is-no-evidence-that-he-has-ever-taken.jpg" alt="Tweet about Jason Hickel's credentials"></figure>
+      </div>
+    </article>
+
+    <div class="context">
+      <h3>Analytical Context</h3>
+      <p>What unites these dispatches is a preoccupation with <strong>institutional legitimacy and the abuse of expertise</strong>. The Trita Parsi probe — investigating, and reportedly weighing deportation of, a prominent Iran-war critic — is flagged as "peak authoritarianism": the state turning instruments of immigration enforcement against dissent. It rhymes with the war themes, where Policy Tensor treats the suppression of critics as a symptom of strategic panic.</p>
+      <p>The minimum-wage thread is a clean piece of <strong>credible causal inference</strong>: with 30 states raising the wage and 20 not, Arin Dube treats the variation as a natural experiment, and the "striking figure" — pay rises, employment essentially unchanged — undercuts the textbook disemployment prediction. The Hickel jab is the methodological mirror image: Policy Tensor rejects <em>credentialism</em> ("he lacks an economics course") as a substitute for an argument — attack the claim, not the CV.</p>
+      <p>The JFK/Vietnam note is a <strong>structure-vs-agency</strong> point: because Kennedy hand-picked the Kennedy–Johnson security establishment, the personnel (and therefore the escalatory tendencies) would likely have persisted regardless of the assassination — a caution against great-man counterfactuals. And Albania's "Flamingo Revolution," ignited by a €5bn Kushner/Ivanka-backed resort, shows how elite self-dealing abroad can metastasize into a full legitimacy crisis demanding the establishment "step aside."</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="page">
+  <p>Thematic digest of <a href="https://x.com/policytensor">@policytensor</a>'s timeline, 11 Jun 2026 12:00 CEST (10:00 UTC) through 12 Jun 2026 06:52 UTC. 36 in-window main tweets across three exports, de-duplicated; nested quotes and reposts preserved. Dates link to source tweets. Generated for offline reading.</p>
+</footer>
+
+</body>
+</html>
