@@ -1,0 +1,1326 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Modernism in Pairs</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@400;500;600;700&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..800;1,6..96,400..700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<style>
+/* Layout: one catalogue column (max 1120px) under a sticky tab bar. Works hang in pairs inside grey "wall" frames, two-up on desktop and stacked on phones. The timeline is a horizontally scrolling chart. */
+:root {
+  --paper: #f6f7f5;
+  --wall: #e6e8e4;
+  --ink: #1a1c1f;
+  --muted: #5a5f65;
+  --rule: #d2d5cf;
+  --card: #ffffff;
+  --accent: #1d4f9e;
+  --accent-soft: #dde6f4;
+  --pd: #2e6a4d;
+  --pd-soft: #d9eadf;
+  --cr: #8a5410;
+  --cr-soft: #f1e4cc;
+  --ns: #55606b;
+  --ns-soft: #e3e7eb;
+  --war: rgba(120, 60, 50, .08);
+  --font-display: "Bodoni Moda", "Bodoni 72", Didot, Georgia, serif;
+  --font-body: "Source Serif 4", "Iowan Old Style", Georgia, serif;
+  --font-label: "Archivo Narrow", "Arial Narrow", "Roboto Condensed", system-ui, sans-serif;
+  --shadow: 0 1px 2px rgba(18, 22, 28, .10), 0 10px 26px rgba(18, 22, 28, .10);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #111316; --wall: #1c1f23; --ink: #e8e6e1; --muted: #9ba1a8; --rule: #2c3036; --card: #181b1f;
+    --accent: #8db0ee; --accent-soft: #1f2b40; --pd: #8fd0ad; --pd-soft: #18301f; --cr: #e9b56a; --cr-soft: #34270f;
+    --ns: #b6bfc8; --ns-soft: #262b31; --war: rgba(220, 140, 120, .07);
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 26px rgba(0,0,0,.35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #111316; --wall: #1c1f23; --ink: #e8e6e1; --muted: #9ba1a8; --rule: #2c3036; --card: #181b1f;
+  --accent: #8db0ee; --accent-soft: #1f2b40; --pd: #8fd0ad; --pd-soft: #18301f; --cr: #e9b56a; --cr-soft: #34270f;
+  --ns: #b6bfc8; --ns-soft: #262b31; --war: rgba(220, 140, 120, .07);
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 26px rgba(0,0,0,.35);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--paper); color: var(--ink);
+  font-family: var(--font-body); font-size: 17px; line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--paper); }
+a { color: var(--accent); }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.wrap {
+  max-width: 1120px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.label {
+  font-family: var(--font-label); text-transform: uppercase; letter-spacing: .09em;
+  font-size: .76rem; font-weight: 600; color: var(--muted);
+}
+
+/* Hero */
+.hero { padding-block: 44px 20px; display: grid; gap: 14px; }
+.hero h1 {
+  font-family: var(--font-display); font-weight: 500; font-optical-sizing: auto;
+  font-size: clamp(2.7rem, 9vw, 5.6rem); line-height: .95; letter-spacing: -.01em; margin: 0;
+  text-wrap: balance;
+}
+.hero h1 em { font-style: italic; font-weight: 400; }
+.dek { max-width: 62ch; margin: 0; font-size: 1.12rem; color: var(--ink); text-wrap: pretty; }
+.stats { font-family: var(--font-label); font-size: .95rem; color: var(--muted); letter-spacing: .02em; margin: 0; font-variant-numeric: tabular-nums; }
+
+/* Tabs */
+.tabbar {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+  background: var(--paper); border-bottom: 1px solid var(--rule);
+}
+.tabs { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; padding-block: 6px; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  border: 0; background: none; padding: 9px 14px; border-radius: 999px; cursor: pointer; white-space: nowrap;
+  font-family: var(--font-label); font-size: .98rem; font-weight: 600; letter-spacing: .02em; color: var(--muted);
+}
+.tab[aria-selected="true"] { background: var(--ink); color: var(--paper); }
+.tab:hover:not([aria-selected="true"]) { color: var(--ink); background: var(--wall); }
+
+/* Palette index */
+.palette { display: flex; flex-wrap: wrap; gap: 6px 8px; padding-block: 22px 8px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--rule); background: var(--card);
+  padding: 5px 10px 5px 6px; border-radius: 4px; cursor: pointer; font-family: var(--font-label); font-size: .9rem;
+  color: var(--ink); text-decoration: none;
+}
+.chip:hover { border-color: var(--ink); }
+.sw { width: 14px; height: 14px; border-radius: 2px; flex: none; box-shadow: inset 0 0 0 1px rgba(127,127,127,.35); }
+
+.note {
+  margin-block: 14px 0; padding: 12px 14px; border-left: 3px solid var(--accent); background: var(--accent-soft);
+  font-size: .95rem; max-width: 80ch;
+}
+
+/* Sections */
+.sec { padding-block: 56px 8px; scroll-margin-top: 64px; }
+.sec-head { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 18px; align-items: start; }
+.pigment { display: grid; gap: 6px; justify-items: start; }
+.pigment .big { width: 64px; height: 64px; border-radius: 2px; box-shadow: inset 0 0 0 1px rgba(127,127,127,.3), var(--shadow); }
+.pigment .pname { font-family: var(--font-label); font-size: .68rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); line-height: 1.2; }
+.sec h2 {
+  font-family: var(--font-display); font-weight: 500; font-size: clamp(2rem, 5.4vw, 3.1rem); line-height: 1.02;
+  margin: 0 0 6px; text-wrap: balance;
+}
+.sec .meta { margin: 0 0 10px; }
+.sec .intro { margin: 0; max-width: 68ch; text-wrap: pretty; }
+.manif { margin: 10px 0 0; font-size: .95rem; max-width: 68ch; color: var(--muted); }
+.manif b { font-family: var(--font-label); text-transform: uppercase; letter-spacing: .08em; font-size: .74rem; color: var(--ink); margin-right: 6px; }
+@media (max-width: 520px) {
+  .sec-head { grid-template-columns: 1fr; }
+  .pigment { grid-auto-flow: column; align-items: center; justify-content: start; }
+  .pigment .big { width: 34px; height: 34px; }
+}
+
+.pair { padding-block: 30px; border-top: 1px solid var(--rule); display: grid; gap: 16px; margin-top: 28px; }
+.pair + .pair { margin-top: 0; }
+.pair-head { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; }
+.pair-head .yrs { font-family: var(--font-label); font-size: .9rem; color: var(--ink); font-variant-numeric: tabular-nums; }
+.figs { display: grid; grid-template-columns: 1fr; gap: 22px; }
+@media (min-width: 760px) { .figs { grid-template-columns: 1fr 1fr; gap: 26px; } }
+.pair-text { margin: 0; max-width: 70ch; text-wrap: pretty; }
+
+.work { margin: 0; display: grid; gap: 10px; min-width: 0; scroll-margin-top: 90px; }
+.frame { position: relative; aspect-ratio: 4 / 3; background: var(--wall); border-radius: 2px; overflow: hidden; max-width: 100%; }
+.frame-btn {
+  position: absolute; inset: 16px; border: 0; padding: 0; background: none; cursor: zoom-in; display: block;
+}
+.frame-btn img { width: 100%; height: 100%; object-fit: contain; display: block; filter: drop-shadow(0 6px 14px rgba(0,0,0,.22)); }
+.frame.failed .frame-btn { display: none; }
+.placard {
+  position: absolute; inset: 16px; display: none; flex-direction: column; justify-content: center; gap: 6px;
+  padding: 16px 18px; background: var(--card); border: 1px solid var(--rule); color: var(--ink); text-decoration: none;
+  box-shadow: var(--shadow);
+}
+.frame.failed .placard, .frame.textonly .placard { display: flex; }
+.placard .p-title { font-family: var(--font-display); font-style: italic; font-size: clamp(1.15rem, 2.6vw, 1.55rem); line-height: 1.15; text-wrap: balance; }
+.placard .p-sub { font-size: .92rem; color: var(--muted); }
+.placard .p-go { font-family: var(--font-label); font-size: .9rem; color: var(--accent); font-weight: 600; margin-top: 4px; }
+.placard:hover .p-go { text-decoration: underline; }
+.placard .p-rights { font-family: var(--font-label); text-transform: uppercase; letter-spacing: .08em; font-size: .7rem; font-weight: 700; }
+.placard .p-rights.cr { color: var(--cr); }
+.placard .p-rights.pd { color: var(--pd); }
+.placard .p-rights.ns { color: var(--ns); }
+
+figcaption { display: grid; gap: 1px; font-size: .95rem; line-height: 1.4; }
+.cap-artist { font-family: var(--font-label); font-weight: 600; letter-spacing: .03em; }
+.cap-title i { font-style: italic; }
+.cap-where { color: var(--muted); }
+.museum-link { border: 0; padding: 0; background: none; color: var(--muted); cursor: pointer; text-align: left; text-decoration: underline; text-decoration-color: var(--rule); text-underline-offset: 3px; font-size: inherit; }
+.museum-link:hover { color: var(--ink); text-decoration-color: var(--ink); }
+.cap-row { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; margin-top: 4px; }
+.pill { font-family: var(--font-label); font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 2px 7px; border-radius: 3px; white-space: nowrap; }
+.pill.pd { background: var(--pd-soft); color: var(--pd); }
+.pill.cr { background: var(--cr-soft); color: var(--cr); }
+.pill.ns { background: var(--ns-soft); color: var(--ns); }
+.cap-row a { font-family: var(--font-label); font-size: .86rem; text-decoration: none; }
+.cap-row a:hover { text-decoration: underline; }
+.flash { animation: flash 1.6s ease-out 1; }
+@keyframes flash { 0% { box-shadow: 0 0 0 4px var(--accent); } 100% { box-shadow: 0 0 0 0 transparent; } }
+
+/* Museums */
+.view-head { padding-block: 34px 10px; display: grid; gap: 8px; }
+.view-head h2 { font-family: var(--font-display); font-weight: 500; font-size: clamp(1.9rem, 5vw, 2.8rem); margin: 0; line-height: 1.05; }
+.view-head p { margin: 0; max-width: 70ch; }
+.mus-tools { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding-block: 8px 4px; }
+.mus-tools input {
+  font: inherit; font-size: 1rem; padding: 8px 12px; border: 1px solid var(--rule); border-radius: 4px;
+  background: var(--card); color: var(--ink); width: min(360px, 100%);
+}
+.mus-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+.mus { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 18px; padding-block: 22px; border-top: 1px solid var(--rule); scroll-margin-top: 70px; }
+.mus-count { font-family: var(--font-display); font-size: 2.6rem; line-height: 1; font-variant-numeric: lining-nums tabular-nums; }
+.mus-count small { display: block; font-family: var(--font-label); font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
+.mus h3 { font-family: var(--font-display); font-weight: 500; font-size: 1.45rem; margin: 0; line-height: 1.15; }
+.mus .city { margin: 0 0 8px; }
+.mus-works { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.mus-works button {
+  border: 0; background: none; padding: 4px 0; text-align: left; cursor: pointer; display: flex; gap: 10px; align-items: baseline; width: 100%;
+}
+.mus-works button:hover .mw-title { text-decoration: underline; }
+.mw-artist { font-family: var(--font-label); font-weight: 600; min-width: 9.5em; flex: none; }
+.mw-title { min-width: 0; }
+.mw-title i { font-style: italic; }
+.mw-yr { color: var(--muted); }
+@media (max-width: 520px) {
+  .mus { grid-template-columns: 1fr; gap: 6px; }
+  .mus-count { font-size: 2rem; display: flex; gap: 8px; align-items: baseline; }
+  .mus-count small { display: inline; }
+  .mus-works button { flex-direction: column; gap: 0; }
+  .mw-artist { min-width: 0; }
+}
+.empty { color: var(--muted); padding-block: 20px; }
+
+/* Timeline */
+.tl-hint { margin: 0; }
+.tl-scroll { overflow-x: auto; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); margin-top: 14px; -webkit-overflow-scrolling: touch; }
+.tl { position: relative; display: grid; grid-template-columns: 150px var(--trackw); }
+.tl-label {
+  position: sticky; left: 0; z-index: 3; background: var(--paper); border-right: 1px solid var(--rule);
+  padding: 0 10px; display: flex; align-items: center; font-family: var(--font-label); font-size: .86rem; line-height: 1.1;
+  border-bottom: 1px solid var(--rule);
+}
+.tl-label button { border: 0; background: none; padding: 0; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 6px; font-family: inherit; }
+.tl-label button:hover { text-decoration: underline; }
+.tl-label.group { font-weight: 700; text-transform: uppercase; letter-spacing: .08em; font-size: .72rem; color: var(--muted); }
+.tl-track { position: relative; border-bottom: 1px solid var(--rule); }
+.tl-axis { height: 34px; }
+.tick { position: absolute; top: 0; bottom: 0; border-left: 1px solid var(--rule); }
+.tick span { position: absolute; top: 8px; left: 4px; font-family: var(--font-label); font-size: .78rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.gridline { position: absolute; top: 0; bottom: 0; border-left: 1px dashed var(--rule); opacity: .6; pointer-events: none; }
+.war { position: absolute; top: 0; bottom: 0; background: var(--war); pointer-events: none; }
+.war span { position: absolute; bottom: 4px; left: 4px; font-family: var(--font-label); font-size: .68rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+.mv { position: absolute; height: 20px; border-radius: 3px; background: var(--wall); border: 1px solid var(--rule); font-family: var(--font-label); font-size: .76rem; line-height: 18px; padding: 0 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink); }
+.mk {
+  position: absolute; width: 20px; height: 20px; margin-left: -10px; border: 0; padding: 0; cursor: pointer;
+  background: var(--ink); color: var(--paper); transform: rotate(45deg); border-radius: 2px;
+}
+.mk span { display: block; transform: rotate(-45deg); font-family: var(--font-label); font-size: .64rem; font-weight: 700; line-height: 20px; text-align: center; }
+.mk.ev { background: var(--accent); }
+.life { position: absolute; top: 50%; height: 2px; margin-top: -1px; background: var(--muted); opacity: .45; }
+.life.cut::before { content: ""; position: absolute; left: -5px; top: -4px; border: 5px solid transparent; border-right-color: var(--muted); }
+.act { position: absolute; top: 50%; height: 8px; margin-top: -4px; border-radius: 4px; opacity: .85; }
+.dot {
+  position: absolute; top: 50%; width: 13px; height: 13px; margin: -6.5px 0 0 -6.5px; border-radius: 50%; padding: 0; cursor: pointer;
+  border: 2px solid var(--paper); box-shadow: 0 0 0 1px var(--ink);
+}
+.dot:hover, .dot:focus-visible { transform: scale(1.35); z-index: 2; }
+.tip {
+  position: fixed; z-index: 50; pointer-events: none; background: var(--ink); color: var(--paper); padding: 6px 9px; border-radius: 4px;
+  font-family: var(--font-label); font-size: .85rem; max-width: 260px; line-height: 1.3;
+}
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; padding-block: 10px 0; font-family: var(--font-label); font-size: .85rem; color: var(--muted); }
+.legend span { display: inline-flex; gap: 6px; align-items: center; }
+.lg-life { width: 22px; height: 2px; background: var(--muted); opacity: .6; }
+.lg-act { width: 22px; height: 8px; border-radius: 4px; background: var(--muted); }
+.lg-dot { width: 11px; height: 11px; border-radius: 50%; background: var(--muted); box-shadow: 0 0 0 1px var(--ink); }
+.lg-mk { width: 11px; height: 11px; background: var(--ink); transform: rotate(45deg); }
+.lg-ev { width: 11px; height: 11px; background: var(--accent); transform: rotate(45deg); }
+
+.texts { list-style: none; padding: 0; margin: 22px 0 0; display: grid; gap: 0; }
+.texts li { display: grid; grid-template-columns: 34px 64px minmax(0, 1fr); gap: 10px; padding-block: 10px; border-top: 1px solid var(--rule); scroll-margin-top: 80px; }
+.texts .n { font-family: var(--font-label); font-weight: 700; width: 24px; height: 24px; display: grid; place-items: center; background: var(--ink); color: var(--paper); border-radius: 3px; font-size: .8rem; }
+.texts .n.ev { background: var(--accent); }
+.texts .yr { font-family: var(--font-label); font-weight: 600; font-variant-numeric: tabular-nums; padding-top: 1px; }
+.texts .what { min-width: 0; }
+.texts .what b { font-weight: 600; }
+
+/* About */
+.about { display: grid; gap: 4px; padding-bottom: 40px; }
+.about h3 { font-family: var(--font-display); font-weight: 500; font-size: 1.5rem; margin: 26px 0 4px; line-height: 1.2; }
+.about p { margin: 0 0 10px; max-width: 70ch; }
+.about table { border-collapse: collapse; font-size: .95rem; min-width: 520px; }
+.about th, .about td { text-align: left; padding: 6px 12px 6px 0; border-bottom: 1px solid var(--rule); font-variant-numeric: tabular-nums; }
+.about th { font-family: var(--font-label); text-transform: uppercase; letter-spacing: .07em; font-size: .74rem; color: var(--muted); }
+.tbl { overflow-x: auto; }
+
+footer { padding-block: 30px 50px; color: var(--muted); font-size: .9rem; border-top: 1px solid var(--rule); margin-top: 40px; }
+
+/* Lightbox */
+.lb { position: fixed; inset: 0; z-index: 100; background: rgba(8, 9, 11, .96); color: #f1efe9; display: grid; grid-template-rows: auto minmax(0, 1fr); }
+.lb-bar {
+  display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; justify-content: space-between;
+  padding: calc(10px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px));
+}
+.lb-cap { min-width: 0; display: grid; }
+.lb-title { font-family: var(--font-display); font-style: italic; font-size: 1.2rem; line-height: 1.2; }
+.lb-meta { font-family: var(--font-label); font-size: .85rem; color: #b9b6ae; }
+.lb-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.lb-actions button, .lb-actions a {
+  border: 1px solid #44464b; background: #1b1d21; color: #f1efe9; padding: 6px 11px; border-radius: 4px; cursor: pointer;
+  font-family: var(--font-label); font-size: .9rem; text-decoration: none; line-height: 1.3;
+}
+.lb-actions button:hover, .lb-actions a:hover { border-color: #f1efe9; }
+.lb-stage { overflow: hidden; display: grid; place-items: center; padding: 0 max(12px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px)); }
+.lb-stage img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
+.lb-stage.zoom { overflow: auto; place-items: start; cursor: grab; }
+.lb-stage.zoom img { max-width: none; max-height: none; }
+.lb-stage.zoom.dragging { cursor: grabbing; }
+.lb-status { font-family: var(--font-label); font-size: .85rem; color: #b9b6ae; }
+
+@media (prefers-reduced-motion: reduce) { .flash { animation: none; } * { scroll-behavior: auto !important; } }
+</style>
+
+<header class="wrap hero">
+  <div class="label">European painting · c. 1867–1944</div>
+  <h1>Modernism <em>in</em> Pairs</h1>
+  <p class="dek">Twenty-two painters and movements, from Cézanne’s dark early canvases to Mondrian’s last boogie-woogie, read two pictures at a time: what changed between them, what stayed, and where each painting hangs today.</p>
+  <p class="stats" id="stats"></p>
+</header>
+
+<nav class="tabbar" aria-label="Views">
+  <div class="wrap tabs" role="tablist">
+    <button class="tab" role="tab" id="tab-artists" aria-controls="artists" aria-selected="true">Artists &amp; movements</button>
+    <button class="tab" role="tab" id="tab-museums" aria-controls="museums" aria-selected="false">Museums</button>
+    <button class="tab" role="tab" id="tab-timeline" aria-controls="timeline" aria-selected="false">Timeline</button>
+    <button class="tab" role="tab" id="tab-images" aria-controls="images" aria-selected="false">About the images</button>
+  </div>
+</nav>
+
+<main>
+  <section id="artists" role="tabpanel" aria-labelledby="tab-artists">
+    <div class="wrap">
+      <div class="palette" id="palette" aria-label="Jump to an artist or movement"></div>
+      <p class="note" id="img-note" hidden>This viewer blocks images from other websites, so each frame opens the painting’s full-resolution file on Wikimedia Commons instead. Opened as an ordinary web page, the same file shows every public-domain image inline, with a full-screen zoom viewer.</p>
+      <div id="sections"></div>
+    </div>
+  </section>
+
+  <section id="museums" role="tabpanel" aria-labelledby="tab-museums" hidden>
+    <div class="wrap">
+      <div class="view-head">
+        <div class="label">Reverse index</div>
+        <h2>Where the paintings hang</h2>
+        <p id="mus-summary"></p>
+      </div>
+      <div class="mus-tools">
+        <label class="label" for="mus-filter">Filter</label>
+        <input id="mus-filter" type="search" placeholder="Museum, city or artist" autocomplete="off">
+      </div>
+      <ol class="mus-list" id="mus-list"></ol>
+      <p class="empty" id="mus-empty" hidden>No museum matches that filter.</p>
+    </div>
+  </section>
+
+  <section id="timeline" role="tabpanel" aria-labelledby="tab-timeline" hidden>
+    <div class="wrap">
+      <div class="view-head">
+        <div class="label">1865 – 1945</div>
+        <h2>Artists, movements and manifestos</h2>
+        <p class="tl-hint">Thin lines are lifetimes, thick bars are working careers or a movement’s main years, dots are the paintings in this guide. Numbered diamonds are manifestos and key texts; blue ones are events. Tap a dot to jump to its painting. On a phone, scroll the chart sideways.</p>
+      </div>
+      <div class="legend">
+        <span><i class="lg-life"></i>Lifetime</span>
+        <span><i class="lg-act"></i>Career or movement</span>
+        <span><i class="lg-dot"></i>Painting</span>
+        <span><i class="lg-mk"></i>Manifesto or text</span>
+        <span><i class="lg-ev"></i>Event</span>
+      </div>
+    </div>
+    <div class="wrap"><div class="tl-scroll" id="tl-scroll"><div class="tl" id="tl"></div></div></div>
+    <div class="wrap"><ol class="texts" id="texts"></ol></div>
+  </section>
+
+  <section id="images" role="tabpanel" aria-labelledby="tab-images" hidden>
+    <div class="wrap about">
+      <div class="view-head" style="padding-bottom:0">
+        <div class="label">Copyright and sources</div>
+        <h2>About the images</h2>
+      </div>
+
+      <h3>When does a painting enter the public domain?</h3>
+      <p>In the EU, Poland included, copyright lasts for the artist’s life plus 70 years, counted from the 1 January after death. Klee (died 1940) has been free since 2011, Matisse (1954) since 2025, Tanguy (1955) since January 2026, Rodchenko (1956) becomes free on 1 January 2027 and Picasso (1973) in 2044. The United States counts from publication: works published before 1931 are public domain there now, and every 1 January another year’s worth joins them.</p>
+
+      <h3>Can a scan or photograph of an old painting be copyrighted?</h3>
+      <p>For a faithful reproduction of a flat public-domain work, generally no. Article 14 of the EU’s 2019 Copyright in the Digital Single Market Directive says such reproductions attract no copyright or related right unless the reproduction is itself an original creation, and member states, Poland among them, have written that into national law. In the US the same result comes from the 1999 case Bridgeman v. Corel. Three caveats: a photograph of a sculpture or other 3D object involves choices of angle and light, so the photographer can hold a copyright; museums can still impose conditions through visitor rules and website terms, which are contracts rather than copyright; and Italy’s cultural heritage code lets the state charge for commercial reproductions of works in its collections.</p>
+
+      <h3>How do scans end up on Wikimedia Commons?</h3>
+      <p>Mostly in bulk. Museums with open-access programmes, such as the Met, the Art Institute of Chicago, Yale, the National Gallery of Art and Paris Musées, release their images of public-domain works under CC0, and volunteers or bots copy them over; that is why some files here carry accession numbers in their names. In 2005 the Yorck Project’s DVD of 10,000 paintings was uploaded, which explains file names like “Paul Gauguin 091.jpg”. Volunteers photograph works on gallery walls (the Italian-titled files here come from one prolific photographer). And every Public Domain Day, when another year of artists comes free, brings a wave of new uploads.</p>
+
+      <h3>Are Google Arts &amp; Culture scans public domain?</h3>
+      <p>The scans themselves gain no new copyright under the rules above, which is why Commons hosts thousands of “Google Art Project” files from a 2012 bulk upload of Google’s zoomable images. Two things still apply. Google’s terms of service govern how you use Google’s website, and the painting’s own copyright stays with the painting: a Google scan of a Picasso is still a Picasso.</p>
+
+      <h3>Why some frames show no picture</h3>
+      <p>Commons hosts a file only if the work is free both in the United States and in its country of origin. Duchamp’s 1912 <i>Nude Descending a Staircase</i> is public domain in the US but in copyright in France until 2039, so it isn’t there. Those cards link to the work’s Wikipedia article or the museum’s page instead, and each card shows the year the work becomes free in the EU.</p>
+      <div class="tbl" id="pd-table"></div>
+
+      <h3>Credits</h3>
+      <p>Images: Wikimedia Commons, loaded directly from Commons. Each image links to its file page, which records the source, uploader and licence. Museum locations reflect public collection records as of 2026; long-term loans are marked.</p>
+    </div>
+  </section>
+</main>
+
+<footer><div class="wrap">Modernism in Pairs. Commentary written for this guide; images from Wikimedia Commons.</div></footer>
+
+<div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-label="Image viewer">
+  <div class="lb-bar">
+    <div class="lb-cap"><span class="lb-title" id="lb-title"></span><span class="lb-meta" id="lb-meta"></span></div>
+    <div class="lb-actions">
+      <button id="lb-zoom" type="button">Zoom</button>
+      <a id="lb-orig" target="_blank" rel="noopener">Original file ↗</a>
+      <a id="lb-commons" target="_blank" rel="noopener">Commons page ↗</a>
+      <button id="lb-prev" type="button" aria-label="Previous painting">←</button>
+      <button id="lb-next" type="button" aria-label="Next painting">→</button>
+      <button id="lb-close" type="button" aria-label="Close viewer">Close ✕</button>
+    </div>
+  </div>
+  <div class="lb-stage" id="lb-stage"><img id="lb-img" alt=""></div>
+</div>
+<div class="tip" id="tip" hidden></div>
+
+<script>
+"use strict";
+/* ---------- Museums ---------- */
+const MUS = {
+  moma: ["Museum of Modern Art", "New York"],
+  gugg: ["Solomon R. Guggenheim Museum", "New York"],
+  met: ["Metropolitan Museum of Art", "New York"],
+  neue: ["Neue Galerie", "New York"],
+  pma: ["Philadelphia Museum of Art", "Philadelphia"],
+  barnes: ["Barnes Foundation", "Philadelphia"],
+  aic: ["Art Institute of Chicago", "Chicago"],
+  nga: ["National Gallery of Art", "Washington, D.C."],
+  phillips: ["Phillips Collection", "Washington, D.C."],
+  yale: ["Yale University Art Gallery", "New Haven"],
+  mfa: ["Museum of Fine Arts", "Boston"],
+  akg: ["Buffalo AKG Art Museum", "Buffalo"],
+  sfmoma: ["San Francisco Museum of Modern Art", "San Francisco"],
+  lacma: ["Los Angeles County Museum of Art", "Los Angeles"],
+  dma: ["Dallas Museum of Art", "Dallas"],
+  allen: ["Allen Memorial Art Museum", "Oberlin, Ohio"],
+  orsay: ["Musée d’Orsay", "Paris"],
+  pompidou: ["Centre Pompidou", "Paris"],
+  orangerie: ["Musée de l’Orangerie", "Paris"],
+  vgm: ["Van Gogh Museum", "Amsterdam"],
+  stedelijk: ["Stedelijk Museum", "Amsterdam"],
+  kmdh: ["Kunstmuseum Den Haag", "The Hague"],
+  km: ["Kröller-Müller Museum", "Otterlo"],
+  vanabbe: ["Van Abbemuseum", "Eindhoven"],
+  ngl: ["National Gallery", "London"],
+  tate: ["Tate", "London"],
+  courtauld: ["Courtauld Gallery", "London"],
+  walker: ["Walker Art Gallery", "Liverpool"],
+  nsg: ["Scottish National Gallery", "Edinburgh"],
+  sngma: ["Scottish National Gallery of Modern Art", "Edinburgh"],
+  belv: ["Belvedere", "Vienna"],
+  wien: ["Wien Museum", "Vienna"],
+  leopold: ["Leopold Museum", "Vienna"],
+  gnm: ["Galerie Neue Meister (Albertinum)", "Dresden"],
+  lenbach: ["Lenbachhaus", "Munich"],
+  nng: ["Nationalgalerie, Staatliche Museen zu Berlin", "Berlin"],
+  k20: ["Kunstsammlung Nordrhein-Westfalen", "Düsseldorf"],
+  ludwig: ["Museum Ludwig", "Cologne"],
+  stuttgart: ["Staatsgalerie Stuttgart", "Stuttgart"],
+  basel: ["Kunstmuseum Basel", "Basel"],
+  bern: ["Kunstmuseum Bern", "Bern"],
+  zpk: ["Zentrum Paul Klee", "Bern"],
+  zurich: ["Kunsthaus Zürich", "Zürich"],
+  pgc: ["Peggy Guggenheim Collection", "Venice"],
+  gnam: ["Galleria Nazionale d’Arte Moderna", "Rome"],
+  brera: ["Pinacoteca di Brera", "Milan"],
+  reina: ["Museo Reina Sofía", "Madrid"],
+  moderna: ["Moderna Museet", "Stockholm"],
+  momus: ["MOMus – Costakis Collection", "Thessaloniki"],
+  tretyakov: ["State Tretyakov Gallery", "Moscow"],
+  pushkin: ["Pushkin Museum of Fine Arts", "Moscow"],
+  rusmus: ["State Russian Museum", "St Petersburg"],
+  hermitage: ["State Hermitage Museum", "St Petersburg"],
+  mnk: ["National Museum in Kraków", "Kraków"],
+  telaviv: ["Tel Aviv Museum of Art", "Tel Aviv"],
+  israel: ["Israel Museum", "Jerusalem"],
+  macusp: ["Museu de Arte Contemporânea, Universidade de São Paulo", "São Paulo"],
+  chimei: ["Chimei Museum", "Tainan"],
+  nagoya: ["Nagoya City Art Museum", "Nagoya"]
+};
+
+/* ---------- Content ----------
+   Work fields: id, t title, y display date, yr numeric year, m museum key, f Commons file,
+   a artist (when it differs from the section), c EU public-domain year (in copyright),
+   n note on location, u external page (when no Commons file), w Wikipedia article title. */
+const SECTIONS = [
+{
+  id: "cezanne", name: "Paul Cézanne", kind: "Painter", dates: "1839–1906", life: [1839, 1906], span: [1860, 1906],
+  pig: ["Viridian", "#3f7d68"],
+  intro: "The painter nearly everyone after 1900 claimed as a father. Cézanne built pictures from patches of colour laid down like masonry and let objects be seen from more than one place at once. His memorial retrospective at the 1907 Salon d’Automne set Cubism in motion.",
+  works: [
+    { id: "c1", t: "The Murder", y: "c. 1867–68", yr: 1867.5, m: "walker", f: "Paul Cézanne - The Murder - Google Art Project.jpg" },
+    { id: "c2", t: "The House of the Hanged Man, Auvers-sur-Oise", y: "1873", yr: 1873, m: "orsay", f: "La Maison du pendu, Auvers-sur-Oise, par Paul Cézanne, FWN 81.jpg" },
+    { id: "c3", t: "The Bay of Marseille, Seen from L’Estaque", y: "c. 1885", yr: 1885, m: "aic", f: "Paul Cézanne - The Bay of Marseille, Seen from L'Estaque - 1933.1116 - Art Institute of Chicago.jpg" },
+    { id: "c4", t: "The Basket of Apples", y: "c. 1893", yr: 1893, m: "aic", f: "Paul Cézanne - The Basket of Apples - 1926.252 - Art Institute of Chicago.jpg" },
+    { id: "c5", t: "Woman with a Coffeepot", y: "c. 1895", yr: 1895, m: "orsay", f: "Paul Cézanne - Woman with a Coffeepot - Google Art Project.jpg" },
+    { id: "c6", t: "The Card Players", y: "1890–92", yr: 1891, m: "met", f: "Cezanne The Card Players Metmuseum.jpg" },
+    { id: "c7", t: "Mont Sainte-Victoire Seen from Les Lauves", y: "1904–06", yr: 1905, m: "basel", f: "Mont Sainte-Victoire Seen from Les Lauves (Basel) 1904-1906 Paul Cezzane.jpg" },
+    { id: "c8", t: "The Large Bathers", y: "1898–1905", yr: 1902, m: "pma", f: "Paul Cézanne, French - The Large Bathers - Google Art Project.jpg" }
+  ],
+  pairs: [
+    ["c1", "c2", "Start with the young Cézanne in what he later called his “couillarde” manner, roughly “ballsy”: thick paint shoved around with a palette knife, a lurid night-time subject, two figures wrestled into a pyramid. Five years later, painting outdoors beside Pissarro at Auvers, he has lightened his palette and shortened his stroke, and the House of the Hanged Man went into the first Impressionist exhibition in 1874. Look at how it is still built rather than glimpsed. Roofs and walls lock together like blocks, and the paint is crusted in layers. He took the Impressionist palette and kept the weight."],
+    ["c3", "c4", "This is the “constructive stroke”: parallel hatches of colour, usually slanting the same way, that turn the surface into a woven fabric. In the bay the sea is a flat wall of blue that refuses to recede, and the houses are cubes; twenty-three years later Braque went to the same coast to paint Houses at L’Estaque. In the Basket of Apples, follow the table edge. It doesn’t line up on either side of the cloth, and the bottle leans. Each object is seen from its own viewpoint and then stitched to its neighbours, and this, more than any look, is what the Cubists inherited."],
+    ["c5", "c6", "Cézanne painted people the way he painted apples, and his sitters noticed. The dealer Ambroise Vollard said he sat more than a hundred times and was told to keep as still as an apple. The woman with the coffeepot is a column, her dress a set of folded planes, the spoon in her cup bolt upright. The card players, farmhands from the family estate at the Jas de Bouffan, are as still as the table. Look for what’s missing: nobody is winning, nobody speaks, there is no anecdote at all. The subject has turned into structure."],
+    ["c7", "c8", "In the last years the patches loosen until the landscape almost dissolves into a mosaic of green, ochre and violet, with bare canvas showing through; the mountain is held together only by the logic of the colour. The Large Bathers is his answer to the Old Masters, nudes painted without models (he worked from drawings, memory and photographs), bodies bent into the triangle of the arching trees. When Picasso and Matisse saw the 1907 retrospective, this was the lesson they took away: a picture has an architecture of its own and owes nature only its starting point."]
+  ]
+},
+{
+  id: "vangogh", name: "Vincent van Gogh", kind: "Painter", dates: "1853–1890", life: [1853, 1890], span: [1880, 1890],
+  pig: ["Chrome yellow", "#e2a623"],
+  intro: "A ten-year career that runs from the darkest Dutch realism to colour used as pure feeling. Van Gogh died in 1890, and his real influence began in 1901, when a retrospective at the Bernheim-Jeune gallery in Paris reached the young painters who would soon be called the Fauves.",
+  works: [
+    { id: "v1", t: "The Potato Eaters", y: "1885", yr: 1885, m: "vgm", f: "Vincent van Gogh - The potato eaters - Google Art Project (5776925).jpg" },
+    { id: "v2", t: "Self-Portrait with Grey Felt Hat", y: "1887", yr: 1887, m: "vgm", f: "Vincent van Gogh - Self-portrait with grey felt hat - Google Art Project.jpg" },
+    { id: "v3", t: "The Night Café", y: "1888", yr: 1888.7, m: "yale", f: "Le café de nuit (The Night Café) by Vincent van Gogh.jpeg" },
+    { id: "v4", t: "Sunflowers", y: "1888", yr: 1888.6, m: "ngl", f: "Vincent van Gogh - Sunflowers (1888, National Gallery London).jpg" },
+    { id: "v5", t: "The Starry Night", y: "1889", yr: 1889.5, m: "moma", f: "Vincent van Gogh - Starry Night - Google Art Project.jpg" },
+    { id: "v6", t: "Wheatfield with Crows", y: "1890", yr: 1890.5, m: "vgm", f: "Vincent van Gogh - Wheatfield with crows - Google Art Project.jpg" }
+  ],
+  pairs: [
+    ["v1", "v2", "Two years and one move apart. In Nuenen he wanted his peasants to look the colour of an unpeeled, dusty potato, and the Potato Eaters is almost monochrome, lit by a single oil lamp, the hands knotted like roots. In Paris he met the Impressionists and Seurat’s dots, and the change is drastic. The 1887 self-portrait is built from short, separate dashes of complementary colour, orange against blue, that swirl around the head like iron filings around a magnet. Watch the direction of the dabs more than their hue: they already follow the form, the habit that became his signature."],
+    ["v3", "v4", "Arles, 1888, a few weeks apart. He wrote that in the Night Café he tried to express the terrible passions of humanity with red and green. The floor tilts toward you as if it were sliding, and the lamps throb in concentric rings. The Sunflowers, painted to decorate the room Gauguin would use in the Yellow House, are yellow on yellow, a test of how far one colour can be pushed. That yellow is chrome yellow, a modern synthetic pigment, which is also why parts of these canvases have darkened since. In both, colour describes how a room or a bunch of flowers feels."],
+    ["v5", "v6", "At the asylum in Saint-Rémy he painted the view from his window and added a village with a spire that recalls Holland more than Provence. The sky is one moving field of rhythmic strokes, and the cypress is a dark flame tying earth to heaven. In Auvers, weeks before his death, the canvas stretches into a double square and the paint becomes faster and more abbreviated: three paths going nowhere, crows reduced to V-shaped marks. The legend calls it his last picture. It probably isn’t, and its mood is more open than the myth allows."]
+  ]
+},
+{
+  id: "gauguin", name: "Paul Gauguin", kind: "Painter", dates: "1848–1903", life: [1848, 1903], span: [1873, 1903],
+  pig: ["Vermilion", "#c8442c"],
+  intro: "A stockbroker turned painter who used flat colour, heavy outlines and borrowed “primitive” sources to paint ideas instead of appearances. His idealised Tahiti, and his conduct there, are read much more critically now than they were in 1900, but his flattened, symbolic colour fed straight into the Nabis, the Fauves and Expressionism.",
+  manifesto: "Jean Moréas’s Symbolist Manifesto (Le Figaro, 1886) supplied the climate: art should clothe ideas in sensuous form.",
+  works: [
+    { id: "g1", t: "The Seine at the Pont d’Iéna, Snowy Weather", y: "1875", yr: 1875, m: "orsay", f: "PaulGauguin-1875-Seine River Seen From Iéna Bridge.jpg" },
+    { id: "g2", t: "Vision after the Sermon (Jacob Wrestling with the Angel)", y: "1888", yr: 1888, m: "nsg", f: "Paul Gauguin - Vision of the Sermon (Jacob Wrestling with the Angel) - NG 1643 - National Galleries of Scotland.jpg" },
+    { id: "g3", t: "The Yellow Christ", y: "1889", yr: 1889, m: "akg", f: "Paul Gauguin - The Yellow Christ (Le Christ jaune) 1889.jpg" },
+    { id: "g4", t: "Tahitian Women on the Beach", y: "1891", yr: 1891, m: "orsay", f: "Paul Gauguin - Donne tahitiane sulla spiaggia (1891).jpg" },
+    { id: "g5", t: "Where Do We Come From? What Are We? Where Are We Going?", y: "1897–98", yr: 1897.8, m: "mfa", f: "Paul Gauguin - D'ou venons-nous.jpg" },
+    { id: "g6", t: "Nevermore", y: "1897", yr: 1897, m: "courtauld", f: "Paul Gauguin 091.jpg" }
+  ],
+  pairs: [
+    ["g1", "g2", "Gauguin started as a Sunday painter, buying Impressionists with his stock-exchange salary, and the 1875 Seine is competent Impressionism: soft greys, broken touches, a real winter afternoon. Thirteen years later, in Brittany with Émile Bernard, everything has changed. The field is an unreal vermilion, the colour of a vision. A diagonal tree trunk divides the praying women from what they see, and the forms are flattened and ringed with dark lines like cloisonné enamel or stained glass. He offered the painting to the church at Nizon, and the priest turned it down."],
+    ["g3", "g4", "The Yellow Christ takes its body from a painted wooden crucifix in the Trémalo chapel near Pont-Aven, and its autumn landscape is as yellow as the figure: Breton folk piety turned into a modern style. Two years later, in Tahiti, the colour softens and the compositions get heavier. The two women fill the frame like sculpture, cropped by its edges, sitting on bands of sand and sea with hardly any horizon. That cropping comes from Japanese prints and photography, and the compressed, frieze-like space is what the Nabis, and later Matisse, took from him."],
+    ["g5", "g6", "Gauguin called the Boston canvas his testament, and he painted it in a period of illness and despair. Read it from right to left, from a sleeping baby to an old woman near death, with a blue idol presiding. It’s a frieze of the human cycle painted on coarse sacking, matte and almost fresco-like. Nevermore takes its title from Poe’s raven, which perches by the window while the girl on the bed lies awake and watchful. Look at how much of the feeling is carried by the patterned wall and the flat yellow pillow rather than by the figure."]
+  ]
+},
+{
+  id: "klimt", name: "Gustav Klimt", kind: "Painter", dates: "1862–1918", life: [1862, 1918], span: [1883, 1918],
+  pig: ["Gold leaf", "#c39a2a"],
+  intro: "Co-founder and first president of the Vienna Secession, whose building still carries the motto “Der Zeit ihre Kunst, der Kunst ihre Freiheit” (to each age its art, to art its freedom). Klimt went from academic decorator to the gold-leaf icon-maker of fin-de-siècle Vienna, and then gave up the gold.",
+  manifesto: "The Secession broke away from the Künstlerhaus in 1897 and published its programme in its magazine Ver Sacrum (“Sacred Spring”) from 1898.",
+  works: [
+    { id: "k1", t: "Auditorium of the Old Burgtheater", y: "1888", yr: 1888, m: "wien", f: "Klimt - Zuschauerraum im alten Burgtheater - 1888.jpeg" },
+    { id: "k2", t: "Pallas Athene", y: "1898", yr: 1898, m: "wien", f: "Klimt - Pallas Athene.jpeg" },
+    { id: "k3", t: "Judith and the Head of Holofernes", y: "1901", yr: 1901, m: "belv", f: "Gustav Klimt - Judith - 4737 - Österreichische Galerie Belvedere.jpg" },
+    { id: "k4", t: "Portrait of Adele Bloch-Bauer I", y: "1907", yr: 1907, m: "neue", f: "Gustav Klimt, 1907, Adele Bloch-Bauer I, Neue Galerie New York.jpg" },
+    { id: "k5", t: "The Kiss", y: "1907–08", yr: 1907.7, m: "belv", f: "Gustav Klimt - Der Kuss (Liebespaar) - 912 - Österreichische Galerie Belvedere.jpg" },
+    { id: "k6", t: "Death and Life", y: "1910–15", yr: 1911, m: "leopold", f: "Gustav Klimt - Death and Life - Google Art Project.jpg" },
+    { id: "k7", t: "Beech Grove I", y: "1902", yr: 1902, m: "gnm", f: "Gustav Klimt - Beech Grove I - Google Art Project.jpg" },
+    { id: "k8", t: "Portrait of Friederike Maria Beer", y: "1916", yr: 1916, m: "telaviv", f: "Portrait of Friedericke Maria Beer.jpg" }
+  ],
+  pairs: [
+    ["k1", "k2", "Commissioned to record the old court theatre before it was demolished, the young Klimt painted the audience from the stage: more than a hundred recognisable Viennese faces in a meticulous academic gouache that won him the Emperor’s Prize. Ten years later Pallas Athene is the Secession’s mascot, a frontal goddess in golden helmet and breastplate, holding a tiny naked figure of Truth in her hand. The realism survives only in the face. Everything else is turning into ornament, metal and frame, and the frame itself was hammered by his brother Georg."],
+    ["k3", "k4", "Judith is his first full use of real gold leaf. Only her face, shoulders and the cut-off head are modelled in depth; the rest is flat pattern lifted from Assyrian reliefs. By Adele I the pattern has swallowed the sitter: Egyptian eyes, Mycenaean spirals and the Byzantine mosaics he had seen at Ravenna in 1903. Look for where the flesh stops and the gold starts. The edge of her body is almost impossible to find. After a long restitution case brought by the sitter’s niece, Maria Altmann, the portrait went to the Neue Galerie in 2006."],
+    ["k5", "k6", "The Kiss is the peak of the golden phase, bought by the Austrian state from the 1908 Kunstschau. The man’s robe carries black and white rectangles, the woman’s carries circles and flowers, a gendered code of ornament that runs through all of Klimt. Death and Life shows the change after 1910. The gold is gone, the background is a dull blue-grey, and the mosaic of colour is softer. Klimt even repainted the background, originally gold, in 1915, four years after the picture won first prize at the international exhibition in Rome. The flattening survives; the glamour does not."],
+    ["k7", "k8", "Klimt spent his summers on the Attersee and painted landscapes on square canvases, framing them with a cardboard viewfinder or opera glasses, which pressed depth into a tapestry of trunks and leaves. Look for the missing sky in Beech Grove I: the horizon has climbed out of the picture, and nature becomes a decorative screen. The late portraits apply the same screen to people. Friederike Beer wears Wiener Werkstätte silk and a fur coat turned inside out at Klimt’s request, and behind her floats a battle of little warriors copied from a Korean vase. Colour has replaced gold."]
+  ]
+},
+{
+  id: "kokoschka", name: "Oskar Kokoschka", kind: "Painter", dates: "1886–1980", life: [1886, 1980], span: [1906, 1980],
+  pig: ["Madder lake", "#9a2d3c"],
+  intro: "The enfant terrible of Viennese Expressionism; a critic at the 1908 Kunstschau called him the “Oberwildling”, the chief wild man. His early portraits seemed to expose the sitter’s nerves. He lived until 1980, so his work stays in copyright in the EU until 2051 and these cards link out.",
+  works: [
+    { id: "kk1", t: "Portrait of Adolf Loos", y: "1909", yr: 1909, m: "nng", c: 2051, w: "Oskar Kokoschka" },
+    { id: "kk2", t: "Hans Tietze and Erica Tietze-Conrat", y: "1909", yr: 1909.4, m: "moma", c: 2051, w: "Hans Tietze and Erica Tietze-Conrat" },
+    { id: "kk3", t: "The Bride of the Wind", y: "1913–14", yr: 1913.6, m: "basel", c: 2051, w: "The Bride of the Wind" },
+    { id: "kk4", t: "Knight Errant", y: "1915", yr: 1915, m: "gugg", c: 2051, w: "Oskar Kokoschka" },
+    { id: "kk5", t: "The Power of Music", y: "1918–20", yr: 1919, m: "vanabbe", c: 2051, w: "Oskar Kokoschka" },
+    { id: "kk6", t: "Self-Portrait of a “Degenerate Artist”", y: "1937", yr: 1937, m: "sngma", n: "on long-term loan", c: 2051, w: "Oskar Kokoschka" }
+  ],
+  pairs: [
+    ["kk1", "kk2", "His champion was the architect Adolf Loos, author of the polemic Ornament and Crime, which made the young painter an anti-Klimt almost by default. Loos found him sitters and promised to buy any portrait they rejected. Look at the hands in both pictures: oversized, nervous and scratched into the wet paint, sometimes with the end of the brush or a fingernail. The art historians Hans and Erica Tietze sit side by side yet don’t meet, their hands almost touching in a flickering, scraped void. The psychology is in the surface."],
+    ["kk3", "kk4", "The Bride of the Wind shows Kokoschka and Alma Mahler, Gustav Mahler’s widow, adrift in a shell-like boat in a storm. She sleeps; he stares, wide awake. The brushwork has become long, swirling and heavily loaded, closer to Tintoretto and Baroque altarpieces than to anything Viennese. When she ended the affair he joined the cavalry. Knight Errant, painted before he left for the front, shows him suspended in armour in a stormy void, like a premonition. Within months he had been shot in the head and bayoneted on the Eastern Front."],
+    ["kk5", "kk6", "In Dresden after the war (the years of the life-size Alma doll he commissioned from a puppet-maker) his palette explodes. The Power of Music is built from slabs of pure, saturated colour, the stroke now broad and blocky. By 1937 the Nazis had stripped hundreds of his works from German museums and put several into the Degenerate Art exhibition. He answered from Prague with this defiant self-portrait, arms folded, painted in his loose late manner. In 1938 he fled to Britain, where he stayed through the war."]
+  ]
+},
+{
+  id: "matisse", name: "Henri Matisse", kind: "Painter", dates: "1869–1954", life: [1869, 1954], span: [1890, 1954],
+  pig: ["Venetian red", "#b4412e"],
+  intro: "The leader of the Fauves, and the painter whose rivalry with Picasso set the terms of modern art. Matisse died in 1954, so his work entered the EU public domain on 1 January 2025, and his paintings from before 1931 can now be shared freely.",
+  manifesto: "Matisse’s “Notes of a Painter” (La Grande Revue, December 1908) asked for an art of balance and serenity, something like a good armchair for a tired businessman.",
+  works: [
+    { id: "m1", t: "Luxe, Calme et Volupté", y: "1904", yr: 1904.6, m: "orsay", n: "Centre Pompidou collection, on deposit", f: "Luxe, calme et volupté, par Henri Matisse.jpg" },
+    { id: "m2", t: "Woman with a Hat", y: "1905", yr: 1905.5, m: "sfmoma", f: "Matisse-Woman-with-a-Hat.jpg" },
+    { id: "m3", t: "Le Bonheur de vivre (The Joy of Life)", y: "1905–06", yr: 1906, m: "barnes", f: "La Joie de vivre, par Henri Matisse.jpg" },
+    { id: "m4", t: "The Dance (second version)", y: "1910", yr: 1910, m: "hermitage", f: "La Danse II, par Henri Matisse.jpg" },
+    { id: "m5", t: "The Red Studio", y: "1911", yr: 1911, m: "moma", f: "L'Atelier rouge, par Henri Matisse.jpg" },
+    { id: "m6", t: "Goldfish", y: "1912", yr: 1912, m: "pushkin", f: "Les Poissons rouges, par Henri Matisse.jpg" },
+    { id: "m7", t: "The Painter in His Studio", y: "1916–17", yr: 1916.6, m: "pompidou", f: "Henri Matisse, 1916-17, Le Peintre dans son atelier (The Painter and His Model), oil on canvas, 146.5 x 97 cm, Musée National d'Art Moderne, Centre Georges Pompidou, Paris.jpg" },
+    { id: "m8", t: "Decorative Figure on an Ornamental Ground", y: "1925–26", yr: 1925.6, m: "pompidou", f: "Figure décorative sur fond ornemental, par Henri Matisse.jpg" }
+  ],
+  pairs: [
+    ["m1", "m2", "A summer in Saint-Tropez with Paul Signac in 1904 produced Luxe, Calme et Volupté, its title from Baudelaire: Seurat’s pointillism with bigger, brighter tiles of colour, but still a system. A year later at Collioure the system broke. Woman with a Hat, a portrait of his wife Amélie, was the scandal of the 1905 Salon d’Automne, where the critic Louis Vauxcelles, spotting a Renaissance-style sculpture among the canvases, joked about “Donatello among the wild beasts” (fauves). Look at the green and violet across her face. Colour is now chosen for force, with no attempt at description. Leo and Gertrude Stein bought it."],
+    ["m3", "m4", "Bonheur de vivre takes the pastoral of Titian and Ingres and paints it in arbitrary colour and sinuous outline. Picasso saw it at the Steins’ apartment, and many historians think he began Les Demoiselles d’Avignon partly as a rebuttal. The ring of dancers in the background became, four years later, the whole subject of The Dance, commissioned by the Moscow collector Sergei Shchukin for his staircase. Only three colours are left: red bodies, green hill, blue sky. The pull and stretch of the bodies is the picture’s energy, a frieze reduced to rhythm."],
+    ["m5", "m6", "In The Red Studio Matisse flooded his own studio with Venetian red, leaving the furniture as thin lines where the underlayer shows through. The paintings on the walls, his own, are the only fully coloured objects in the room: a picture about pictures. Technical study for MoMA’s 2022 exhibition showed that the red covers an earlier, more naturalistic blue-grey version. Goldfish turns a café table into a disc tipped up toward us while the bowl is seen from the side, two viewpoints quietly reconciled. Shchukin bought that one too, which is why it is in Moscow."],
+    ["m7", "m8", "During the war, with Cubism all around him, Matisse’s colour went austere: greys and blacks, geometric scaffolding, the painter shown as a faceless outline at his easel. Then he moved to Nice and turned sensuous. The 1925–26 odalisque is the climax of the Nice period, a sculptural nude set against a wall of baroque wallpaper and a patterned carpet that tilts up toward us. Look at the contest between the solid body and the flat ornament around it. For decades this phase was dismissed as a decorative retreat, and it has since been reassessed as an experiment in space."]
+  ]
+},
+{
+  id: "expressionism", name: "German Expressionism", kind: "Movement", dates: "Die Brücke 1905 · Der Blaue Reiter 1911", life: null, span: [1905, 1920],
+  pig: ["Cobalt blue", "#2c55a6"],
+  intro: "Two groups with very different temperaments. Die Brücke (The Bridge), founded in Dresden in 1905 by four architecture students, wanted rawness: woodcut angularity, the city and the nude. Der Blaue Reiter (The Blue Rider), launched in Munich in 1911 by Kandinsky and Franz Marc, wanted spirit: colour as inner sound.",
+  manifesto: "Die Brücke programme, cut as a woodcut by Kirchner (1906); the Blaue Reiter almanac, edited by Kandinsky and Marc (1912).",
+  works: [
+    { id: "e1", a: "Ernst Ludwig Kirchner", t: "Marcella", y: "1909–10", yr: 1909.5, m: "moderna", f: "Kirchner 1909 Marzella.jpg" },
+    { id: "e2", a: "Ernst Ludwig Kirchner", t: "Street, Berlin", y: "1913", yr: 1913, m: "moma", f: "Ernst Ludwig Kirchner, 1913, Street, Berlin, oil on canvas, 120.6 x 91.1 cm, MoMA.jpg" },
+    { id: "e3", a: "Franz Marc", t: "Blue Horse I", y: "1911", yr: 1911, m: "lenbach", f: "Franz Marc - Blaues Pferd I - G 13324 - Lenbachhaus.jpg" },
+    { id: "e4", a: "Franz Marc", t: "The Fate of the Animals", y: "1913", yr: 1913.4, m: "basel", f: "Marc - Tierschicksale (Die Bäume zeigten ihre Ringe, die Tiere ihre Adern), 1913, Inv. 1739.jpg" },
+    { id: "e5", a: "August Macke", t: "Lady in a Green Jacket", y: "1913", yr: 1913.7, m: "ludwig", f: "August Macke 005.jpg" },
+    { id: "e6", a: "Alexej von Jawlensky", t: "Portrait of the Dancer Alexander Sakharoff", y: "1909", yr: 1909, m: "lenbach", f: "Alexej von Jawlensky - Bildnis des Tänzers Alexander Sacharoff - G 13388 - Lenbachhaus.jpg" },
+    { id: "e7", a: "Ernst Ludwig Kirchner", t: "Self-Portrait as a Soldier", y: "1915", yr: 1915, m: "allen", f: "Kirchner - Self Portrait as a Soldier (1915).jpg" },
+    { id: "e8", a: "Max Beckmann", t: "The Night", y: "1918–19", yr: 1918.7, m: "k20", f: "Max Beckmann, 1918-19, The Night (Die Nacht), oil on canvas, 133 x 154 cm, Kunstsammlung Nordrhein-Westfalen, Düsseldorf.jpg" }
+  ],
+  pairs: [
+    ["e1", "e2", "In Dresden Kirchner painted flat, Fauve-bright planes with simplified contours. Marcella was one of the young girls who modelled for the group, and the frankness with which she is painted is uncomfortable to look at today. In 1911 the group moved to Berlin and the style sharpened into splinters. In Street, Berlin the figures stretch into spikes, faces become masks, and the colour turns acid pink and green. The women on the pavement, in feathered hats, are cut with the same tense, angular stroke as his woodcuts. The city itself has become the subject."],
+    ["e3", "e4", "Marc had a colour theory: blue was masculine and spiritual, yellow feminine and gentle, red the brutal weight of matter. The young blue horse stands in a landscape of those colours, more emblem than animal. Two years later The Fate of the Animals shatters the scene with Cubist and Futurist lines of force, a forest crashing down like a premonition of war; on the back he wrote that the trees showed their rings and the animals their veins. A warehouse fire in 1916 burned its right-hand third, which Paul Klee repainted in muted tones, and you can still see the seam. Marc was killed at Verdun that year."],
+    ["e5", "e6", "Two temperaments in the Blue Rider circle. Macke, the youngest and sunniest, borrowed Delaunay’s luminous prisms for a calm, everyday world of strollers by a lake and people looking into shop windows, figures turned in profile like mannequins. He was killed in the first weeks of the war, aged 27. Jawlensky, a former officer in the Russian army, pushed the face toward the icon. Sakharoff, the androgynous dancer, is a white mask with crimson lips and heavy black contours. Jawlensky spent the following decades painting little else but heads, reduced in the end to a cross of lines."],
+    ["e7", "e8", "The war ended both groups and changed the style. Kirchner, who broke down during military training, painted himself in uniform with a bloody stump where his painting hand should be, a wound that never happened, an image of what he feared. His slashing stroke has become a symptom. Beckmann, who had served as a medical orderly and suffered his own collapse, painted The Night: a torture scene in a cramped attic, bodies jammed into a tilted box of space. The hard outlines and claustrophobic geometry point toward the colder style of the 1920s known as New Objectivity."]
+  ]
+},
+{
+  id: "picasso", name: "Pablo Picasso", kind: "Painter", dates: "1881–1973", life: [1881, 1973], span: [1895, 1973],
+  pig: ["Prussian blue", "#22385c"],
+  intro: "The great shape-shifter, who said he painted things as he thought them rather than as he saw them. Picasso died in 1973, so his paintings are in copyright in the EU until 1 January 2044; these cards link to Wikipedia, where most of them are shown.",
+  works: [
+    { id: "p1", t: "Le Moulin de la Galette", y: "1900", yr: 1900, m: "gugg", c: 2044, w: "Le Moulin de la Galette (Picasso)" },
+    { id: "p2", t: "The Old Guitarist", y: "1903–04", yr: 1903.5, m: "aic", c: 2044, w: "The Old Guitarist" },
+    { id: "p3", t: "Family of Saltimbanques", y: "1905", yr: 1905, m: "nga", c: 2044, w: "Family of Saltimbanques" },
+    { id: "p4", t: "Portrait of Gertrude Stein", y: "1905–06", yr: 1906, m: "met", c: 2044, w: "Portrait of Gertrude Stein" },
+    { id: "p5", t: "Les Demoiselles d’Avignon", y: "1907", yr: 1907, m: "moma", c: 2044, w: "Les Demoiselles d'Avignon" },
+    { id: "p6", t: "Portrait of Ambroise Vollard", y: "1910", yr: 1910, m: "pushkin", c: 2044, w: "Portrait of Ambroise Vollard (Picasso)" },
+    { id: "p7", t: "Three Musicians", y: "1921", yr: 1921.4, m: "moma", c: 2044, w: "Three Musicians" },
+    { id: "p8", t: "Three Women at the Spring", y: "1921", yr: 1921.6, m: "moma", c: 2044, w: "Three Women at the Spring" },
+    { id: "p9", t: "Girl before a Mirror", y: "1932", yr: 1932, m: "moma", c: 2044, w: "Girl before a Mirror" },
+    { id: "p10", t: "Guernica", y: "1937", yr: 1937, m: "reina", c: 2044, w: "Guernica (Picasso)" }
+  ],
+  pairs: [
+    ["p1", "p2", "On his first trip to Paris, at nineteen, Picasso painted the famous dance hall in the manner of Toulouse-Lautrec and Steinlen: gaslit faces, black silhouettes, worldly swagger. Three years later, after the suicide of his friend Carles Casagemas and months of poverty, he was painting in blue. The Old Guitarist is long-limbed and angular like an El Greco saint, folded into the frame, the blue almost liturgical. Infrared images show a woman’s face and other figures underneath. He was too poor to buy new canvases and painted over old ones."],
+    ["p3", "p4", "The Rose period brought warmer terracottas and the world of travelling acrobats, figures standing apart in an empty landscape as if they had forgotten why they gathered. Then Gertrude Stein sat for him some eighty or ninety times, and he wiped out her face in frustration. He repainted it from memory after seeing ancient Iberian stone heads at the Louvre and spending a summer in the Catalan village of Gósol: a mask with heavy-lidded, uneven eyes. When people said she didn’t look like it, he is supposed to have replied that she would. That mask is the first step toward the Demoiselles."],
+    ["p5", "p6", "Five women in a brothel on Barcelona’s Carrer d’Avinyó confront the viewer. The three on the left have Iberian features; the two on the right were repainted with faces drawn from African and Oceanic masks he had seen at the Trocadéro ethnographic museum. The space breaks into angular, splintered planes, and there is still pink and blue. Three years later, in Analytic Cubism, the colour has drained to brown and grey, and the dealer Vollard dissolves into a lattice of small facets. Yet his bald dome and heavy lids are unmistakable, a face seen through frosted glass."],
+    ["p7", "p8", "Picasso painted both of these in the same summer of 1921, at Fontainebleau. Three Musicians is Synthetic Cubism at its grandest: flat, interlocking shapes like cut paper forming Pierrot, Harlequin and a monk, with a dog hidden under the table. Three Women at the Spring belongs to his return to order: monumental neoclassical giantesses in drapery fluted like Greek columns. Compare the hands and feet. They are flat and toy-like in one, swollen and rounded in the other, and in both the volume is invented. He moved between styles the way a writer moves between genres."],
+    ["p9", "p10", "Girl before a Mirror shows the curving, swelling line of the Marie-Thérèse Walter years: bright colour held in heavy black lines like the leading of stained glass, a face that is profile and full-face at once. Guernica keeps that elastic anatomy and doubled face but drains it to newspaper grey. He learned of the bombing through press photographs, and the hatching on the horse’s body looks like newsprint. Under the chaos sits a classical triangle, like a temple pediment. Set it beside the Demoiselles: in 1907 the distortion analyses form, in 1937 it expresses pain."]
+  ]
+},
+{
+  id: "braque", name: "Georges Braque", kind: "Painter", dates: "1882–1963", life: [1882, 1963], span: [1902, 1963],
+  pig: ["Raw umber", "#715b40"],
+  intro: "Picasso’s partner in inventing Cubism, slower and more methodical, trained as a decorator and house painter, which is where he learned the faux-wood graining and stencilled letters he brought into fine art. He died in 1963, so his work is in copyright in the EU until 2034.",
+  manifesto: "Albert Gleizes and Jean Metzinger, Du “Cubisme” (1912), the first book-length theory of the style, written by painters outside the Picasso–Braque partnership.",
+  works: [
+    { id: "b1", t: "Landscape at La Ciotat", y: "1907", yr: 1907, m: "moma", c: 2034, w: "Georges Braque" },
+    { id: "b2", t: "Houses at L’Estaque", y: "1908", yr: 1908, m: "bern", n: "Hermann and Margrit Rupf Foundation", c: 2034, w: "Houses at l'Estaque" },
+    { id: "b3", t: "Violin and Candlestick", y: "1910", yr: 1910, m: "sfmoma", c: 2034, w: "Violin and Candlestick" },
+    { id: "b4", t: "Fruit Dish and Glass", y: "1912", yr: 1912, m: "met", c: 2034, w: "Fruit Dish and Glass" },
+    { id: "b5", t: "Canephorae", y: "1922", yr: 1922, m: "pompidou", c: 2034, w: "Georges Braque" },
+    { id: "b6", t: "The Round Table", y: "1929", yr: 1929, m: "phillips", c: 2034, w: "Georges Braque" }
+  ],
+  pairs: [
+    ["b1", "b2", "In 1907 Braque was a minor Fauve, and La Ciotat is all pink, violet and orange, loose and decorative. After the Cézanne retrospective and a visit to Picasso’s studio to see the Demoiselles, he went to L’Estaque, Cézanne’s own motif, and painted houses as ochre blocks stacked up a hill, trees bent into arcs, with no horizon and barely any sky. The Salon d’Automne jury rejected these pictures. When they were shown at Kahnweiler’s gallery in November 1908, Vauxcelles wrote that Braque reduced everything to cubes. The name stuck."],
+    ["b3", "b4", "High Analytic Cubism: the violin is broken into dozens of small transparent facets, the candlestick barely there, the palette held to browns and greys so that colour will not distract from structure. Braque liked to anchor such dissolving spaces with a crisp trompe-l’oeil nail or a stencilled letter. Then in September 1912, while Picasso was away, he bought a roll of fake wood-grain wallpaper in Avignon and glued strips onto a charcoal drawing. Fruit Dish and Glass is the first papier collé. The paper stands for wood: a real fragment in place of a painted one."],
+    ["b5", "b6", "Braque was badly wounded in the head in 1915 and needed trepanning. After the war he painted alone; the partnership with Picasso never resumed. The Canephorae, two basket-bearing women in the classical manner, are his version of the return to order, though the sand-roughened paint and soft contours are his own. In the Guéridon series of the late 1920s, a pedestal table loaded with still-life objects is tipped toward us, its legs splayed. Cubist planes survive inside rich, sombre, textured paint. Recognising a Braque often means recognising the surface, which he wanted as worked as a craftsman’s."]
+  ]
+},
+{
+  id: "futurism", name: "Futurism", kind: "Movement", dates: "1909", life: null, span: [1909, 1918],
+  pig: ["Cobalt violet", "#7a3f90"],
+  intro: "The first art movement launched like an advertising campaign. On 20 February 1909 the poet Filippo Tommaso Marinetti published the Founding Manifesto of Futurism on the front page of Le Figaro, praising speed, machines and war, and calling for the museums to be destroyed. The painters followed with manifestos of their own.",
+  manifesto: "Manifesto of the Futurist Painters and the Technical Manifesto of Futurist Painting (both 1910), signed by Boccioni, Carrà, Russolo, Balla and Severini.",
+  works: [
+    { id: "f1", a: "Umberto Boccioni", t: "The City Rises", y: "1910", yr: 1910.5, m: "moma", f: "The City Rises by Umberto Boccioni 1910.jpg" },
+    { id: "f2", a: "Giacomo Balla", t: "Dynamism of a Dog on a Leash", y: "1912", yr: 1912.2, m: "akg", c: 2029, w: "Dynamism of a Dog on a Leash" },
+    { id: "f3", a: "Umberto Boccioni", t: "States of Mind I: The Farewells", y: "1911", yr: 1911.8, m: "moma", f: "States of Mind- The Farewells by Umberto Boccioni, 1911.jpeg" },
+    { id: "f4", a: "Gino Severini", t: "Dynamic Hieroglyphic of the Bal Tabarin", y: "1912", yr: 1912.5, m: "moma", c: 2037, w: "Dynamic Hieroglyphic of the Bal Tabarin" },
+    { id: "f5", a: "Carlo Carrà", t: "Funeral of the Anarchist Galli", y: "1910–11", yr: 1911, m: "moma", c: 2037, w: "Funeral of the Anarchist Galli" },
+    { id: "f6", a: "Luigi Russolo", t: "Dynamism of a Car", y: "1912–13", yr: 1913, m: "pompidou", f: "Luigi Russolo dynamism-of-a-car-1913.jpg" },
+    { id: "f7", a: "Umberto Boccioni", t: "Dynamism of a Cyclist", y: "1913", yr: 1913.5, m: "pgc", n: "Gianni Mattioli Collection, long-term loan", f: "Umberto Boccioni, 1913, Dynamism of a Cyclist (Dinamismo di un ciclista), oil on canvas, 70 x 95 cm, Gianni Mattioli Collection, on long-term loan to the Peggy Guggenheim Collection, Venice.jpg" },
+    { id: "f8", a: "Umberto Boccioni", t: "Portrait of Ferruccio Busoni", y: "1916", yr: 1916.5, m: "gnam", f: "Umberto boccioni, ritratto del maestro busoni, 1916.jpg" }
+  ],
+  pairs: [
+    ["f1", "f2", "The City Rises is the first big Futurist painting, and it is still built on Divisionism, the Italian version of pointillism. A huge red horse surges through a building site on the edge of Milan, workers straining at its harness, everything dissolving in streaks of light. Balla, Boccioni’s teacher, took the opposite route and froze motion like a photograph. The dachshund’s legs, the lady’s skirt and the leash blur into dozens of overlapping positions, borrowed straight from Étienne-Jules Marey’s chronophotography. One painter dramatises energy, the other analyses it."],
+    ["f3", "f4", "After seeing Cubism in Paris in late 1911, Boccioni repainted his States of Mind trilogy. The Farewells now uses Cubist fragmentation to paint a railway station as a mood: a locomotive’s number, swirling waves of steam and embraces, the “lines of force” of the Futurist programme. Severini, who lived in Paris, made the most Parisian Futurist picture. The Bal Tabarin nightclub becomes a kaleidoscope of dancers’ ruffles, with real sequins glued on and words scattered across the surface. It is lighter in spirit, closer to Cubism, and full of jokes."],
+    ["f5", "f6", "Carrà had witnessed the 1904 funeral of the anarchist Angelo Galli in Milan, when police charged the mourners. His canvas turns the riot into a storm of black flags and swinging poles, a crowd painted at the speed of violence. Russolo turns a car into a sequence of red chevrons slicing across a blue field, velocity with almost no object left. Russolo was also the movement’s musician: in 1913 he wrote The Art of Noises and built intonarumori, machines for making noise, so this painting is close to a score."],
+    ["f7", "f8", "Dynamism of a Cyclist is Boccioni at his most abstract: the rider becomes a wedge of force, cut into faceted planes and sweeping arcs, as near as Futurism came to pure abstraction. Three years later, staying with the composer Ferruccio Busoni on Lake Maggiore, he painted this portrait, and it is a surprise: calm and Cézannian, with solid volumes and broad strokes of green and violet. A few weeks later he died after falling from a horse during cavalry training. Had he lived, he might have followed his friends back to order."]
+  ]
+},
+{
+  id: "rayonism", name: "Rayonism", kind: "Movement", dates: "1912–1914", life: null, span: [1910, 1915],
+  pig: ["Cadmium orange", "#df7a27"],
+  intro: "A short-lived Moscow movement invented by Mikhail Larionov and Natalia Goncharova, partners in life and art. They argued that we see the rays of light reflected from objects rather than the objects themselves, so painting should depict the rays. Both lived into the 1960s, so their work remains in copyright in the EU, Goncharova’s until 2033 and Larionov’s until 2035.",
+  manifesto: "“Rayonists and Futurists: A Manifesto”, published in the 1913 Moscow miscellany The Donkey’s Tail and Target.",
+  works: [
+    { id: "r1", a: "Natalia Goncharova", t: "Peasants Picking Apples", y: "1911", yr: 1911, m: "tretyakov", c: 2033, w: "Natalia Goncharova" },
+    { id: "r2", a: "Mikhail Larionov", t: "Soldier on a Horse", y: "c. 1911", yr: 1911.4, m: "tate", c: 2035, w: "Mikhail Larionov" },
+    { id: "r3", a: "Mikhail Larionov", t: "Glass", y: "1912", yr: 1912, m: "gugg", c: 2035, w: "Rayonism" },
+    { id: "r4", a: "Natalia Goncharova", t: "The Cyclist", y: "1913", yr: 1913, m: "rusmus", c: 2033, w: "Natalia Goncharova" },
+    { id: "r5", a: "Mikhail Larionov", t: "Rayonist Composition: Domination of Red", y: "1912–13", yr: 1912.8, m: "moma", c: 2035, w: "Rayonism" },
+    { id: "r6", a: "Natalia Goncharova", t: "Cats (rayist percep[tion] in rose, black and yellow)", y: "1913", yr: 1913.5, m: "gugg", c: 2033, w: "Natalia Goncharova" }
+  ],
+  pairs: [
+    ["r1", "r2", "Before the rays came Neo-Primitivism. Goncharova’s peasants are massive, flat and boldly outlined, drawn from icons, lubki (popular woodcut prints) and ancient stone idols of the steppe: a deliberate turn away from Paris toward Russian sources. Larionov’s soldier is drawn like a child’s picture or barrack-wall graffiti, flat colour and a deliberately clumsy horse. Both were rejecting academic polish as a Western import. In 1910 police removed nudes by Goncharova from a Moscow exhibition, and she was prosecuted for obscenity and acquitted."],
+    ["r3", "r4", "Glass is one of the first Rayonist pictures. Bottles and tumblers on a table burst into needle-like shafts of light, and the objects survive only as reflections. Goncharova’s Cyclist is closer to Italian Futurism: legs and wheels multiplied, cobbles vibrating, fragments of shop signs cutting across. Watch how she paints the struggle with the street. The rider seems to pedal furiously and barely move."],
+    ["r5", "r6", "At full strength Rayonism is very nearly abstraction: crossing beams of red and orange, an energy field with no object left, painted in the same months as Kandinsky’s first abstractions and two years before Malevich’s Black Square. Goncharova’s Cats keeps a hint of whiskers and fur inside the crossing rays. In 1915 the couple left Russia to work for Diaghilev’s Ballets Russes and spent the rest of their lives in Paris designing sets and costumes, where Rayonism lived on as stage design."]
+  ]
+},
+{
+  id: "malevich", name: "Kazimir Malevich", kind: "Painter", dates: "1879–1935", life: [1879, 1935], span: [1898, 1935],
+  pig: ["Lamp black", "#1c1c1d"],
+  intro: "Born in Kyiv to a Polish family, Malevich moved through nearly every style of his time before inventing Suprematism in 1915, the supremacy of pure feeling expressed in geometric form. Then, in the late 1920s, under growing official pressure, he turned back to the human figure.",
+  manifesto: "From Cubism and Futurism to Suprematism: The New Painterly Realism, the pamphlet he issued for the 0,10 exhibition in Petrograd (December 1915).",
+  works: [
+    { id: "ml1", t: "Flower Girl", y: "dated 1903", yr: 1903, m: "rusmus", f: "Flowergirl, by Kazimir Malevich.jpg" },
+    { id: "ml2", t: "Woodcutter", y: "1912", yr: 1912, m: "stedelijk", f: "Woodcutter by Kazimir Malevich.jpg" },
+    { id: "ml3", t: "The Knife Grinder (Principle of Glittering)", y: "1912–13", yr: 1912.8, m: "yale", f: "The Knife Grinder Principle of Glittering by Kazimir Malevich.jpeg" },
+    { id: "ml4", t: "An Englishman in Moscow", y: "1914", yr: 1914, m: "stedelijk", f: "An Englishman in Moscow, by Kazimir Malevich.jpg" },
+    { id: "ml5", t: "Black Square", y: "1915", yr: 1915.9, m: "tretyakov", f: "Kazimir Malevich, 1915, Black Suprematic Square, oil on linen canvas, 79.5 x 79.5 cm, Tretyakov Gallery, Moscow.jpg" },
+    { id: "ml6", t: "Suprematist Composition: White on White", y: "1918", yr: 1918, m: "moma", f: "Kazimir Malevich - 'Suprematist Composition- White on White', oil on canvas, 1918, Museum of Modern Art.jpg" },
+    { id: "ml7", t: "Complex Presentiment (Half-Figure in a Yellow Shirt)", y: "1928–32", yr: 1930, m: "rusmus", f: "Казимир Малевич — Важке передчуття.jpg" },
+    { id: "ml8", t: "Self-Portrait", y: "1933", yr: 1933, m: "rusmus", f: "Self-portrait (Malevich, 1933).jpg" }
+  ],
+  pairs: [
+    ["ml1", "ml2", "Malevich began as an Impressionist, and Flower Girl is soft, broken colour, a market scene in sunlight. There is a twist: many scholars think he actually painted it around 1930 and backdated it, building himself a tidy evolution for posterity. Woodcutter shows his peasant period. The figure and the logs are built from shiny tubes, like Léger’s, in metallic colour. The subject is village labour; the forms are machine parts. Many works like this reached Amsterdam because Malevich left them in Berlin after his 1927 exhibition when he was recalled to the Soviet Union."],
+    ["ml3", "ml4", "Cubo-Futurism first. The knife grinder’s hands, feet and the stairs he climbs repeat in stuttering steps, like Duchamp’s nude, while the cylinders flash. Then came what Malevich called alogism, a deliberate attack on logic. In An Englishman in Moscow a top-hatted man is half hidden by a fish, a church, a sabre, a candle, a ladder and scraps of words: a picture built on nonsense, two years before Dada. He demonstrated the idea in public by strolling down Moscow’s Kuznetsky Most with a wooden spoon in his buttonhole."],
+    ["ml5", "ml6", "At the 0,10 exhibition in December 1915, Black Square hung high across a corner of the room, the place an icon occupies in a Russian home. In 2015 Tretyakov researchers found earlier coloured compositions beneath the black and a pencilled inscription read as “battle of negroes in a dark cave”, a reference to a racist joke monochrome exhibited by French humorists in the 1880s and 1890s, which Malevich seems to have known. Three years later White on White pushed the reduction further: a tilted white square on a white ground, told apart only by the warmth of the two whites and the brush texture."],
+    ["ml7", "ml8", "In the late 1920s, as collectivisation reshaped the countryside and official pressure grew, Malevich went back to peasants, but faceless ones: blank ovals above bodies built from bands of Suprematist colour. Complex Presentiment shows a figure with no arms and no face in front of a distant house with no windows. In the 1933 Self-Portrait he presents himself as a Renaissance gentleman in black and red, and signs it with a tiny black square instead of his name. He was buried in 1935 in a coffin he had painted with Suprematist shapes."]
+  ]
+},
+{
+  id: "kandinsky", name: "Wassily Kandinsky", kind: "Painter", dates: "1866–1944", life: [1866, 1944], span: [1896, 1944],
+  pig: ["Ultramarine", "#2b3f9e"],
+  intro: "A Moscow lawyer who turned down a university post at thirty to study painting in Munich. Kandinsky is counted, with Kupka, Delaunay, Malevich and the Swedish painter Hilma af Klint, among the pioneers of abstraction, and he wrote its most influential theory.",
+  manifesto: "Concerning the Spiritual in Art (published December 1911, dated 1912): colour acts on the soul the way musical sound does.",
+  works: [
+    { id: "kd1", t: "Riding Couple", y: "1906–07", yr: 1906.5, m: "lenbach", f: "Wassily Kandinsky - Reitendes Paar - GMS 26 - Lenbachhaus.jpg" },
+    { id: "kd2", t: "Blue Mountain", y: "1908–09", yr: 1908.6, m: "gugg", f: "Blue Mountain by Vasily Kandinsky, 1908-09.JPG" },
+    { id: "kd3", t: "Impression III (Concert)", y: "1911", yr: 1911.05, m: "lenbach", f: "Wassily Kandinsky - Impression III (Konzert) - GMS 78 - Lenbachhaus.jpg" },
+    { id: "kd4", t: "Improvisation 28 (second version)", y: "1912", yr: 1912, m: "gugg", f: "Vasily Kandinsky Improvisation 28 (second version).jpg" },
+    { id: "kd5", t: "Composition VII", y: "1913", yr: 1913.9, m: "tretyakov", f: "Vassily Kandinsky, 1913 - Composition 7.jpg" },
+    { id: "kd6", t: "Composition VIII", y: "1923", yr: 1923.5, m: "gugg", f: "Vassily Kandinsky, 1923 - Composition 8, huile sur toile, 140 cm x 201 cm, Musée Guggenheim, New York.jpg" },
+    { id: "kd7", t: "Yellow-Red-Blue", y: "1925", yr: 1925, m: "pompidou", f: "Gelb-Rot-Blau, by Wassily Kandinsky, Centre Pompidou.jpg" },
+    { id: "kd8", t: "Several Circles", y: "1926", yr: 1926, m: "gugg", f: "Vassily Kandinsky, 1926 - Several Circles, Gugg 0910 25.jpg" },
+    { id: "kd9", t: "Composition X", y: "1939", yr: 1939, m: "k20", f: "Vassily Kandinsky, 1939 - Composition 10.jpg" },
+    { id: "kd10", t: "Sky Blue", y: "1940", yr: 1940, m: "pompidou", f: "Wassily Kandinsky - Sky Blue, 1940.jpg" }
+  ],
+  pairs: [
+    ["kd1", "kd2", "Riding Couple is a Russian fairy tale in a jewel box: a knight and his lady on horseback before a walled city, painted in dabs of colour on a dark ground like enamel or beadwork, full of Jugendstil (German Art Nouveau) nostalgia. Two years later, painting with Gabriele Münter in Murnau, the dabs have grown into large blocks of saturated colour. In Blue Mountain the riders are still there, but the red and yellow trees and the blue peak now carry the picture. The story is fading, and the colour has started to speak for itself."],
+    ["kd3", "kd4", "On 2 January 1911 Kandinsky and Franz Marc heard a concert of Arnold Schoenberg’s atonal music in Munich. Within days Kandinsky painted Impression III: a huge yellow wave of sound washing over the audience, the black lid of the grand piano a single slab. He wrote to Schoenberg that month, and they became friends. Kandinsky sorted his pictures into Impressions (from outside nature), Improvisations (spontaneous expressions of inner feeling) and Compositions (slowly worked out). Improvisation 28 still hides traces of motifs, but the whole has become an explosion of line and colour."],
+    ["kd5", "kd6", "The clearest pair for seeing Kandinsky change. Composition VII came after more than thirty preparatory studies and was then painted in about four days: a vortex of overlapping colour, floating blots and black lines, with themes of deluge and resurrection buried deep inside. Ten years, a revolution and a spell among the Moscow Constructivists later, he joined the Bauhaus. Composition VIII is cool and precise: circles, triangles, grids and ruled lines on a pale ground, with the large black-ringed circle at top left as the dominant note. The same ambition has acquired a new grammar."],
+    ["kd7", "kd8", "At the Bauhaus Kandinsky taught a theory of form and colour; a 1923 questionnaire asked students to match yellow, red and blue to the triangle, square and circle, and he expected yellow triangles, red squares and blue circles. Yellow-Red-Blue stages exactly that drama: a yellow field with angular forms on the left, a dark blue circle on the right, warm against cool. Several Circles is the calmest thing he ever painted, translucent discs floating on black like planets. He called the circle a synthesis of the greatest oppositions."],
+    ["kd9", "kd10", "After the Nazis forced the Bauhaus to close in 1933, Kandinsky moved to Neuilly, outside Paris. His last style mixes geometry with soft biological shapes, little creatures like amoebas, embryos or larvae under a microscope. Composition X sets bright forms against black. Sky Blue lets whimsical organisms swim in pale blue air, closer to Miró and Arp than to the Bauhaus. Look at the playfulness. His painting grew lighter as the world grew darker."]
+  ]
+},
+{
+  id: "constructivism", name: "Constructivism", kind: "Movement", dates: "1914–1932", life: null, span: [1914, 1932],
+  pig: ["Red lead", "#c5452c"],
+  intro: "Russian artists who, especially after 1917, wanted art to stop being a picture on a wall and become construction: real materials, real space, social use. The name was adopted in 1921 by the First Working Group of Constructivists in Moscow.",
+  manifesto: "Naum Gabo and Antoine Pevsner, the Realistic Manifesto (Moscow, 1920); Aleksei Gan, Constructivism (1922).",
+  works: [
+    { id: "cs1", a: "Vladimir Tatlin", t: "The Sailor (Self-Portrait)", y: "1911", yr: 1911, m: "rusmus", f: "Vladimir Tatlin, Sailor (Self Portrait), 1911.jpg" },
+    { id: "cs2", a: "Vladimir Tatlin", t: "Corner Counter-Relief", y: "1915", yr: 1915.9, m: null, n: "Lost; known from photographs of the 0,10 exhibition, later reconstructed", f: "Corner counter-relief (Vladimir Tatlin, 1915) during 0,10 exhibition.jpg" },
+    { id: "cs3", a: "Lyubov Popova", t: "Painterly Architectonics", y: "c. 1917", yr: 1917, m: "dma", f: "Lyubov Popova - Painterly Architectonics - 1982.10 - Dallas Museum of Art.jpg" },
+    { id: "cs4", a: "Lyubov Popova", t: "Space-Force Construction", y: "1920–21", yr: 1921, m: "momus", f: "Liubov Popova, Spatial Force Construction, 1920-21.jpg" },
+    { id: "cs5", a: "El Lissitzky", t: "Proun 99", y: "c. 1923–25", yr: 1924, m: "yale", f: "El Lissitzky - Proun 99 - 1941.548 - Yale University Art Gallery.jpg" },
+    { id: "cs6", a: "Alexander Rodchenko", t: "Non-Objective Painting no. 80 (Black on Black)", y: "1918", yr: 1918.5, m: "moma", c: 2027, w: "Alexander Rodchenko" }
+  ],
+  pairs: [
+    ["cs1", "cs2", "Tatlin really had been a sailor, and his self-portrait in a sailor’s cap is built like an icon, flat ochres and blues around a rounded, sculptural head. In 1914 he visited Picasso’s studio in Paris and saw his cardboard and sheet-metal guitars. Back home he gave up painting for counter-reliefs: iron, wood, rope and wire strung across the corner of a room, the place of the icon. At the 0,10 exhibition they shared the show with Malevich’s Black Square, and the two men’s rivalry split it in two: pure feeling against real materials."],
+    ["cs3", "cs4", "Popova studied in Paris with the Cubists Le Fauconnier and Metzinger and then absorbed Suprematism. Her Painterly Architectonics are overlapping planes of strong colour that look cut from paper, with a sense of weight and leaning that Malevich’s floating shapes lack. By 1921 she was painting Space-Force Constructions on rough plywood: crossing lines and translucent arcs that look like engineering diagrams of energy. Within a year she declared easel painting finished and designed textiles and stage sets. She died of scarlet fever in 1924, aged 35."],
+    ["cs5", "cs6", "Lissitzky called his works Prouns, from the Russian for “project for the affirmation of the new”, and described them as interchange stations between painting and architecture. Proun 99 floats solid-looking blocks in a space with no up or down, drawn with an architect’s precision. Rodchenko answered White on White with black on black: circles told apart only by texture and sheen. In 1921 he showed three plain canvases in red, yellow and blue and announced the end of painting, and Constructivism moved into posters, photography and furniture. Rodchenko died in 1956, so his work leaves copyright in the EU on 1 January 2027."]
+  ]
+},
+{
+  id: "dada", name: "Dada", kind: "Movement", dates: "1916", life: null, span: [1915, 1924],
+  pig: ["Newsprint grey", "#8a8a82"],
+  intro: "Born at the Cabaret Voltaire in Zurich in February 1916, among refugees from a war that seemed to have discredited reason itself. Dada was anti-art: chance, collage, nonsense and provocation. It spread to Berlin, Hanover, Cologne, New York and Paris, and by 1924 most of its Paris members had become Surrealists.",
+  manifesto: "Hugo Ball read the first Dada manifesto in Zurich on 14 July 1916; Tristan Tzara’s Dada Manifesto 1918 became the movement’s loudest statement.",
+  works: [
+    { id: "d1", a: "Francis Picabia", t: "I See Again in Memory My Dear Udnie", y: "1914", yr: 1914, m: "moma", f: "Francis Picabia, I See Again in Memory My Dear Udnie (50393140728).jpg" },
+    { id: "d2", a: "Francis Picabia", t: "Very Rare Picture on the Earth", y: "1915", yr: 1915.5, m: "pgc", f: "Francis Picabia, 1915 - Très rare tableau sur la terre.jpg" },
+    { id: "d3", a: "Hans Arp", t: "Untitled (Collage with Squares Arranged according to the Law of Chance)", y: "1916–17", yr: 1916.6, m: "moma", c: 2037, w: "Jean Arp" },
+    { id: "d4", a: "Sophie Taeuber-Arp", t: "Composition Dada (Head with Plate)", y: "1920", yr: 1920, m: "pompidou", f: "Sophie Taeuber-Arp Composition Dada 1920.jpg" },
+    { id: "d5", a: "Kurt Schwitters", t: "Das Undbild (The And-Picture)", y: "1919", yr: 1919, m: "stuttgart", f: "DasUndbild.jpg" },
+    { id: "d6", a: "Hannah Höch", t: "Cut with the Kitchen Knife Dada through the Last Weimar Beer-Belly Cultural Epoch of Germany", y: "1919–20", yr: 1919.7, m: "nng", c: 2049, w: "Cut with the Kitchen Knife" },
+    { id: "d7", a: "Francis Picabia", t: "Portrait of Cézanne, Portrait of Rembrandt, Portrait of Renoir (Still Lifes)", y: "1920", yr: 1920.3, m: null, n: "Lost; known from its reproduction in the review Cannibale, 1920", f: "Francis Picabia, 1920, Portrait of Cézanne, Portrait of Renoir, Portrait of Rembrandt.jpg" },
+    { id: "d8", a: "Max Ernst", t: "Celebes", y: "1921", yr: 1921, m: "tate", c: 2047, w: "Celebes (painting)" }
+  ],
+  pairs: [
+    ["d1", "d2", "Before Dada, Picabia was an Orphic Cubist. Udnie is a swirl of soft, organic forms, half dancer, half machine part, prompted by a dancer he met on the ship taking him to New York for the 1913 Armory Show. In New York he discovered the machine as a subject and began his “mechanomorphs”. Very Rare Picture on the Earth is a deadpan diagram of cylinders and pistons, finished in silver and gold, a machine with no purpose. Look at the gilding. It mocks the precious object while making one."],
+    ["d3", "d4", "Arp said he tore up paper, let the pieces fall and glued them where they landed. The result is suspiciously orderly, and he probably helped chance along, but chance had become a working method. His partner Sophie Taeuber, a textile designer, teacher and dancer at the Cabaret Voltaire, brought a different discipline: grids, weaving and exact geometry. Her Dada heads and compositions combine puppet-like faces with flat fields of colour. Hers was the more rigorous abstraction, and it was overshadowed for decades. Since 1995 she has been on the Swiss 50-franc note."],
+    ["d5", "d6", "Schwitters, in Hanover, was turned away by Berlin Dada and invented his own one-man movement, Merz, a word cut from an advertisement for the Commerz- und Privatbank. Das Undbild assembles tickets, labels and scraps of wood into a careful, almost tender composition. Höch, in Berlin, used the same scissors for politics. Her huge photomontage cuts up magazine photographs of generals, politicians, dancers and Dadaists into a panorama of the new Weimar Republic, with a map of the countries where women could vote pasted into a corner. Same technique, opposite purpose."],
+    ["d7", "d8", "Picabia nailed a toy monkey to a board, wrote around it “Portrait of Cézanne, Portrait of Rembrandt, Portrait of Renoir” and “Still Lifes”, and published it in his review Cannibale in 1920. The original is lost, which suits it. In Cologne, Max Ernst built the bridge to Surrealism. Celebes turns a Sudanese corn bin he found in an anthropological journal into a mechanical elephant in a dreamlike landscape, painted with academic smoothness. Dada’s collage logic, carried out in oil paint, was about to become Surrealism."]
+  ]
+},
+{
+  id: "duchamp", name: "Marcel Duchamp", kind: "Painter", dates: "1887–1968", life: [1887, 1968], span: [1902, 1968],
+  pig: ["Yellow ochre", "#b6862f"],
+  intro: "Duchamp ran through Cézanne, Fauvism, Cubism and Futurism in about four years and then all but gave up painting, arguing for an art of the mind against what he called “retinal” art. He died in 1968. His pre-1931 works are public domain in the US but in copyright in the EU until 2039, which is why Wikimedia Commons cannot host them.",
+  works: [
+    { id: "du1", t: "Portrait of the Artist’s Father", y: "1910", yr: 1910, m: "pma", c: 2039, w: "Marcel Duchamp" },
+    { id: "du2", t: "Portrait of Chess Players", y: "1911", yr: 1911.8, m: "pma", c: 2039, w: "Portrait of Chess Players" },
+    { id: "du3", t: "Sad Young Man on a Train", y: "1911–12", yr: 1911.95, m: "pgc", c: 2039, w: "Sad Young Man on a Train" },
+    { id: "du4", t: "Nude Descending a Staircase, No. 2", y: "1912", yr: 1912.05, m: "pma", c: 2039, w: "Nude Descending a Staircase, No. 2" },
+    { id: "du5", t: "The Bride Stripped Bare by Her Bachelors, Even (The Large Glass)", y: "1915–23", yr: 1919, m: "pma", c: 2039, w: "The Bride Stripped Bare by Her Bachelors, Even" },
+    { id: "du6", t: "Tu m’", y: "1918", yr: 1918, m: "yale", c: 2039, w: "Tu m'" }
+  ],
+  pairs: [
+    ["du1", "du2", "Duchamp came from a family of artists: his brothers Jacques Villon and Raymond Duchamp-Villon and his sister Suzanne all exhibited. The 1910 portrait of his father is open homage to Cézanne, solid and constructive. A year later, at the Cubist gatherings in his brothers’ studio at Puteaux, he painted two of them playing chess, working by gaslight, in transparent overlapping planes. The players dissolve into their own thinking. Cubism here is used to show thought rather than objects, a first hint of where he was going."],
+    ["du3", "du4", "Sad Young Man on a Train is a self-portrait in motion: a smoker swaying in a railway carriage, his outline repeated in brown parallel shapes. Then came the Nude, a mechanical figure clattering downstairs in some twenty overlapping positions, borrowed from chronophotography. The Cubists hanging the 1912 Salon des Indépendants asked him to change the title, so he withdrew the painting and took it home in a taxi. At the 1913 Armory Show in New York it became the scandal of the exhibition, mocked as an explosion in a shingle factory."],
+    ["du5", "du6", "The Large Glass took eight years and was left unfinished: a diagram of desire on two panes of glass, made with lead wire, foil, varnish and dust, which he let gather on it for months before fixing it in place. It cracked in transit in 1926, and Duchamp declared the cracks a completion. Tu m’, made for Katherine Dreier’s library, was his farewell to painting: cast shadows of his readymades, a painted tear held together with real safety pins, a bottle brush sticking out of the canvas and a pointing hand painted by a professional sign-writer. The title is usually read as short for “tu m’emmerdes”, you bore me."]
+  ]
+},
+{
+  id: "mondrian", name: "Piet Mondrian", kind: "Painter", dates: "1872–1944", life: [1872, 1944], span: [1892, 1944],
+  pig: ["Cadmium red", "#cf3128"],
+  intro: "A Dutch landscape painter who, in about twelve years, reduced the tree in front of him to a grid of black lines and three primary colours. With Theo van Doesburg he founded De Stijl (The Style) in 1917, and he called his theory Neo-Plasticism.",
+  manifesto: "De Stijl magazine (from October 1917) and its first manifesto (November 1918); Mondrian’s essay Le Néo-Plasticisme (Paris, 1920).",
+  works: [
+    { id: "mo1", t: "Mill in Sunlight (The Winkel Mill)", y: "1908", yr: 1908, m: "kmdh", f: "Mondriaan Molen bij zonlicht.jpg" },
+    { id: "mo2", t: "Evening; Red Tree", y: "1908–10", yr: 1909, m: "kmdh", f: "Piet Mondrian, 1908-10, Evening; Red Tree (Avond; De rode boom), oil on canvas, 70 x 99 cm, Gemeentemuseum Den Haag.jpg" },
+    { id: "mo3", t: "The Grey Tree", y: "1911", yr: 1911, m: "kmdh", f: "Gray Tree 1911.jpg" },
+    { id: "mo4", t: "Flowering Apple Tree", y: "1912", yr: 1912, m: "kmdh", f: "Blossoming apple tree, by Piet Mondriaan.jpg" },
+    { id: "mo5", t: "Tableau No. 2 / Composition No. VII", y: "1913", yr: 1913, m: "gugg", f: "Piet Mondriaan - Tableau 2 - 51.1309 - Solomon R. Guggenheim Museum.jpg" },
+    { id: "mo6", t: "Composition 10 in Black and White (Pier and Ocean)", y: "1915", yr: 1915, m: "km", f: "Mondrian - Composition 10 in Black and White (1915).jpg" },
+    { id: "mo7", t: "Composition with Grid 9: Checkerboard with Light Colours", y: "1919", yr: 1919, m: "kmdh", f: "Piet mondrian, composizione con griglia 9, composizione a scacchiera con colori chiari, 1919, 01.jpg" },
+    { id: "mo8", t: "Composition II in Red, Blue and Yellow", y: "1930", yr: 1930, m: "zurich", f: "Piet Mondriaan, 1930 - Mondrian Composition II in Red, Blue, and Yellow.jpg" },
+    { id: "mo9", t: "Broadway Boogie Woogie", y: "1942–43", yr: 1942.7, m: "moma", f: "Piet Mondrian, 1942 - Broadway Boogie Woogie.jpg" },
+    { id: "mo10", t: "Victory Boogie Woogie (unfinished)", y: "1942–44", yr: 1943.5, m: "kmdh", f: "Piet Mondriaan, 1942-1944 - Victory Boogie-Woogie.jpg" }
+  ],
+  pairs: [
+    ["mo1", "mo2", "Until about 1907 Mondrian painted dark, tonal Dutch landscapes in the manner of the Hague School. Then he discovered colour, through Van Gogh and the Fauves and through the Theosophy he formally joined in 1909. The mill blazes red, yellow and blue against the sky, already the three primaries, in long, separate strokes. The Red Tree turns a twisted apple tree into a red web against a field of blue. Look at the branches: they already behave less like wood than like lines spreading across a surface."],
+    ["mo3", "mo4", "After seeing Picasso and Braque at an Amsterdam exhibition in 1911, Mondrian drained his colour to grey and ochre, and at the end of that year he moved to Paris. In The Grey Tree the branches arc into a rhythm of curves and the space flattens. A year later, in the Flowering Apple Tree, the tree has almost vanished: short curved strokes interlock into an all-over pattern held in a loose oval, and only the title tells you what you are looking at. It is the most direct sequence in modern art from observed nature to abstraction."],
+    ["mo5", "mo6", "In Paris the curves straightened into a scaffolding of short horizontal and vertical strokes in muted ochre, grey and pink: the Cubist grid without the Cubist object. Back in the neutral Netherlands during the war, he looked at the pier at Scheveningen running into the North Sea and reduced it to small plus and minus signs inside a loose oval, waves and pier as a rhythm of crosses. Only horizontals and verticals are left, and the theory of their balance would occupy the rest of his life."],
+    ["mo7", "mo8", "In 1919 he tried a modular grid of sixteen by sixteen equal squares filled with pale colour, a system in which every cell is equal and no point matters more than another. He soon dropped it as too static. By 1921 the mature style was in place: unequal rectangles, thick black lines, white, and red, blue and yellow in carefully weighed doses. The 1930 Zürich picture is the classic example. Look at how small the blue and yellow are, and how much work they do in holding a huge red square in balance."],
+    ["mo9", "mo10", "Fleeing the war, Mondrian reached New York in 1940 and fell for Manhattan’s street grid and boogie-woogie piano. The black lines disappear. Broadway Boogie Woogie is made of yellow lines punctuated by small squares of red, blue and grey, blinking like traffic seen from above. Victory Boogie Woogie, a diamond-shaped canvas still unfinished when he died in February 1944, is covered with bits of coloured tape he was still moving around. It was bought for the Netherlands in 1998 for about 80 million guilders."]
+  ]
+},
+{
+  id: "klee", name: "Paul Klee", kind: "Painter", dates: "1879–1940", life: [1879, 1940], span: [1898, 1940],
+  pig: ["Terre verte", "#6c8868"],
+  intro: "A trained violinist from Bern who taught at the Bauhaus from 1921 to 1931 and wrote some of its most original theory, starting from the idea of taking a line for a walk. Klee made more than 9,000 works, most of them small.",
+  manifesto: "“Creative Confession” (1920), which opens with the claim that art does not reproduce the visible but makes visible; Pedagogical Sketchbook (Bauhaus book, 1925).",
+  works: [
+    { id: "kl1", t: "Virgin in a Tree (Invention 3)", y: "1903", yr: 1903, m: "moma", n: "etching; impressions in several collections", f: "Paul Klee, Inventionen Nr. 3, Jungfrau im Baum (1903).jpg" },
+    { id: "kl2", t: "Before the Gates of Kairouan", y: "1914", yr: 1914.3, m: "zpk", f: "Vor den Toren v. Kairuan, Paul Klee (1914).png" },
+    { id: "kl3", t: "Angelus Novus", y: "1920", yr: 1920, m: "israel", f: "Paul Klee ~ Angelus Novus ~ 1920.jpg" },
+    { id: "kl4", t: "Twittering Machine", y: "1922", yr: 1922, m: "moma", f: "Die Zwitscher-Maschine (Twittering Machine), 1922 - Paul Klee.jpg" },
+    { id: "kl5", t: "Fish Magic", y: "1925", yr: 1925, m: "pma", f: "Paul Klee, Swiss - Fish Magic - Google Art Project.jpg" },
+    { id: "kl6", t: "Highways and Byways", y: "1929", yr: 1929, m: "ludwig", f: "Paul Klee, Hauptweg und Nebenwege, 1929, Öl auf Leinwand, 83,7 x 67,5 cm, Museum Ludwig 1976.jpg" },
+    { id: "kl7", t: "Ad Parnassum", y: "1932", yr: 1932, m: "bern", f: "Ad Parnassum, Paul Klee (1932, 274).jpg" },
+    { id: "kl8", t: "Death and Fire", y: "1940", yr: 1940, m: "zpk", f: "Death and Fire (1940) - Paul Klee (Zentrum Paul Klee).jpg" }
+  ],
+  pairs: [
+    ["kl1", "kl2", "For his first decade Klee thought of himself as a draughtsman. His early etchings, the Inventions, are bitter, grotesque satires in a fine, hard line: a scrawny nude lying in a dead tree. In April 1914 he travelled to Tunisia with August Macke and Louis Moilliet, and in Kairouan he wrote in his diary that colour had taken hold of him, that he and colour were one, and that he was a painter. The watercolours from the trip break the town into small transparent patches of colour, domes and walls dissolving in light."],
+    ["kl3", "kl4", "Klee’s oil-transfer technique, tracing a drawing through a sheet coated with black paint, gives both of these their smudged, printed line. The philosopher Walter Benjamin bought Angelus Novus in 1921 and saw in it the angel of history, facing the past while a storm called progress blows him backwards into the future. Twittering Machine is a joke with a chill: four wiry birds on a perch turned by a crank, a contraption for producing birdsong, a parody of the machine age the Bauhaus celebrated. The Nazis later put it in the Degenerate Art exhibition."],
+    ["kl5", "kl6", "Fish Magic is painted over a dark ground, so fish, flowers, a clock and a moon glow as if seen through deep water; Klee even glued on a square of muslin to make a window within the picture. A trip to Egypt in the winter of 1928–29 changed his structure. Highways and Byways is built from horizontal bands of colour, like irrigated fields along the Nile, with a central road climbing toward a blue sky. Klee thought of such pictures as polyphonic, with several rhythms running in parallel like voices in Bach."],
+    ["kl7", "kl8", "Ad Parnassum, one of his largest paintings, is built from thousands of stamped dots of colour over a grid, a private pointillism that makes a mountain and a temple out of shimmering light; the title recalls Gradus ad Parnassum, the counterpoint textbook every musician knew. After the Nazis dismissed him from his Düsseldorf professorship in 1933 and a long illness set in from 1935, his line grew thick and black, like beams or runes. Death and Fire shows a white skull-like face whose features spell T-O-D, German for death, and a figure walking toward it. He died that year."]
+  ]
+},
+{
+  id: "modigliani", name: "Amedeo Modigliani", kind: "Painter", dates: "1884–1920", life: [1884, 1920], span: [1902, 1920],
+  pig: ["Burnt sienna", "#9a4e2b"],
+  intro: "Born in Livorno to a Sephardic Jewish family, Modigliani came to Paris in 1906 and became the legend of Montparnasse: poverty, drink, tuberculosis and an unmistakable style. He died at 35 in 1920, so his whole career sits inside this story.",
+  works: [
+    { id: "mg1", t: "Head of a Woman (limestone)", y: "1910–11", yr: 1910.5, m: "nga", f: "Amedeo Modigliani, Head of a Woman, 1910-1911, NGA 46716.jpg" },
+    { id: "mg2", t: "Paul Guillaume, Novo Pilota", y: "1915", yr: 1915, m: "orangerie", f: "Amedeo Modigliani - Paul Guillaume, Novo Pilota.jpg" },
+    { id: "mg3", t: "Portrait of Chaïm Soutine", y: "1915–16", yr: 1916, m: "stuttgart", f: "Modigliani - Bildnis Chaim Soutine (Portrait de Chaim Soutine), 1915.jpg" },
+    { id: "mg4", t: "Self-Portrait", y: "1919", yr: 1919.6, m: "macusp", f: "Modigliani-autoretrato-macusp1.jpg" },
+    { id: "mg5", t: "Reclining Nude", y: "c. 1919", yr: 1919, m: "moma", f: "Modigliani, Amedeo - Reclining Nude - MoMA.jpg" },
+    { id: "mg6", t: "Jeanne Hébuterne", y: "1919", yr: 1919.3, m: "met", f: "Amedeo Modigliani, 1919, Jeanne Hébuterne, oil on canvas, 91.4 x 73 cm, Metropolitan Museum of Art.jpg" }
+  ],
+  pairs: [
+    ["mg1", "mg2", "Between about 1909 and 1914 Modigliani mostly carved, encouraged by his neighbour Brancusi. His limestone heads have long noses, small mouths, almond eyes and stretched necks, drawn from Khmer, African and Cycladic sculpture. The stone dust was bad for his lungs and the money ran out, so he went back to painting and took the sculpture with him. The portrait of his young dealer Paul Guillaume carries the inscription “Novo Pilota”, new pilot: a dandy in collar and tie, the face simplified into planes, the background thin and scraped."],
+    ["mg3", "mg4", "Modigliani painted his friends, the exiles of Montparnasse, and Chaïm Soutine, a penniless painter from a shtetl near Minsk, was one of his favourite sitters. Here the head tilts, the eyes are uneven, the surface is still restless. His later dealer, the Polish poet Léopold Zborowski, gave him a room and a daily allowance, and by 1919 the style had settled into its final form. His only painted self-portrait shows him pale and serene, palette in hand, eyes without pupils, a few months before his death."],
+    ["mg5", "mg6", "His only solo exhibition, at Berthe Weill’s gallery in December 1917, ran into the police on its first day; the commissioner ordered the nudes in the window taken down. The nudes descend from Giorgione, Titian and Ingres, but they press against the edges of the canvas and meet your eye. The portraits of Jeanne Hébuterne, his partner and the mother of his daughter, show the style at its most extreme: neck as a long column, head as a tilted oval. She died the day after him. The elongation that looks like mannerism is really a sculptor’s memory."]
+  ]
+},
+{
+  id: "chagall", name: "Marc Chagall", kind: "Painter", dates: "1887–1985", life: [1887, 1985], span: [1906, 1985],
+  pig: ["Cerulean", "#3d8ec4"],
+  intro: "A Hasidic Jew from Vitebsk who reached Paris in 1910 and fused Cubist structure and Fauve colour with the folk memory of the shtetl. Chagall worked until his death in 1985, so his work is in copyright in the EU until 2056 and these cards link out.",
+  works: [
+    { id: "ch1", t: "The Dead Man", y: "1908", yr: 1908, m: "pompidou", c: 2056, w: "Marc Chagall" },
+    { id: "ch2", t: "I and the Village", y: "1911", yr: 1911, m: "moma", c: 2056, w: "I and the Village" },
+    { id: "ch3", t: "The Fiddler", y: "1912–13", yr: 1912.6, m: "stedelijk", c: 2056, w: "The Fiddler (Chagall)" },
+    { id: "ch4", t: "Paris Through the Window", y: "1913", yr: 1913, m: "gugg", c: 2056, w: "Paris Through the Window" },
+    { id: "ch5", t: "Over the Town", y: "1914–18", yr: 1915.5, m: "tretyakov", c: 2056, w: "Over the Town" },
+    { id: "ch6", t: "The Birthday", y: "1915", yr: 1915.2, m: "moma", c: 2056, w: "Birthday (Chagall)" },
+    { id: "ch7", t: "The Falling Angel", y: "1923–47", yr: 1933, m: "basel", c: 2056, w: "Marc Chagall" },
+    { id: "ch8", t: "White Crucifixion", y: "1938", yr: 1938, m: "aic", c: 2056, w: "White Crucifixion" }
+  ],
+  pairs: [
+    ["ch1", "ch2", "The Dead Man, painted while he studied in St Petersburg, is a Vitebsk street at night: a corpse ringed by candles, a mourning woman, a fiddler on a rooftop. The colour is dark and earthy, but the dream logic is already there. In Paris, soon living at La Ruche, the beehive-shaped studio building for poor émigré artists, he met Cubism and Delaunay’s colour. I and the Village sets a green-faced man and a cow’s head nose to nose inside a wheel of prismatic planes, with a milkmaid inside the cow’s head and a peasant woman walking upside down. Cubism here tells a fairy tale."],
+    ["ch3", "ch4", "The green-faced Fiddler, a giant over the snowy village, plays at Jewish weddings and funerals; he is half Hasidic tradition, half Cubist mannequin, and he is often said to have inspired the title of the musical Fiddler on the Roof. Paris Through the Window looks out on the Eiffel Tower with a parachutist, an upside-down train and a two-faced man, perhaps Chagall himself, looking east and west at once. The window and Delaunay’s coloured prisms let the two worlds into one picture."],
+    ["ch5", "ch6", "Trapped in Vitebsk by the war, Chagall married Bella Rosenfeld in 1915, and the lovers took to the air. In Over the Town they float horizontally over wooden houses, with a man squatting by a fence in the corner as a private joke. The Birthday shows Bella bringing flowers while Chagall, his neck twisted impossibly, floats up to kiss her in a real bedroom with patterned rugs. Levitation is his great invention: love shown as a loss of gravity."],
+    ["ch7", "ch8", "The Falling Angel was begun in Paris in 1923, reworked in 1933 and finished in 1947, and its red angel plunging past a Jew clutching a Torah scroll records three decades of darkening history. White Crucifixion answers the pogroms and the Kristallnacht of November 1938. Christ wears a Jewish prayer shawl as a loincloth; around him a synagogue burns, refugees flee by boat, and a man in a green armband (once lettered “Ich bin Jude”, later painted over) runs past. The style hasn’t changed, but the floating figures now flee rather than fly. Pope Francis named it his favourite painting."]
+  ]
+},
+{
+  id: "kisling", name: "Moïse (Mojżesz) Kisling", kind: "Painter", dates: "1891–1953", life: [1891, 1953], span: [1910, 1953],
+  pig: ["Emerald green", "#2b8a5d"],
+  intro: "Born in Kraków and trained there under Józef Pankiewicz, Kisling reached Paris at nineteen and became one of the bright figures of Montparnasse, known for his parties as much as for his enamel-smooth portraits and nudes. He died in 1953, so his work entered the EU public domain in 2024, but few good images of it have reached Commons yet.",
+  works: [
+    { id: "ks1", a: "Roman Kramsztyk", t: "Portrait of Mojżesz Kisling", y: "1913", yr: 1913, m: "mnk", f: "Kramsztyk, Roman (1885-1942) - Portrait of Mojżesz Kisling - MNK II-b-294 - National Museum Kraków.jpg" },
+    { id: "ks2", a: "Amedeo Modigliani", t: "Portrait of Moïse Kisling", y: "1915", yr: 1915, m: "brera", f: "Amedeo Modigliani (1884-1920) - Ritratto del pittore Moisè Kisling (1915) - Pinacoteca di Brera - Milano.jpg" },
+    { id: "ks3", t: "La Sieste à Saint-Tropez (Kisling with Renée)", y: "1916", yr: 1916, m: null, n: "Collection not publicly listed", f: "Moise Kisling, 1916, La Sieste à Saint-Tropez, Kisling avec Renée.jpg" },
+    { id: "ks4", t: "Kiki de Montparnasse", y: "1924", yr: 1924, m: "chimei", ns: true, u: "https://collections.culture.tw/chimei_collectionsweb/en/collection.aspx?GID=M60ZM6" },
+    { id: "ks5", t: "Portrait of Madame Renée Kisling", y: "1920", yr: 1920, m: "nagoya", ns: true, u: "https://artsandculture.google.com/asset/ewFPGyLVMfmYSA" },
+    { id: "ks6", t: "Woman with a Polish Shawl", y: "c. 1928", yr: 1928, m: "pompidou", n: "on deposit at the Musée d’art et d’histoire du Judaïsme, Paris", ns: true, u: "https://www.centrepompidou.fr/en/ressources/oeuvre/cqG57Ek" }
+  ],
+  pairs: [
+    ["ks1", "ks2", "Start with how his friends saw him. Roman Kramsztyk, a Warsaw-born Polish-Jewish painter who also worked in Paris, painted him in a solid, classicising manner: a stocky young man with a direct gaze. Two years later Modigliani painted him with a low fringe and a broad, flat face simplified into a mask. Kisling lent Modigliani studio space and, in 1920, organised his funeral. These two portraits frame the world he moved between: the sober realism of the Polish school and the stylisation of Montparnasse."],
+    ["ks3", "ks4", "Kisling volunteered for the French Foreign Legion and was badly wounded in the war. This picture of himself with Renée Gros, who became his wife, still shows the Cézanne-and-Derain manner of his first Paris years: muted greens, simplified volumes, Provençal light. By the mid-1920s his style had turned into the smooth, glossy, almost porcelain finish that sold so well. Kiki de Montparnasse, model, singer and Man Ray’s companion, sat for him often. Look for the high-keyed colour, the very large eyes and the hint of melancholy that keep these pictures from being merely decorative."],
+    ["ks5", "ks6", "Renée Kisling, known in Montparnasse for her tomboyish style, embodied the garçonne, the boyish modern woman of the 1920s, and her husband painted her with crisp contours and saturated, enamel-like colour. By the late 1920s his formula was fixed: a frontal sitter, large, sad eyes, smooth modelling and a background of patterned foliage that echoes the costume. Woman with a Polish Shawl makes the Kraków roots explicit, and the Pompidou’s own catalogue note compares its poses to Modigliani’s. Kisling spent the Second World War in exile in the United States and returned to France in 1946."]
+  ]
+},
+{
+  id: "surrealism", name: "Surrealism", kind: "Movement", dates: "1924", life: null, span: [1924, 1945],
+  pig: ["Payne’s grey", "#4b5865"],
+  intro: "André Breton’s Manifesto of Surrealism defined it as “pure psychic automatism”, thought dictated without the control of reason. Its painters split between two methods: automatism, letting the hand run free, and dream illusionism, painting the impossible with academic precision. Most of its stars lived long, so nearly all of this section is still in copyright.",
+  manifesto: "André Breton, Manifesto of Surrealism (October 1924); Second Manifesto of Surrealism (1929).",
+  works: [
+    { id: "s1", a: "Giorgio de Chirico", t: "The Song of Love", y: "1914", yr: 1914, m: "moma", c: 2049, w: "The Song of Love" },
+    { id: "s2", a: "René Magritte", t: "The Treachery of Images", y: "1929", yr: 1929, m: "lacma", c: 2038, w: "The Treachery of Images" },
+    { id: "s3", a: "Joan Miró", t: "The Tilled Field", y: "1923–24", yr: 1923.6, m: "gugg", c: 2054, w: "The Tilled Field" },
+    { id: "s4", a: "Joan Miró", t: "Harlequin’s Carnival", y: "1924–25", yr: 1924.7, m: "akg", c: 2054, w: "Harlequin's Carnival" },
+    { id: "s5", a: "André Masson", t: "Battle of Fishes", y: "1926", yr: 1926, m: "moma", c: 2058, w: "André Masson" },
+    { id: "s6", a: "Max Ernst", t: "Forest and Dove", y: "1927", yr: 1927, m: "tate", c: 2047, w: "Max Ernst" },
+    { id: "s7", a: "Yves Tanguy", t: "Mama, Papa Is Wounded!", y: "1927", yr: 1927.4, m: "moma", f: "Mama, Papa is Wounded!.jpg" },
+    { id: "s8", a: "Salvador Dalí", t: "The Persistence of Memory", y: "1931", yr: 1931, m: "moma", c: 2060, w: "The Persistence of Memory" },
+    { id: "s9", a: "Salvador Dalí", t: "Soft Construction with Boiled Beans (Premonition of Civil War)", y: "1936", yr: 1936, m: "pma", c: 2060, w: "Soft Construction with Boiled Beans (Premonition of Civil War)" },
+    { id: "s10", a: "Max Ernst", t: "The Robing of the Bride", y: "1940", yr: 1940, m: "pgc", c: 2047, w: "The Robing of the Bride" }
+  ],
+  pairs: [
+    ["s1", "s2", "De Chirico’s metaphysical paintings, made in Paris before the war, are the founding images of Surrealism. Here a plaster head of the Apollo Belvedere, a red rubber glove and a green ball sit beside an arcade under a deep green sky. Magritte said that seeing a reproduction of this picture in the early 1920s moved him to tears and showed him what painting could do. In The Treachery of Images he paints a pipe as plainly as a shop sign and writes beneath it that this is not a pipe. Both use a flat, almost illustrative technique to make ordinary things strange."],
+    ["s3", "s4", "Miró’s farm pictures had been detailed and legible, but in The Tilled Field his Catalan landscape turns into a code: an ear grows on a tree, an eye looks out of the foliage, animals become signs. A year later, poor and, he claimed, hallucinating from hunger, he painted Harlequin’s Carnival, a party of musical notes, a ladder, cats playing with yarn, insects and a guitar-faced harlequin. The forms have become a personal alphabet of biomorphic shapes floating on a flat ground: automatism with a painter’s control."],
+    ["s5", "s6", "Masson made automatism literal. He spread glue across the canvas, threw sand over it, shook off the excess and then drew into the accidental shapes with a few lines and touches of oil. Battle of Fishes is one of these sand paintings, violence emerging from chance. Ernst found chance machines of his own: frottage (rubbing over wood grain or other textures) and grattage (scraping paint across them), which gave him forests growing out of floorboards. Look at the bark in Forest and Dove. It was printed off something real, not painted stroke by stroke."],
+    ["s7", "s8", "Tanguy, a former merchant sailor who taught himself to paint after seeing a de Chirico in a gallery window from a bus, invented the empty seabed landscape: an endless plain with no horizon line, scattered with soft, bone-like forms casting long shadows. The title came from a psychiatric case history. He died in January 1955, so his work entered the EU public domain on 1 January 2026, and Commons has begun to host it. Dalí learned a great deal from those deserts. The Persistence of Memory puts melting watches on a Catalan shore, painted with a miniaturist’s precision on a canvas only 24 × 33 cm."],
+    ["s9", "s10", "By the mid-1930s Surrealist illusionism was turning toward catastrophe. Dalí painted a monstrous body tearing itself apart over a Spanish landscape months before the Civil War began, and added the subtitle about premonition afterwards. Ernst painted The Robing of the Bride in Saint-Martin-d’Ardèche as war closed in, partly with decalcomania (paint pressed between surfaces and pulled apart to leave spongy textures): a bride in a cloak of red feathers. Peggy Guggenheim bought it, married Ernst in 1941, and it hangs in her palazzo on the Grand Canal. Surrealism’s next chapter was written in New York."]
+  ]
+}
+];
+
+/* ---------- Timeline extras ---------- */
+const MOVEMENTS = [
+  ["Impressionist exhibitions", 1874, 1886], ["Post-Impressionism", 1886, 1906], ["Vienna Secession", 1897, 1918],
+  ["Fauvism", 1905, 1908], ["Die Brücke", 1905, 1913], ["Cubism", 1907, 1921], ["Futurism", 1909, 1916],
+  ["Der Blaue Reiter", 1911, 1914], ["Orphism", 1912, 1914], ["Rayonism", 1912, 1914], ["Metaphysical painting", 1911, 1919],
+  ["Suprematism", 1915, 1927], ["Dada", 1916, 1924], ["De Stijl", 1917, 1931], ["Return to order", 1918, 1926],
+  ["Constructivism", 1919, 1932], ["Bauhaus", 1919, 1933], ["New Objectivity", 1923, 1933], ["Surrealism", 1924, 1945],
+  ["School of Paris", 1905, 1940]
+];
+const TEXTS = [
+  [1874.3, "ev", "First Impressionist exhibition, Paris. Cézanne shows The House of the Hanged Man."],
+  [1886.7, "tx", "<b>Jean Moréas, Symbolist Manifesto</b>, Le Figaro, 18 September."],
+  [1897.3, "ev", "Vienna Secession founded, with Klimt as president. Its building (1898) carries the motto “To each age its art, to art its freedom”."],
+  [1905.8, "ev", "Salon d’Automne, Paris: Vauxcelles’s quip about “wild beasts” names Fauvism."],
+  [1906.3, "tx", "<b>Die Brücke programme</b>, cut as a woodcut by Kirchner, Dresden."],
+  [1907.8, "ev", "Cézanne memorial retrospective at the Salon d’Automne."],
+  [1908.9, "tx", "<b>Henri Matisse, “Notes of a Painter”</b>, La Grande Revue, December."],
+  [1909.15, "tx", "<b>F. T. Marinetti, Founding Manifesto of Futurism</b>, front page of Le Figaro, 20 February."],
+  [1910.3, "tx", "<b>Technical Manifesto of Futurist Painting</b> (Boccioni, Carrà, Russolo, Balla, Severini), April; <b>Adolf Loos lectures “Ornament and Crime”</b> in Vienna."],
+  [1911.95, "tx", "<b>Wassily Kandinsky, Concerning the Spiritual in Art</b>, December (dated 1912)."],
+  [1912.4, "tx", "<b>Der Blaue Reiter almanac</b>, May; <b>Gleizes and Metzinger, Du “Cubisme”</b>."],
+  [1913.15, "ev", "Armory Show, New York: Duchamp’s Nude Descending a Staircase becomes its scandal."],
+  [1913.5, "tx", "<b>Larionov and Goncharova, Rayonist manifesto</b>; <b>Luigi Russolo, The Art of Noises</b>."],
+  [1915.95, "tx", "<b>Malevich, From Cubism and Futurism to Suprematism</b>, issued for the 0,10 exhibition, Petrograd, where Black Square is first shown."],
+  [1916.1, "ev", "Cabaret Voltaire opens in Zurich, 5 February; Hugo Ball reads the first Dada manifesto on 14 July."],
+  [1917.8, "ev", "Russian Revolution; first issue of De Stijl, October."],
+  [1918.9, "tx", "<b>Tristan Tzara, Dada Manifesto 1918</b>; <b>first De Stijl manifesto</b>, November."],
+  [1919.3, "tx", "<b>Walter Gropius, Bauhaus manifesto</b>, Weimar, April, with Feininger’s woodcut cathedral on the cover."],
+  [1920.6, "tx", "<b>Naum Gabo and Antoine Pevsner, Realistic Manifesto</b>, Moscow."],
+  [1924.8, "tx", "<b>André Breton, Manifesto of Surrealism</b>, October."],
+  [1929.9, "tx", "<b>Breton, Second Manifesto of Surrealism</b>."],
+  [1933.6, "ev", "The Bauhaus closes under Nazi pressure; Klee and Kandinsky leave Germany."],
+  [1937.5, "ev", "“Degenerate Art” exhibition, Munich, July; Guernica shown at the Paris International Exposition."]
+];
+const WARS = [["First World War", 1914.58, 1918.86], ["Second World War", 1939.67, 1945]];
+
+/* ---------- Helpers ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
+const encFile = f => encodeURIComponent(f.replace(/ /g, "_"));
+const thumbURL = (f, w) => `https://commons.wikimedia.org/wiki/Special:FilePath/${encFile(f)}?width=${w}`;
+const origURL = f => `https://commons.wikimedia.org/wiki/Special:FilePath/${encFile(f)}`;
+const pageURL = f => `https://commons.wikimedia.org/wiki/File:${encFile(f)}`;
+const wikiURL = q => `https://en.wikipedia.org/w/index.php?title=Special:Search&go=Go&search=${encodeURIComponent(q)}`;
+const reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const WORKS = [];
+const BYID = {};
+SECTIONS.forEach(s => s.works.forEach(w => {
+  w.sec = s;
+  w.artist = w.a || s.name.replace(/ \(.*\)/, "");
+  if (s.id === "kisling" && !w.a) w.artist = "Moïse Kisling";
+  WORKS.push(w); BYID[w.id] = w;
+}));
+function rightsOf(w) {
+  if (w.c) return { cls: "cr", label: `© EU until ${w.c}` };
+  if (w.ns) return { cls: "ns", label: "Public domain · no free scan yet" };
+  return { cls: "pd", label: "Public domain" };
+}
+function whereText(w) {
+  if (!w.m) return w.n || "";
+  const [name, city] = MUS[w.m];
+  return `${name}, ${city}` + (w.n ? ` (${w.n})` : "");
+}
+
+/* ---------- Artists view ---------- */
+function figureHTML(w) {
+  const r = rightsOf(w);
+  const showArtist = !!w.a || w.sec.kind === "Movement";
+  const alt = `${w.t} by ${w.artist}, ${w.y}`;
+  let frame;
+  if (w.f) {
+    frame = `<div class="frame">
+      <button class="frame-btn" type="button" data-open="${w.id}" aria-label="Enlarge ${esc(w.t)}">
+        <img class="thumb" loading="lazy" decoding="async" src="${thumbURL(w.f, 800)}" alt="${esc(alt)}">
+      </button>
+      <a class="placard" href="${pageURL(w.f)}" target="_blank" rel="noopener">
+        <span class="p-rights pd">Public domain · Wikimedia Commons</span>
+        <span class="p-title">${esc(w.t)}</span>
+        <span class="p-sub">${esc(w.artist)}, ${esc(w.y)}</span>
+        <span class="p-go">Open the full-resolution file ↗</span>
+      </a></div>`;
+  } else {
+    const href = w.u || wikiURL(w.w || `${w.t} ${w.artist}`);
+    const go = w.u ? "See it on the museum’s page ↗" : "See it on Wikipedia ↗";
+    const why = w.c ? `In copyright in the EU until 1 January ${w.c}` : "Public domain · no free scan on Commons yet";
+    frame = `<div class="frame textonly">
+      <a class="placard" href="${href}" target="_blank" rel="noopener">
+        <span class="p-rights ${r.cls}">${why}</span>
+        <span class="p-title">${esc(w.t)}</span>
+        <span class="p-sub">${esc(w.artist)}, ${esc(w.y)}</span>
+        <span class="p-go">${go}</span>
+      </a></div>`;
+  }
+  const museum = w.m
+    ? `<button class="museum-link" type="button" data-museum="${w.m}">${esc(MUS[w.m][0])}</button>, ${esc(MUS[w.m][1])}${w.n ? ` <span>(${esc(w.n)})</span>` : ""}`
+    : esc(w.n || "");
+  const extLink = w.f ? `<a href="${pageURL(w.f)}" target="_blank" rel="noopener">Commons ↗</a>` : "";
+  return `<figure class="work" id="w-${w.id}">
+    ${frame}
+    <figcaption>
+      ${showArtist ? `<span class="cap-artist">${esc(w.artist)}</span>` : ""}
+      <span class="cap-title"><i>${esc(w.t)}</i>, ${esc(w.y)}</span>
+      <span class="cap-where">${museum}</span>
+      <span class="cap-row"><span class="pill ${r.cls}">${r.label}</span>${extLink}</span>
+    </figcaption>
+  </figure>`;
+}
+function renderArtists() {
+  $("#palette").innerHTML = SECTIONS.map(s =>
+    `<a class="chip" href="#${s.id}" data-jump="${s.id}"><span class="sw" style="background:${s.pig[1]}"></span>${esc(s.name.replace(/ \(.*\)/, ""))}</a>`).join("");
+  $("#sections").innerHTML = SECTIONS.map(s => {
+    const pairs = s.pairs.map((p, i) => {
+      const a = BYID[p[0]], b = BYID[p[1]];
+      return `<div class="pair">
+        <div class="pair-head"><span class="label">Pair ${i + 1} of ${s.pairs.length}</span><span class="yrs">${esc(a.y)} → ${esc(b.y)}</span></div>
+        <div class="figs">${figureHTML(a)}${figureHTML(b)}</div>
+        <p class="pair-text">${esc(p[2])}</p>
+      </div>`;
+    }).join("");
+    return `<section class="sec" id="${s.id}" aria-labelledby="h-${s.id}">
+      <div class="sec-head">
+        <div class="pigment"><span class="big" style="background:${s.pig[1]}"></span><span class="pname">${esc(s.pig[0])}</span></div>
+        <div style="min-width:0">
+          <h2 id="h-${s.id}">${esc(s.name)}</h2>
+          <p class="meta label">${esc(s.kind)} · ${esc(s.dates)} · ${s.works.length} works</p>
+          <p class="intro">${esc(s.intro)}</p>
+          ${s.manifesto ? `<p class="manif"><b>Key texts</b>${esc(s.manifesto)}</p>` : ""}
+        </div>
+      </div>
+      ${pairs}
+    </section>`;
+  }).join("");
+}
+
+/* Image load tracking */
+let loadedCount = 0;
+function wireImages() {
+  document.querySelectorAll("img.thumb").forEach(img => {
+    img.addEventListener("load", () => { loadedCount++; $("#img-note").hidden = true; });
+    img.addEventListener("error", () => {
+      const fr = img.closest(".frame"); if (fr) fr.classList.add("failed");
+      if (!loadedCount) $("#img-note").hidden = false;
+    });
+  });
+}
+
+/* ---------- Museums view ---------- */
+function museumGroups() {
+  const g = {};
+  WORKS.forEach(w => { if (w.m) (g[w.m] = g[w.m] || []).push(w); });
+  return Object.entries(g).map(([k, ws]) => ({ k, name: MUS[k][0], city: MUS[k][1], works: ws.sort((a, b) => a.yr - b.yr) }))
+    .sort((a, b) => b.works.length - a.works.length || a.name.localeCompare(b.name));
+}
+function renderMuseums() {
+  const groups = museumGroups();
+  const located = WORKS.filter(w => w.m).length;
+  const cities = new Set(groups.map(g => g.city)).size;
+  const top5 = groups.slice(0, 5).reduce((n, g) => n + g.works.length, 0);
+  $("#mus-summary").textContent = `${located} of the ${WORKS.length} works in this guide are in ${groups.length} public collections across ${cities} cities. The top five collections hold ${top5} of them; ${groups[0].name} alone has ${groups[0].works.length}. Tap a work to jump to its pair.`;
+  $("#mus-list").innerHTML = groups.map(g => `<li class="mus" id="m-${g.k}" data-search="${esc((g.name + " " + g.city + " " + g.works.map(w => w.artist + " " + w.t).join(" ")).toLowerCase())}">
+      <div class="mus-count">${g.works.length}<small>${g.works.length === 1 ? "work" : "works"}</small></div>
+      <div style="min-width:0">
+        <h3>${esc(g.name)}</h3>
+        <p class="city label">${esc(g.city)}</p>
+        <ul class="mus-works">${g.works.map(w => `<li><button type="button" data-goto="${w.id}">
+          <span class="mw-artist">${esc(w.artist)}</span>
+          <span class="mw-title"><i>${esc(w.t)}</i> <span class="mw-yr">${esc(w.y)}</span>${w.c ? ` <span class="pill cr">© ${w.c}</span>` : ""}</span>
+        </button></li>`).join("")}</ul>
+      </div></li>`).join("");
+}
+function filterMuseums(q) {
+  q = q.trim().toLowerCase();
+  let shown = 0;
+  document.querySelectorAll(".mus").forEach(li => {
+    const hit = !q || li.dataset.search.includes(q);
+    li.hidden = !hit; if (hit) shown++;
+  });
+  $("#mus-empty").hidden = shown > 0;
+}
+
+/* ---------- Timeline view ---------- */
+const T0 = 1865, T1 = 1946, PX = 13;
+const xOf = y => (Math.max(T0, Math.min(T1, y)) - T0) * PX;
+function renderTimeline() {
+  const tl = $("#tl");
+  const W = (T1 - T0) * PX;
+  tl.style.setProperty("--trackw", W + "px");
+  const rows = [];
+  const grid = () => {
+    let g = "";
+    for (let y = 1870; y <= 1940; y += 10) g += `<i class="gridline" style="left:${xOf(y)}px"></i>`;
+    WARS.forEach(([n, a, b]) => { g += `<i class="war" style="left:${xOf(a)}px;width:${xOf(b) - xOf(a)}px"></i>`; });
+    return g;
+  };
+  // axis
+  let ticks = "";
+  for (let y = T0; y <= 1945; y += 5) ticks += `<i class="tick" style="left:${xOf(y)}px;${y % 10 ? "opacity:.45" : ""}">${y % 10 === 0 ? `<span>${y}</span>` : ""}</i>`;
+  rows.push(`<div class="tl-label group" style="height:34px">Year</div><div class="tl-track tl-axis">${ticks}</div>`);
+  // movements in lanes
+  const lanes = [];
+  const sorted = MOVEMENTS.slice().sort((a, b) => a[1] - b[1]);
+  sorted.forEach(m => {
+    const x0 = xOf(m[1]), x1 = xOf(m[2]);
+    const need = Math.max(x1, x0 + m[0].length * 6.2 + 14);
+    let lane = lanes.findIndex(end => end + 4 <= x0);
+    if (lane === -1) { lanes.push(0); lane = lanes.length - 1; }
+    lanes[lane] = need; m.lane = lane;
+  });
+  const laneH = 24, mvH = lanes.length * laneH + 10;
+  const mvBars = sorted.map(m => `<span class="mv" title="${esc(m[0])}, ${m[1]}–${m[2]}" style="left:${xOf(m[1])}px;width:${Math.max(xOf(m[2]) - xOf(m[1]), m[0].length * 6.2 + 12)}px;top:${6 + m.lane * laneH}px">${esc(m[0])}</span>`).join("");
+  rows.push(`<div class="tl-label group" style="height:${mvH}px">Movements</div><div class="tl-track" style="height:${mvH}px">${grid()}${mvBars}</div>`);
+  // manifestos and events
+  const mk = TEXTS.map((t, i) => `<button class="mk ${t[1] === "ev" ? "ev" : ""}" type="button" data-text="${i + 1}" data-tip="${esc(String(Math.floor(t[0])) + ": " + t[2].replace(/<[^>]+>/g, ""))}" style="left:${xOf(t[0])}px;top:${i % 2 ? 34 : 8}px" aria-label="${i + 1}. ${esc(t[2].replace(/<[^>]+>/g, ""))}"><span>${i + 1}</span></button>`).join("");
+  rows.push(`<div class="tl-label group" style="height:76px">Texts &amp; events</div><div class="tl-track" style="height:76px">${grid()}${mk}${WARS.map(([n, a]) => `<span class="war" style="left:${xOf(a)}px;width:0;background:none"><span>${n}</span></span>`).join("")}</div>`);
+  // sections
+  SECTIONS.forEach(s => {
+    let inner = grid();
+    if (s.life) {
+      const cut = s.life[0] < T0;
+      inner += `<i class="life${cut ? " cut" : ""}" style="left:${xOf(s.life[0])}px;width:${xOf(s.life[1]) - xOf(s.life[0])}px"></i>`;
+    }
+    inner += `<i class="act" style="left:${xOf(s.span[0])}px;width:${Math.max(4, xOf(s.span[1]) - xOf(s.span[0]))}px;background:${s.pig[1]}"></i>`;
+    inner += s.works.map(w => `<button class="dot" type="button" data-goto="${w.id}" data-tip="${esc(w.artist + ", " + w.t + ", " + w.y)}" aria-label="${esc(w.t + ", " + w.y)}" style="left:${xOf(w.yr)}px;background:${s.pig[1]}"></button>`).join("");
+    const short = s.name.replace(/ \(.*\)/, "");
+    rows.push(`<div class="tl-label" style="height:34px"><button type="button" data-jump="${s.id}"><span class="sw" style="background:${s.pig[1]}"></span>${esc(short)}</button></div><div class="tl-track" style="height:34px">${inner}</div>`);
+  });
+  tl.innerHTML = rows.join("");
+  $("#texts").innerHTML = TEXTS.map((t, i) => `<li id="t-${i + 1}"><span class="n ${t[1] === "ev" ? "ev" : ""}">${i + 1}</span><span class="yr">${Math.floor(t[0])}</span><span class="what">${t[2]}</span></li>`).join("");
+}
+
+/* Tooltip */
+const tip = $("#tip");
+function showTip(el, x, y) {
+  tip.textContent = el.dataset.tip; tip.hidden = false;
+  const r = tip.getBoundingClientRect();
+  let left = x + 12, top = y + 14;
+  if (left + r.width > window.innerWidth - 8) left = x - r.width - 12;
+  if (top + r.height > window.innerHeight - 8) top = y - r.height - 12;
+  tip.style.left = Math.max(8, left) + "px"; tip.style.top = Math.max(8, top) + "px";
+}
+document.addEventListener("pointerover", e => { const el = e.target.closest("[data-tip]"); if (el && e.pointerType === "mouse") showTip(el, e.clientX, e.clientY); });
+document.addEventListener("pointermove", e => { const el = e.target.closest("[data-tip]"); if (el && e.pointerType === "mouse") showTip(el, e.clientX, e.clientY); });
+document.addEventListener("pointerout", e => { if (e.target.closest("[data-tip]")) tip.hidden = true; });
+document.addEventListener("focusin", e => { const el = e.target.closest("[data-tip]"); if (el) { const r = el.getBoundingClientRect(); showTip(el, r.right, r.bottom); } });
+document.addEventListener("focusout", () => { tip.hidden = true; });
+
+/* ---------- Tabs and navigation ---------- */
+const VIEWS = ["artists", "museums", "timeline", "images"];
+function show(view) {
+  VIEWS.forEach(v => {
+    $("#" + v).hidden = v !== view;
+    $("#tab-" + v).setAttribute("aria-selected", v === view ? "true" : "false");
+  });
+  tip.hidden = true;
+  try { history.replaceState(null, "", "#" + view); } catch (e) { /* sandboxed */ }
+}
+function flash(el) { el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); }
+function scrollToEl(el, block = "start") { el.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block }); }
+function goToWork(id) {
+  show("artists");
+  const el = document.getElementById("w-" + id);
+  if (!el) return;
+  requestAnimationFrame(() => { scrollToEl(el, "center"); flash(el.querySelector(".frame")); });
+}
+function goToSection(id) {
+  show("artists");
+  const el = document.getElementById(id);
+  if (el) requestAnimationFrame(() => scrollToEl(el));
+  try { history.replaceState(null, "", "#" + id); } catch (e) { /* sandboxed */ }
+}
+function goToMuseum(k) {
+  show("museums");
+  $("#mus-filter").value = ""; filterMuseums("");
+  const el = document.getElementById("m-" + k);
+  if (el) requestAnimationFrame(() => { scrollToEl(el); flash(el); });
+}
+document.addEventListener("click", e => {
+  const tab = e.target.closest(".tab");
+  if (tab) { show(tab.id.replace("tab-", "")); const hero = $(".hero"); const y = hero.offsetTop + hero.offsetHeight; if (window.scrollY > y) window.scrollTo(0, y); return; }
+  const jump = e.target.closest("[data-jump]");
+  if (jump) { e.preventDefault(); goToSection(jump.dataset.jump); return; }
+  const go = e.target.closest("[data-goto]");
+  if (go) { goToWork(go.dataset.goto); return; }
+  const mus = e.target.closest("[data-museum]");
+  if (mus) { goToMuseum(mus.dataset.museum); return; }
+  const tx = e.target.closest("[data-text]");
+  if (tx) { const li = document.getElementById("t-" + tx.dataset.text); if (li) { scrollToEl(li, "center"); flash(li); } return; }
+  const open = e.target.closest("[data-open]");
+  if (open) { openLB(open.dataset.open); return; }
+});
+$("#mus-filter").addEventListener("input", e => filterMuseums(e.target.value));
+
+/* ---------- Lightbox ---------- */
+const lb = $("#lb"), lbImg = $("#lb-img"), stage = $("#lb-stage");
+let lbList = [], lbIdx = 0, zoomed = false, lastFocus = null;
+function viewable() { return WORKS.filter(w => w.f && !document.querySelector(`#w-${w.id} .frame.failed`)); }
+function setLB() {
+  const w = lbList[lbIdx];
+  zoomed = false; stage.classList.remove("zoom");
+  $("#lb-zoom").textContent = "Zoom";
+  lbImg.src = thumbURL(w.f, 1920);
+  lbImg.alt = `${w.t} by ${w.artist}, ${w.y}`;
+  $("#lb-title").textContent = w.t;
+  $("#lb-meta").textContent = `${w.artist} · ${w.y} · ${whereText(w)} · ${lbIdx + 1} of ${lbList.length}`;
+  $("#lb-orig").href = origURL(w.f);
+  $("#lb-commons").href = pageURL(w.f);
+}
+function openLB(id) {
+  lbList = viewable();
+  lbIdx = Math.max(0, lbList.findIndex(w => w.id === id));
+  if (!lbList.length) return;
+  lastFocus = document.activeElement;
+  setLB(); lb.hidden = false; document.body.style.overflow = "hidden";
+  $("#lb-close").focus();
+}
+function closeLB() { lb.hidden = true; lbImg.removeAttribute("src"); document.body.style.overflow = ""; if (lastFocus) lastFocus.focus(); }
+function stepLB(d) { lbIdx = (lbIdx + d + lbList.length) % lbList.length; setLB(); }
+function toggleZoom() {
+  const w = lbList[lbIdx];
+  zoomed = !zoomed;
+  stage.classList.toggle("zoom", zoomed);
+  $("#lb-zoom").textContent = zoomed ? "Fit to screen" : "Zoom";
+  lbImg.src = thumbURL(w.f, zoomed ? 3840 : 1920);
+  if (zoomed) stage.scrollTo(0, 0);
+}
+$("#lb-close").addEventListener("click", closeLB);
+$("#lb-prev").addEventListener("click", () => stepLB(-1));
+$("#lb-next").addEventListener("click", () => stepLB(1));
+$("#lb-zoom").addEventListener("click", toggleZoom);
+lbImg.addEventListener("dblclick", toggleZoom);
+document.addEventListener("keydown", e => {
+  if (lb.hidden) return;
+  if (e.key === "Escape") closeLB();
+  else if (e.key === "ArrowLeft") stepLB(-1);
+  else if (e.key === "ArrowRight") stepLB(1);
+  else if (e.key.toLowerCase() === "z") toggleZoom();
+  else if (e.key === "Tab") {
+    const f = [...lb.querySelectorAll("button, a[href]")];
+    const i = f.indexOf(document.activeElement);
+    if (e.shiftKey && i <= 0) { e.preventDefault(); f[f.length - 1].focus(); }
+    else if (!e.shiftKey && i === f.length - 1) { e.preventDefault(); f[0].focus(); }
+  }
+});
+/* drag to pan when zoomed (mouse); touch scrolls natively */
+let drag = null;
+stage.addEventListener("pointerdown", e => {
+  if (!zoomed || e.pointerType !== "mouse") return;
+  drag = { x: e.clientX, y: e.clientY, l: stage.scrollLeft, t: stage.scrollTop };
+  stage.classList.add("dragging"); e.preventDefault();
+});
+window.addEventListener("pointermove", e => { if (!drag) return; stage.scrollLeft = drag.l - (e.clientX - drag.x); stage.scrollTop = drag.t - (e.clientY - drag.y); });
+window.addEventListener("pointerup", () => { drag = null; stage.classList.remove("dragging"); });
+stage.addEventListener("click", e => { if (e.target === stage && !zoomed) closeLB(); });
+
+/* ---------- About: public-domain table ---------- */
+function renderPDTable() {
+  const seen = {};
+  WORKS.forEach(w => {
+    const key = w.artist;
+    if (!seen[key]) seen[key] = { artist: key, c: w.c || null, ns: w.ns, f: 0, n: 0 };
+    seen[key].n++; if (w.f) seen[key].f++;
+  });
+  const rows = Object.values(seen).filter(r => r.c).sort((a, b) => a.c - b.c || a.artist.localeCompare(b.artist));
+  $("#pd-table").innerHTML = `<table><thead><tr><th>Artist in this guide</th><th>Free in the EU from</th><th>Works here</th></tr></thead><tbody>${
+    rows.map(r => `<tr><td>${esc(r.artist)}</td><td>1 January ${r.c}</td><td>${r.n}</td></tr>`).join("")}</tbody></table>`;
+}
+
+/* ---------- Boot ---------- */
+function boot() {
+  renderArtists(); wireImages(); renderMuseums(); renderTimeline(); renderPDTable();
+  const groups = museumGroups();
+  const pdImg = WORKS.filter(w => w.f).length;
+  $("#stats").textContent = `${WORKS.length} works · ${SECTIONS.length} artists and movements · ${groups.length} museums in ${new Set(groups.map(g => g.city)).size} cities · ${pdImg} public-domain images`;
+  const h = (location.hash || "").replace("#", "");
+  if (VIEWS.includes(h)) show(h);
+  else if (h && document.getElementById(h) && SECTIONS.some(s => s.id === h)) goToSection(h);
+}
+boot();
+</script>
+
+</body>
+</html>
