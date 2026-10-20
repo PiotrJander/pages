@@ -43,7 +43,7 @@ Reply with one JSON object and nothing else:
 
 Rules for "text":
 - Copy the work exactly as it appears: same words, spelling, punctuation, capitalisation and line breaks. Never correct, modernise, translate, paraphrase or complete anything. Every line you output must appear in the page text.
-- Separate stanzas or paragraphs with one blank line. Drop indentation.
+- Separate stanzas or paragraphs with one blank line. Drop indentation. Pages often put each line of a poem in its own block, so a blank line follows every single line: that is page layout, not stanzas, so join those lines and keep blank lines only where the work has real stanza breaks.
 - Remove all debris, including the title and author lines, unless the work itself prints them inside its text.
 - If a PASSAGE is requested, return only that passage. Otherwise, if the page holds several works, return the first complete one.
 - Stay under ${budget} characters. If the work is longer, return a portion from its start (or from the requested passage) that ends at a stanza or paragraph boundary.
@@ -88,7 +88,7 @@ export async function cleanup(key, { page, passage, budget, base }) {
   };
 }
 
-const DIRECTOR_PROMPT = `You are directing a spoken reading of a poem for a text-to-speech voice.
+export const DIRECTOR_PROMPT = `You are directing a spoken reading of a poem for a text-to-speech voice.
 You insert ElevenLabs audio tags in square brackets to shape how it is read.
 
 Hard rules:

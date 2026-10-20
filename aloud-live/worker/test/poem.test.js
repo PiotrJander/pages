@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import {
-  compose, parse, sameShape, buildBundle, fitBudget, provenance, transplantTags,
+  compose, parse, sameShape, buildBundle, fitBudget, provenance, transplantTags, undoubleSpace,
   detectForm, detectTitle, guessLanguage, stripTags
 } from "../src/poem.js";
 
@@ -130,4 +130,15 @@ test("transplantTags keeps the original characters and only borrows the tag posi
 test("transplantTags refuses a reworded line", () => {
   assert.equal(transplantTags("the lone and level sands", "[wry] the lone and endless sands"), null);
   assert.equal(transplantTags("one two three", "[pause] one two"), null);
+});
+
+test("transplantTags keeps tags that contain spaces, and tags glued to words", () => {
+  assert.equal(transplantTags("I met a traveller\nfrom an antique land", "[drawn out] I met a traveller\nfrom an[pause] antique land"),
+    "[drawn out] I met a traveller\nfrom an [pause] antique land");
+});
+
+test("undoubleSpace joins a poem double-spaced by its page, and leaves real stanzas alone", () => {
+  assert.equal(undoubleSpace("one\n\ntwo\n\nthree\n\nfour"), "one\ntwo\nthree\nfour");
+  assert.equal(undoubleSpace("one\ntwo\n\nthree\nfour"), "one\ntwo\n\nthree\nfour");
+  assert.equal(undoubleSpace("a haiku\n\nin parts"), "a haiku\n\nin parts");   // too short to judge
 });

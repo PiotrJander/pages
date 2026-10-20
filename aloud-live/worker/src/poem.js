@@ -22,7 +22,8 @@ export function transplantTags(original, directed) {
   const loose = w => w.normalize("NFKC")
     .replace(/[\u2018\u2019\u201B\u2032`]/g, "'").replace(/[\u201C\u201D\u201E\u2033]/g, '"')
     .replace(/[\u2010-\u2015\u2212]/g, "-").replace(/\u2026/g, "...").toLowerCase();
-  const tokens = directed.replace(TAG, m => ` ${m} `).split(/\s+/).filter(Boolean);
+  // whole tags first: a tag may hold spaces, as [drawn out] does
+  const tokens = [...directed.matchAll(/\[[^\]\n]*\]|[^\s\[]+/g)].map(m => m[0]);
   const words = [...normalise(original).matchAll(/\S+/g)];
   const inserts = [];
   let pending = [], wi = 0;
@@ -219,6 +220,18 @@ export function detectTitle(parsed) {
   const first = parsed.lines[0];
   if (!first || parsed.lines.length < 3) return null;
   return first.text.length <= 70 && !/[.,;:!?…]$/.test(first.text) ? first.text : null;
+}
+
+/**
+ * Pages often wrap every line of a poem in its own block, which arrives as a
+ * blank line after every line. When every "stanza" is a single line, that is
+ * layout rather than form, so the lines are joined into one stanza.
+ */
+export function undoubleSpace(text) {
+  const t = normalise(text).trim();
+  const lines = t.split("\n").filter(l => l.trim());
+  const blocks = t.split(/\n\s*\n/);
+  return lines.length >= 4 && blocks.length === lines.length ? lines.join("\n") : t;
 }
 
 /** Long lines mean paragraphs of prose rather than lines of verse. */

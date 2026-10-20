@@ -16,7 +16,7 @@
 // displays to fetch it.
 
 import { DurableObject } from "cloudflare:workers";
-import { compose, buildBundle, fitBudget, guessLanguage, normalise } from "./poem.js";
+import { compose, buildBundle, fitBudget, guessLanguage, normalise, undoubleSpace } from "./poem.js";
 import { extractFromUrl } from "./extract.js";
 import { cleanup, direct, OPENROUTER } from "./llm.js";
 import { synthesize, VOICES, LEAD, STANZA, BUDGET } from "./speech.js";
@@ -126,7 +126,7 @@ export class Room extends DurableObject {
       const clean = await cleanup(env.OPENROUTER_API_KEY, {
         page, passage: args.passage, budget: BUDGET - 400, base: llmBase
       });
-      source = clean.text;
+      source = undoubleSpace(clean.text);
       title = clean.title;
       author = clean.author;
       lang ||= clean.language;
