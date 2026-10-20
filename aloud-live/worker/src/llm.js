@@ -4,7 +4,7 @@
 // Each pass is checked, and its output is discarded if it changed what it
 // was not allowed to change.
 
-import { sameShape, provenance } from "./poem.js";
+import { transplantTags, provenance } from "./poem.js";
 
 export const OPENROUTER = "https://openrouter.ai";
 export const CLEANUP_MODEL = "openai/gpt-6-luna";
@@ -105,11 +105,11 @@ Taste, which matters more than coverage:
 
 Return only the poem.`;
 
-/** The text with directions, or null if the model touched the words. */
+/** The original text carrying the model's tags, or null if it changed the words. */
 export async function direct(key, text, base) {
   const out = (await chat(key, {
     model: DIRECTOR_MODEL, system: DIRECTOR_PROMPT, user: text,
     maxTokens: 6000, temperature: 0.7, base
   })).replace(/^\s*```[a-z]*\s*/i, "").replace(/```\s*$/, "").trim();
-  return out && sameShape(text, out) ? out : null;
+  return out ? transplantTags(text, out) : null;
 }

@@ -13,6 +13,31 @@ export function normalise(raw) {
   return String(raw ?? "").replace(/\r\n?/g, "\n").replace(/ /g, " ");
 }
 
+/**
+ * Keep a model's tags, never its words: each tag is moved onto the original
+ * text in front of the word it preceded. Quote, dash and case differences
+ * are tolerated; any real change to the words returns null.
+ */
+export function transplantTags(original, directed) {
+  const loose = w => w.normalize("NFKC")
+    .replace(/[\u2018\u2019\u201B\u2032`]/g, "'").replace(/[\u201C\u201D\u201E\u2033]/g, '"')
+    .replace(/[\u2010-\u2015\u2212]/g, "-").replace(/\u2026/g, "...").toLowerCase();
+  const tokens = directed.replace(TAG, m => ` ${m} `).split(/\s+/).filter(Boolean);
+  const words = [...normalise(original).matchAll(/\S+/g)];
+  const inserts = [];
+  let pending = [], wi = 0;
+  for (const tok of tokens) {
+    if (/^\[[^\]\n]*\]$/.test(tok)) { pending.push(tok); continue; }
+    if (wi >= words.length || loose(tok) !== loose(words[wi][0])) return null;
+    if (pending.length) { inserts.push({ at: words[wi].index, tags: pending }); pending = []; }
+    wi++;
+  }
+  if (wi !== words.length) return null;
+  let out = normalise(original);
+  for (const { at, tags } of inserts.reverse()) out = out.slice(0, at) + tags.join(" ") + " " + out.slice(at);
+  return out;
+}
+
 /** Same words, same lines, ignoring tags and runs of whitespace. */
 export function sameShape(original, candidate) {
   const norm = s => normalise(s).trim().split("\n").map(l => l.trim().replace(/\s+/g, " "));

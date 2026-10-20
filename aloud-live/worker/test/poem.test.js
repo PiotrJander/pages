@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import {
-  compose, parse, sameShape, buildBundle, fitBudget, provenance,
+  compose, parse, sameShape, buildBundle, fitBudget, provenance, transplantTags,
   detectForm, detectTitle, guessLanguage, stripTags
 } from "../src/poem.js";
 
@@ -118,4 +118,16 @@ test("form, title and language heuristics", () => {
   assert.equal(guessLanguage("Litwo! Ojczyzno moja! ty jesteś jak zdrowie."), "pl");
   assert.equal(guessLanguage("I want a hero."), "en");
   assert.equal(stripTags("[wry] a [pause] b"), " a  b");
+});
+
+test("transplantTags keeps the original characters and only borrows the tag positions", () => {
+  const original = "\u201cLook on my Works,\u201d he said \u2014\nand nothing\u2019s left.";
+  const directed = '[slowly] "Look on my works," he said -\nand [softly] nothing\'s left.';
+  assert.equal(transplantTags(original, directed),
+    "[slowly] \u201cLook on my Works,\u201d he said \u2014\nand [softly] nothing\u2019s left.");
+});
+
+test("transplantTags refuses a reworded line", () => {
+  assert.equal(transplantTags("the lone and level sands", "[wry] the lone and endless sands"), null);
+  assert.equal(transplantTags("one two three", "[pause] one two"), null);
 });

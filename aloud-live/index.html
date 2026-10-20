@@ -45,8 +45,11 @@
                overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .head .author{color:var(--quiet);white-space:nowrap}
 
-  .stage{padding:clamp(1.5rem, 6vh, 4rem) 0 clamp(5rem, 30vh, 16rem);transition:opacity .6s ease}
-  .stage.fading{opacity:0}
+  .stage{padding:clamp(1.5rem, 6vh, 4rem) 0 clamp(5rem, 30vh, 16rem)}
+
+  /* turning from one poem to the next: head, verse and progress dim together */
+  .page,.progress{transition:opacity .65s ease}
+  body.turning .page,body.turning .progress{opacity:0}
 
   .idle{
     font-family:var(--serif);font-style:italic;font-weight:300;
@@ -115,7 +118,7 @@
 
   @media (max-width:700px){ .vline .num{display:none} }
   @media (prefers-reduced-motion:reduce){
-    .stage,.vline,.arm.gone{transition:none}
+    .page,.progress,.vline,.arm.gone{transition:none}
   }
 </style>
 </head>
@@ -151,24 +154,34 @@ const hs = new URLSearchParams(location.hash.slice(1));
 const API = (qs.get("api") || "https://aloud-live.pjander2.workers.dev").replace(/\/$/, "");
 const KEY = hs.get("key") || qs.get("key") || "";
 const SILENT = "data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjYwLjE2LjEwMAAAAAAAAAAAAAAA//NwwAAAAAAAAAAAAEluZm8AAAAPAAAACgAABMsAOzs7Ozs7Ozs7UVFRUVFRUVFRUWdnZ2dnZ2dnZ2d9fX19fX19fX19kpKSkpKSkpKSkqioqKioqKioqKi+vr6+vr6+vr6+1NTU1NTU1NTU1Orq6urq6urq6ur/////////////AAAAAExhdmM2MC4zMQAAAAAAAAAAAAAAACQDBgAAAAAAAATL+A9CeQAAAAAAAAAAAAAAAAD/80DEAAAAA0gAAAAATEFNRTMuMTAwVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsRbAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQMSkAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NCxKMAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NAxKQAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/80LEowAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/80DEpAAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsSjAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQMSkAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NCxKMAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV";
-const GAP_MS = 2000;                 // a breath between one queued poem and the next
+
+// the choreography of a change of poem
+const VOICE_FADE_MS = 1000;   // an interrupted voice trails off rather than stopping dead
+const TURN_OUT_MS = 650;      // the page dims…
+const TURN_IN_MS = 700;       // …and the next poem settles in
+const BEAT_MS = 700;          // a breath before the first word
+const GAP_MS = 2500;          // after a poem ends, a pause before the queue moves on
 
 const $ = id => document.getElementById(id);
 const dom = { title: $("title"), author: $("author"), stage: $("stage"), idle: $("idle"),
               progress: $("progress"), fill: $("fill"), status: $("status"), arm: $("arm") };
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 const audio = new Audio();          // one element for everything, unlocked by the first tap
 audio.preload = "auto";
+let actx = null, gain = null;       // Web Audio, so fades work where element volume is ignored (iOS)
 
 let armed = false;
 let current = null;                 // the entry on screen
 let state = "idle";                 // idle · starting · waiting (needs a tap) · playing · paused · ended · stopped
 let queue = [];                     // entries waiting their turn
 let gapTimer = 0;
+let turn = 0;                       // bumps on every change of poem; a superseded change stops quietly
+let gen = 0;                        // bumps on every playback change, so a stale play() can't win
+let pauseRequested = false;         // a pause that arrived mid-turn
 let inbox = Promise.resolve();      // poems are handled strictly in the order they arrive
 let rafId = 0, lastLine = -1;
-let gen = 0;                        // bumps on every playback change, so a stale play() can't win
 let ws = null, backoff = 1000, pingTimer = 0, pongTimer = 0;
 
 const setStatus = text => { dom.status.textContent = text || ""; };
@@ -219,31 +232,27 @@ function typeset(poem) {
   return { view, lines };
 }
 
-function show(entry) {
-  const swap = () => {
-    dom.stage.replaceChildren(entry.view);
-    dom.title.textContent = entry.poem.title || "Aloud";
-    dom.author.textContent = entry.poem.author || "";
-    dom.progress.classList.remove("hidden");
-    dom.fill.style.width = "0";
-    window.scrollTo(0, 0);
-    dom.stage.classList.remove("fading");
-  };
+const clearWords = l => l.words.forEach(w => { w.node.classList.remove("lit"); w.node.style.removeProperty("--fill"); });
+
+/** Put a poem on the page, unlit, while the page is dimmed. */
+function swapIn(entry) {
+  dom.stage.replaceChildren(entry.view);
+  dom.title.textContent = entry.poem.title || "Aloud";
+  dom.author.textContent = entry.poem.author || "";
+  dom.progress.classList.remove("hidden");
+  dom.fill.style.width = "0";
   lastLine = -1;
   entry.lines.forEach(l => { l.node.dataset.state = "ahead"; clearWords(l); });
-  const first = !dom.stage.firstElementChild || dom.stage.firstElementChild === dom.idle;
-  if (reduced || first) { swap(); return Promise.resolve(); }
-  dom.stage.classList.add("fading");
-  return new Promise(r => setTimeout(() => { swap(); r(); }, 600));
+  window.scrollTo(0, 0);
 }
 
-const clearWords = l => l.words.forEach(w => { w.node.classList.remove("lit"); w.node.style.removeProperty("--fill"); });
+const turning = on => document.body.classList.toggle("turning", on);
 
 /** The reading is over: the page reads as a printed page and scrolls freely. */
 function rest() {
   if (!current) return;
   current.lines.forEach(l => { l.node.dataset.state = "rest"; clearWords(l); });
-  dom.fill.style.width = state === "ended" ? "100%" : dom.fill.style.width;
+  if (state === "ended") dom.fill.style.width = "100%";
 }
 
 /* ---------- highlighting ---------- */
@@ -291,10 +300,31 @@ audio.addEventListener("play", () => { if (!rafId) rafId = requestAnimationFrame
 audio.addEventListener("pause", () => { cancelAnimationFrame(rafId); rafId = 0; });
 audio.addEventListener("ended", () => { cancelAnimationFrame(rafId); rafId = 0; finish(); });
 
-/* ---------- playback and the queue ---------- */
+/* ---------- the voice ---------- */
 
-function release(entry) {
-  if (entry && entry !== current && !queue.includes(entry) && entry.url) { URL.revokeObjectURL(entry.url); entry.url = null; }
+function fullVolume() {
+  if (gain && actx) { const t = actx.currentTime; gain.gain.cancelScheduledValues(t); gain.gain.setValueAtTime(1, t); }
+  audio.volume = 1;
+}
+
+/** Let the voice trail off instead of stopping dead. */
+function fadeVoice(ms) {
+  if (audio.paused) return Promise.resolve();
+  if (gain && actx?.state === "running") {
+    const g = gain.gain, t = actx.currentTime;
+    g.cancelScheduledValues(t);
+    g.setValueAtTime(g.value, t);
+    g.linearRampToValueAtTime(0.0001, t + ms / 1000);
+  } else {
+    const from = audio.volume, t0 = performance.now();
+    const step = () => {
+      const k = Math.min(1, (performance.now() - t0) / ms);
+      audio.volume = from * (1 - k);
+      if (k < 1 && !audio.paused) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+  return sleep(ms);
 }
 
 /**
@@ -304,6 +334,7 @@ function release(entry) {
  */
 function startAudio() {
   const mine = ++gen;
+  fullVolume();
   state = "playing";
   audio.play().catch(err => {
     if (mine !== gen) return;
@@ -313,17 +344,43 @@ function startAudio() {
 }
 function halt() { gen++; audio.pause(); }
 
+/* ---------- playback and the queue ---------- */
+
+function release(entry) {
+  if (entry && entry !== current && !queue.includes(entry) && entry.url) { URL.revokeObjectURL(entry.url); entry.url = null; }
+}
+
+/**
+ * Change to a new poem: the old voice trails off while the page dims, the
+ * new poem settles in, and after a breath the voice begins. Any newer
+ * change, stop or skip supersedes this one at its next step.
+ */
 async function play(entry) {
   clearTimeout(gapTimer); gapTimer = 0;
-  const previous = current;
+  const mine = ++turn;
+  const voiceOn = state === "playing" && !audio.paused;
+  pauseRequested = false;
+  state = "starting";
+
+  if (!reduced) turning(true);
+  await Promise.all([voiceOn ? fadeVoice(VOICE_FADE_MS) : null, reduced ? null : sleep(TURN_OUT_MS)]);
+  if (mine !== turn) return;
   halt();
+
+  const previous = current;
   current = entry;
-  state = "starting";                // honest during the crossfade
+  swapIn(entry);
+  if (entry.url) audio.src = entry.url;
   release(previous);
-  await show(entry);
-  if (!entry.url) { state = "ended"; rest(); advanceLater(); return; }   // text only
-  audio.src = entry.url;
+  turning(false);
+  await sleep(reduced ? 0 : TURN_IN_MS);
+  if (mine !== turn) return;
+
+  if (!entry.url) { state = "ended"; rest(); advanceLater(); return; }   // shown without sound
   audio.currentTime = 0;
+  await sleep(BEAT_MS);
+  if (mine !== turn) return;
+  if (pauseRequested) { pauseRequested = false; state = "paused"; return; }
   if (!armed) { state = "waiting"; return; }
   startAudio();
 }
@@ -347,23 +404,38 @@ async function receive({ mode, poem, audio: path }) {
     const res = await fetch(API + path);
     if (res.ok) entry.url = URL.createObjectURL(await res.blob());
   } catch { /* shown without sound */ }
-  if (mode === "now" || !busy()) return play(entry);
-  queue.push(entry);
+  if (mode === "now" || !busy()) play(entry);     // not awaited: the next message needn't wait for the turn
+  else queue.push(entry);
 }
 
 function control(action) {
-  if (action === "pause" && (state === "playing" || state === "waiting")) { halt(); state = "paused"; }
-  else if (action === "resume" && state === "paused") startAudio();
-  else if (action === "skip") {
+  if (action === "pause") {
+    if (state === "playing") { halt(); state = "paused"; }
+    else if (state === "starting") pauseRequested = true;
+    else if (state === "waiting") state = "paused";
+  } else if (action === "resume") {
+    if (state === "starting") pauseRequested = false;
+    else if (state === "paused") { if (armed) startAudio(); else state = "waiting"; }
+  } else if (action === "skip") {
     clearTimeout(gapTimer); gapTimer = 0;
-    if (queue.length) return play(queue.shift());
-    if (current) { halt(); state = "ended"; rest(); }
+    if (queue.length) { play(queue.shift()); return; }
+    if (!current) return;
+    turn++;
+    const wasOn = state === "playing";
+    state = "ended";
+    turning(false);
+    rest();
+    (wasOn ? fadeVoice(VOICE_FADE_MS) : Promise.resolve()).then(() => { if (state === "ended") halt(); });
   } else if (action === "stop") {
     clearTimeout(gapTimer); gapTimer = 0;
+    turn++;
     const dropped = queue; queue = [];
     dropped.forEach(release);
-    halt();
-    if (current) { state = "stopped"; rest(); }
+    const wasOn = state === "playing";
+    state = current ? "stopped" : "idle";
+    turning(false);
+    if (current) rest();
+    (wasOn ? fadeVoice(600) : Promise.resolve()).then(() => { if (state === "stopped" || state === "idle") halt(); });
   }
 }
 
@@ -417,12 +489,22 @@ function connect() {
 async function holdScreen() { try { await navigator.wakeLock?.request("screen"); } catch {} }
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && armed) holdScreen(); });
 
+function wireAudio() {
+  if (actx) return;
+  try {
+    actx = new (window.AudioContext || window.webkitAudioContext)();
+    gain = actx.createGain();
+    actx.createMediaElementSource(audio).connect(gain).connect(actx.destination);
+  } catch { actx = null; gain = null; }
+}
+
 async function arm() {
   dom.arm.classList.add("gone");
   if (!armed) {
     armed = true;
-    const keep = audio.getAttribute("src");
-    const at = audio.currentTime;
+    wireAudio();
+    try { await actx?.resume(); } catch {}
+    const keep = audio.getAttribute("src"), at = audio.currentTime;
     audio.src = SILENT;
     try { await audio.play(); } catch {}
     audio.pause();
@@ -445,7 +527,8 @@ if (!KEY) {
 
 // read-only handle for the end-to-end tests
 window.__aloud = { audio, get state() { return state; }, get queue() { return queue.map(e => e.poem.title); },
-                   get title() { return current?.poem.title || null; }, get armed() { return armed; } };
+                   get title() { return current?.poem.title || null; }, get armed() { return armed; },
+                   get gain() { return gain ? gain.gain.value : audio.volume; } };
 })();
 </script>
 </body>
