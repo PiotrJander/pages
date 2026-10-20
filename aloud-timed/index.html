@@ -190,11 +190,12 @@
     text-align:left;
     appearance:none;background:none;border:0;
     font:inherit;color:var(--ahead);
-    padding:0 0 0 1.2em;
-    text-indent:-1.2em;
+    padding:0;
     cursor:pointer;
     transition:color .25s ease;
   }
+  /* the verse itself, hung so run-over lines indent under the first word */
+  .vline .body{display:block;padding-left:1.2em;text-indent:-1.2em}
   .vline:hover{color:var(--past)}
   .vline[data-state="past"]{color:var(--past)}
   .vline[data-state="now"]{color:var(--ink)}
@@ -210,6 +211,16 @@
     user-select:none;
   }
   .vline .indent{padding-left:1.6em;display:inline-block}
+  .dir{
+    display:block;
+    font-family:var(--sans);
+    font-size:.6875rem;
+    line-height:1.4;
+    color:var(--past);
+    margin:0 0 .1em;
+    text-indent:0;
+  }
+  .dir::before{content:"— "}
   .w{background-image:none;background-repeat:no-repeat;background-size:0 100%}
   .vline[data-state="now"] .w.lit{
     /* a marker stroke: short of the full line box, each band overlapping
@@ -318,6 +329,15 @@
     </div>
 
     <div class="field">
+      <span class="label" id="dirlabel">Delivery</span>
+      <div class="toggle" role="group" aria-labelledby="dirlabel">
+        <button type="button" id="dir-plain" aria-pressed="false">Plain</button>
+        <button type="button" id="dir-led" aria-pressed="true">Directed</button>
+      </div>
+      <p class="hint">Directed asks a model to mark where the voice should soften, slow or pause. It adds directions only, and the poem itself is left alone.</p>
+    </div>
+
+    <div class="field">
       <label class="label" for="text">The poem</label>
       <textarea id="text" spellcheck="false" placeholder="Paste a poem here. Keep the line breaks — each line becomes one caption, and a blank line starts a new stanza."></textarea>
       <p class="count" id="count">Nothing yet</p>
@@ -331,6 +351,11 @@
           <label class="label" for="key">ElevenLabs key</label>
           <input type="password" id="key" autocomplete="off" spellcheck="false" placeholder="Your ElevenLabs API key">
           <p class="hint">Kept in this browser only, so you enter it once.</p>
+        </div>
+        <div id="orwrap">
+          <label class="label" for="orkey">OpenRouter key</label>
+          <input type="password" id="orkey" autocomplete="off" spellcheck="false" placeholder="sk-or-v1-…">
+          <p class="hint">Only used to direct the reading. Not needed for Plain.</p>
         </div>
         <div id="voicewrap">
           <label class="label" for="voice">Voice id</label>
@@ -350,7 +375,7 @@
 
   <!-- ============ READING ============ -->
   <main class="reading hidden" id="reading">
-    <p class="notice quiet hidden" id="estimated">This model returned no timings, so the captions are estimated from the audio and may drift.</p>
+    <p class="notice quiet hidden" id="note"></p>
     <div class="verse" id="verse"></div>
     <a class="linkish save-mobile hidden" id="save-mobile" download>Save the audio</a>
   </main>
@@ -381,6 +406,7 @@ const urlKey   = qs.get("key")   || "";
 const urlVoice = qs.get("voice") || "";
 const urlModel = qs.get("model") || "";
 const urlLang  = (qs.get("lang") || "").toLowerCase();
+const urlOrKey = qs.get("orkey") || "";
 
 const VOICES = { pl: "ozf4fnQ34uFcOcKX71uX", en: "auq43ws1oslv0tO4BDa7" };
 const MODELS = { pl: "eleven_v4", en: "eleven_v4" };
@@ -403,6 +429,25 @@ const VOICE_SETTINGS = {
 };
 const LEAD = qs.has("tag") ? qs.get("tag").trim() : "[slowly]";
 const STANZA = "[pause] ";
+
+const DIRECTOR_URL = "https://openrouter.ai/api/v1/chat/completions";
+const DIRECTOR_MODEL = qs.get("director") || "anthropic/claude-sonnet-5.5";
+const DIRECTOR_PROMPT = `You are directing a spoken reading of a poem for a text-to-speech voice.
+You insert ElevenLabs audio tags in square brackets to shape how it is read.
+
+Hard rules:
+- Return the poem exactly as given: same words, same spelling, same punctuation, same line breaks, same stanza breaks. You may ONLY insert bracketed tags.
+- Never remove, reorder, reword or add words. Never add commentary, titles or code fences.
+
+Taste, which matters more than coverage:
+- Be sparing. Most lines need nothing. One tag per stanza is plenty, and leaving a stanza bare is often right.
+- A reading smothered in directions sounds like a parody of poetry reading. Restraint is the whole job.
+- Place a tag immediately before the line or phrase it governs.
+- Prefer quiet, structural directions: [softly], [slowly], [drawn out], [whispers], [thoughtful], [wry], [pause].
+- Match the poem's own register: irony wants [wry], grief wants [softly], a turn in the argument wants [pause]. Do not impose feeling the poem does not have.
+- Never use sound effects, accents, laughter or anything comic unless the poem is itself comic.
+
+Return only the poem.`;
 const endpointFor = voice =>
   "https://api.elevenlabs.io/v1/text-to-speech/" + encodeURIComponent(voice) +
   "/with-timestamps?output_format=" + OUTPUT;
@@ -422,9 +467,22 @@ const dom = {
   langPl: el("lang-pl"), langEn: el("lang-en"),
   transport: el("transport"), play: el("play"), scrub: el("scrub"),
   fill: el("fill"), knob: el("knob"), clock: el("clock"),
-  save: el("save"), saveMobile: el("save-mobile"), estimated: el("estimated"),
+  save: el("save"), saveMobile: el("save-mobile"), note: el("note"),
+  orkey: el("orkey"), orwrap: el("orwrap"),
+  dirPlain: el("dir-plain"), dirLed: el("dir-led"),
   runhead: el("runhead"), restart: el("restart")
 };
+
+function setStatus(label) {
+  dom.cstatus.textContent = "";
+  const bar = document.createElement("span"); bar.className = "bar";
+  const text = document.createElement("span"); text.textContent = label;
+  dom.cstatus.append(bar, text);
+}
+function setNote(message) {
+  dom.note.textContent = message || "";
+  dom.note.classList.toggle("hidden", !message);
+}
 
 let lang = (urlLang === "pl" || urlLang === "en") ? urlLang : (store.get("lang", "en") === "pl" ? "pl" : "en");
 let timeline = null;       // { lines:[{start,end,words:[{start,end,node}]}] }
@@ -440,14 +498,25 @@ if (reduced) document.body.classList.add("reduced");
 /* ------------------------------------------------------------------ *
  * Compose screen wiring
  * ------------------------------------------------------------------ */
-if (!urlKey || !urlVoice) {
+if (!urlKey || !urlVoice || !urlOrKey) {
   dom.settings.classList.remove("hidden");
   if (urlKey) dom.keywrap.classList.add("hidden");
   if (urlVoice) dom.voicewrap.classList.add("hidden");
+  if (urlOrKey) dom.orwrap.classList.add("hidden");
 }
 dom.key.value = urlKey || store.get("key");
 dom.voice.value = urlVoice || store.get("voice");
+dom.orkey.value = urlOrKey || store.get("orkey");
 dom.text.value = store.get("draft");
+
+let directed = store.get("directed", "1") === "1";
+function paintDelivery() {
+  dom.dirPlain.setAttribute("aria-pressed", directed ? "false" : "true");
+  dom.dirLed.setAttribute("aria-pressed", directed ? "true" : "false");
+}
+dom.dirPlain.addEventListener("click", () => { directed = false; store.set("directed", "0"); paintDelivery(); });
+dom.dirLed.addEventListener("click", () => { directed = true; store.set("directed", "1"); paintDelivery(); });
+paintDelivery();
 
 function paintLang() {
   dom.langPl.setAttribute("aria-pressed", lang === "pl" ? "true" : "false");
@@ -460,6 +529,7 @@ paintLang();
 
 dom.key.addEventListener("input", () => store.set("key", dom.key.value.trim()));
 dom.voice.addEventListener("input", () => store.set("voice", dom.voice.value.trim()));
+dom.orkey.addEventListener("input", () => store.set("orkey", dom.orkey.value.trim()));
 
 function describeLength() {
   const raw = dom.text.value.trim();
@@ -496,11 +566,13 @@ const PAUSE = { ",": 2.5, ";": 3, ":": 3, ".": 5, "!": 5, "?": 5, "—": 3, "–
 function compose(raw) {
   const source = raw.replace(/\r\n?/g, "\n");
   let display = "", spoken = "";
-  const d2s = [];
+  const d2s = [], directions = [];
   const both = ch => { d2s[display.length] = spoken.length; display += ch; spoken += ch; };
-  const aside = s => { spoken += s; };
+  // `shown` marks a direction worth printing in the margin: the ones written
+  // into the poem, not the pacing this page adds on its own.
+  const aside = (s, shown) => { if (shown) directions.push({ at: display.length, text: s }); spoken += s; };
 
-  if (LEAD) aside(LEAD + " ");
+  if (LEAD) aside(LEAD + " ", false);
   const lines = source.split("\n");
   let pendingBreak = false;
 
@@ -511,18 +583,43 @@ function compose(raw) {
       if (!last) both("\n");
       return;
     }
-    if (pendingBreak) { aside(STANZA); pendingBreak = false; }   // let stanzas breathe
+    if (pendingBreak) { aside(STANZA, false); pendingBreak = false; }   // let stanzas breathe
     let i = 0;
     while (i < line.length) {
       if (line[i] === "[") {
         const close = line.indexOf("]", i);
-        if (close > i) { aside(line.slice(i, close + 1)); i = close + 1; continue; }
+        if (close > i) { aside(line.slice(i, close + 1), true); i = close + 1; continue; }
       }
       both(line[i]); i++;
     }
     if (!last) both("\n");
   });
-  return { display, spoken, d2s };
+  return { display, spoken, d2s, directions };
+}
+
+/* Ask a model to mark where the voice should turn. It may only insert
+   bracketed tags: if the words come back altered in any way, the result is
+   thrown out and the poem is read plainly. */
+function sameShape(original, tagged) {
+  const norm = s => s.replace(/\r\n?/g, "\n").trim().split("\n").map(l => l.trim().replace(/\s+/g, " "));
+  const a = norm(original), b = norm(tagged.replace(/\[[^\]]*\]/g, ""));
+  return a.length === b.length && a.every((line, i) => line === b[i]);
+}
+
+async function direct(text, key) {
+  const res = await fetch(DIRECTOR_URL, {
+    method: "POST",
+    headers: { "Authorization": "Bearer " + key, "Content-Type": "application/json", "X-Title": "Aloud" },
+    body: JSON.stringify({
+      model: DIRECTOR_MODEL, temperature: 0.7, max_tokens: 2000,
+      messages: [{ role: "system", content: DIRECTOR_PROMPT }, { role: "user", content: text }]
+    })
+  });
+  if (!res.ok) throw new Error("director returned " + res.status);
+  const body = await res.json();
+  const out = ((body.choices && body.choices[0] && body.choices[0].message.content) || "")
+    .replace(/^\s*```[a-z]*\s*/i, "").replace(/```\s*$/, "").trim();
+  return out && sameShape(text, out) ? out : null;
 }
 
 function parse(text) {
@@ -561,7 +658,8 @@ function parse(text) {
       }
       const endOfStanza = li === stanza.length - 1;
       if (words.length) words[words.length - 1].weight += endOfStanza ? 6 : 1.5;
-      lines.push({ words, indented: line.indented, stanza: si, endOfStanza });
+      lines.push({ words, indented: line.indented, stanza: si, endOfStanza,
+                   offset: line.offset, length: line.text.length });
     });
   });
   return { stanzas, lines, text };
@@ -570,10 +668,18 @@ function parse(text) {
 /* ------------------------------------------------------------------ *
  * Typesetting
  * ------------------------------------------------------------------ */
-function typeset(parsed) {
+function typeset(parsed, directions) {
   dom.verse.textContent = "";
   let lineNo = 0;
   const lineNodes = [];
+
+  // a direction belongs to the line it was written in front of
+  const perLine = parsed.lines.map(() => []);
+  (directions || []).forEach(d => {
+    let idx = parsed.lines.findIndex(l => l.offset + l.length > d.at);
+    if (idx < 0) idx = parsed.lines.length - 1;
+    if (idx >= 0) perLine[idx].push(d.text.replace(/^\[|\]$/g, "").trim());
+  });
 
   parsed.stanzas.forEach(stanza => {
     const box = document.createElement("div");
@@ -593,8 +699,18 @@ function typeset(parsed) {
         n.textContent = String(lineNo);
         btn.appendChild(n);
       }
-      const holder = line.indented ? document.createElement("span") : btn;
-      if (line.indented) { holder.className = "indent"; btn.appendChild(holder); }
+      const marks = perLine[lineNodes.length];
+      if (marks && marks.length) {
+        const d = document.createElement("span");
+        d.className = "dir";
+        d.textContent = marks.join(", ");
+        btn.appendChild(d);
+      }
+      const body = document.createElement("span");
+      body.className = "body";
+      btn.appendChild(body);
+      const holder = line.indented ? document.createElement("span") : body;
+      if (line.indented) { holder.className = "indent"; body.appendChild(holder); }
 
       line.words.forEach((word, wi) => {
         const span = document.createElement("span");
@@ -860,20 +976,37 @@ async function run() {
     dom.settings.open = true; dom.key.focus(); return;
   }
 
-  const comp = compose(raw);
-  const parsed = parse(comp.display);
-  if (!parsed.lines.length) { fail("No lines found in that text."); return; }
-  if (comp.spoken.length > MAX_CHARS) {
-    fail("That comes to " + comp.spoken.length + " characters to speak and the limit is "
+  const orKey = (urlOrKey || dom.orkey.value).trim();
+  if (directed && !orKey) {
+    fail("Add an OpenRouter key in settings to have the reading directed, or switch to Plain.");
+    dom.settings.open = true; dom.orkey.focus(); return;
+  }
+
+  const pre = compose(raw);
+  if (!parse(pre.display).lines.length) { fail("No lines found in that text."); return; }
+  if (pre.spoken.length > MAX_CHARS) {
+    fail("That comes to " + pre.spoken.length + " characters to speak and the limit is "
          + MAX_CHARS + ". Read it in two parts.");
     return;
   }
 
   dom.go.disabled = true;
   dom.cstatus.classList.remove("hidden");
-  dom.cstatus.innerHTML = '<span class="bar"></span><span>Preparing the audio</span>';
+  setNote("");
+  let note = "";
 
   try {
+    let source = raw;
+    if (directed) {
+      setStatus("Directing the reading");
+      const marked = await direct(raw, orKey).catch(() => null);
+      if (marked) source = marked;
+      else note = "The reading could not be directed, so it is read plainly.";
+    }
+    setStatus("Preparing the audio");
+
+    const comp = compose(source);
+    const parsed = parse(comp.display);
     const { bytes, alignment } = await synthesize(comp.spoken, key, voice, model);
 
     // decodeAudioData detaches its input, so analyse a copy and keep the original for playback.
@@ -882,11 +1015,14 @@ async function run() {
     const buffer = await ctx.decodeAudioData(copy);
     ctx.close?.();
 
-    const lineNodes = typeset(parsed);                 // assigns a node to every word
+    const lineNodes = typeset(parsed, comp.directions);   // assigns a node to every word
     timeline = (alignment && timelineFromAlignment(parsed, comp, alignment, buffer.duration))
             || buildTimeline(parsed, buffer);
     timeline.lines.forEach((line, i) => { line.node = lineNodes[i]; });
-    dom.estimated.classList.toggle("hidden", !!timeline.exact);
+    if (!timeline.exact && !note) {
+      note = "This model returned no timings, so the captions are estimated from the audio and may drift.";
+    }
+    setNote(note);
 
     if (blobUrl) URL.revokeObjectURL(blobUrl);
     blobUrl = URL.createObjectURL(new Blob([bytes], { type: "audio/mpeg" }));
@@ -1057,7 +1193,7 @@ dom.restart.addEventListener("click", () => {
   dom.compose.classList.remove("hidden");
   dom.runhead.textContent = "Aloud";
   dom.saveMobile.classList.add("hidden");
-  dom.estimated.classList.add("hidden");
+  setNote("");
   window.scrollTo(0, 0);
   dom.text.focus();
 });
