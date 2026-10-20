@@ -143,22 +143,33 @@
 (() => {
 "use strict";
 
+// The display owns playback: it keeps its own queue and decides what plays
+// next. It speaks to the room only to say hello and to answer a query.
+
 const qs = new URLSearchParams(location.search);
 const hs = new URLSearchParams(location.hash.slice(1));
 const API = (qs.get("api") || "https://aloud-live.pjander2.workers.dev").replace(/\/$/, "");
 const KEY = hs.get("key") || qs.get("key") || "";
 const SILENT = "data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjYwLjE2LjEwMAAAAAAAAAAAAAAA//NwwAAAAAAAAAAAAEluZm8AAAAPAAAACgAABMsAOzs7Ozs7Ozs7UVFRUVFRUVFRUWdnZ2dnZ2dnZ2d9fX19fX19fX19kpKSkpKSkpKSkqioqKioqKioqKi+vr6+vr6+vr6+1NTU1NTU1NTU1Orq6urq6urq6ur/////////////AAAAAExhdmM2MC4zMQAAAAAAAAAAAAAAACQDBgAAAAAAAATL+A9CeQAAAAAAAAAAAAAAAAD/80DEAAAAA0gAAAAATEFNRTMuMTAwVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsRbAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQMSkAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NCxKMAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NAxKQAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/80LEowAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/80DEpAAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsSjAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQMSkAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NCxKMAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV";
+const GAP_MS = 2000;                 // a breath between one queued poem and the next
 
 const $ = id => document.getElementById(id);
 const dom = { title: $("title"), author: $("author"), stage: $("stage"), idle: $("idle"),
               progress: $("progress"), fill: $("fill"), status: $("status"), arm: $("arm") };
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-const audio = new Audio();          // one element for everything, unlocked once
+const audio = new Audio();          // one element for everything, unlocked by the first tap
 audio.preload = "auto";
-const prepared = new Map();         // id -> {poem, url, view, lines}
-let shownId = null, armed = false, pendingPlay = null, rafId = 0, lastLine = -1;
-let ws = null, backoff = 1000, pingTimer = 0, pongTimer = 0, gaveUp = false;
+
+let armed = false;
+let current = null;                 // the entry on screen
+let state = "idle";                 // idle · starting · waiting (needs a tap) · playing · paused · ended · stopped
+let queue = [];                     // entries waiting their turn
+let gapTimer = 0;
+let inbox = Promise.resolve();      // poems are handled strictly in the order they arrive
+let rafId = 0, lastLine = -1;
+let gen = 0;                        // bumps on every playback change, so a stale play() can't win
+let ws = null, backoff = 1000, pingTimer = 0, pongTimer = 0;
 
 const setStatus = text => { dom.status.textContent = text || ""; };
 
@@ -190,8 +201,8 @@ function typeset(poem) {
       const body = document.createElement("span");
       body.className = "body";
       el.appendChild(body);
-      const holder = line.indented ? Object.assign(document.createElement("span"), { className: "indent" }) : body;
-      if (holder !== body) body.appendChild(holder);
+      let holder = body;
+      if (line.indented) { holder = document.createElement("span"); holder.className = "indent"; body.appendChild(holder); }
       const words = line.words.map((w, i) => {
         const span = document.createElement("span");
         span.className = "w";
@@ -209,39 +220,38 @@ function typeset(poem) {
 }
 
 function show(entry) {
-  if (shownId === entry.poem.id) return;
   const swap = () => {
     dom.stage.replaceChildren(entry.view);
     dom.title.textContent = entry.poem.title || "Aloud";
     dom.author.textContent = entry.poem.author || "";
     dom.progress.classList.remove("hidden");
+    dom.fill.style.width = "0";
     window.scrollTo(0, 0);
     dom.stage.classList.remove("fading");
   };
-  shownId = entry.poem.id;
   lastLine = -1;
-  entry.lines.forEach(l => { l.node.dataset.state = "ahead"; });
-  if (reduced || !dom.stage.firstElementChild || dom.stage.firstElementChild === dom.idle) { swap(); return; }
+  entry.lines.forEach(l => { l.node.dataset.state = "ahead"; clearWords(l); });
+  const first = !dom.stage.firstElementChild || dom.stage.firstElementChild === dom.idle;
+  if (reduced || first) { swap(); return Promise.resolve(); }
   dom.stage.classList.add("fading");
-  setTimeout(swap, 600);
+  return new Promise(r => setTimeout(() => { swap(); r(); }, 600));
 }
 
-function showIdle() {
-  shownId = null;
-  dom.stage.replaceChildren(dom.idle);
-  dom.title.textContent = "Aloud";
-  dom.author.textContent = "";
-  dom.progress.classList.add("hidden");
-  dom.fill.style.width = "0";
+const clearWords = l => l.words.forEach(w => { w.node.classList.remove("lit"); w.node.style.removeProperty("--fill"); });
+
+/** The reading is over: the page reads as a printed page and scrolls freely. */
+function rest() {
+  if (!current) return;
+  current.lines.forEach(l => { l.node.dataset.state = "rest"; clearWords(l); });
+  dom.fill.style.width = state === "ended" ? "100%" : dom.fill.style.width;
 }
 
 /* ---------- highlighting ---------- */
 
 function paint() {
-  const entry = prepared.get(shownId);
-  if (!entry) return;
+  if (!current) return;
   const t = audio.currentTime;
-  const lines = entry.lines;
+  const lines = current.lines;
   let index = 0;
   for (let i = 0; i < lines.length; i++) {
     const end = lines[i].end ?? Infinity;
@@ -250,12 +260,12 @@ function paint() {
   }
   if (index !== lastLine) {
     lines.forEach((l, i) => {
-      const state = i < index ? "past" : i === index ? "now" : "ahead";
-      if (l.node.dataset.state !== state) l.node.dataset.state = state;
-      if (i !== index) l.words.forEach(w => { w.node.classList.remove("lit"); w.node.style.removeProperty("--fill"); });
+      const s = i < index ? "past" : i === index ? "now" : "ahead";
+      if (l.node.dataset.state !== s) l.node.dataset.state = s;
+      if (i !== index) clearWords(l);
     });
     lastLine = index;
-    keepInView(lines[index].node);
+    if (state === "playing") keepInView(lines[index].node);
   }
   for (const w of lines[index].words) {
     if (t >= w.e) { w.node.classList.add("lit"); w.node.style.removeProperty("--fill"); }
@@ -277,77 +287,95 @@ function keepInView(node) {
 }
 
 const loop = () => { paint(); rafId = requestAnimationFrame(loop); };
-const startLoop = () => { if (!rafId) rafId = requestAnimationFrame(loop); };
-const stopLoop = () => { cancelAnimationFrame(rafId); rafId = 0; paint(); };
+audio.addEventListener("play", () => { if (!rafId) rafId = requestAnimationFrame(loop); });
+audio.addEventListener("pause", () => { cancelAnimationFrame(rafId); rafId = 0; });
+audio.addEventListener("ended", () => { cancelAnimationFrame(rafId); rafId = 0; finish(); });
 
-audio.addEventListener("play", startLoop);
-audio.addEventListener("pause", stopLoop);
-audio.addEventListener("ended", () => {
-  stopLoop();
-  const entry = prepared.get(shownId);
-  if (entry) {
-    entry.lines.forEach(l => { l.node.dataset.state = "rest"; l.words.forEach(w => w.node.classList.remove("lit")); });
-    dom.fill.style.width = "100%";
-    send({ type: "ended", id: entry.poem.id });
-  }
-});
+/* ---------- playback and the queue ---------- */
 
-/* ---------- commands from the room ---------- */
-
-function whenLoaded(fn) {
-  if (audio.readyState >= 1) fn();
-  else audio.addEventListener("loadedmetadata", fn, { once: true });
+function release(entry) {
+  if (entry && entry !== current && !queue.includes(entry) && entry.url) { URL.revokeObjectURL(entry.url); entry.url = null; }
 }
 
-async function onPrepare({ poem, audio: path }) {
-  let entry = prepared.get(poem.id);
-  if (!entry) {
-    entry = { poem, url: null, ...typeset(poem) };
-    prepared.set(poem.id, entry);
-    for (const [id, old] of prepared) {          // keep the last two
-      if (prepared.size <= 2) break;
-      if (id !== poem.id && id !== shownId) { if (old.url) URL.revokeObjectURL(old.url); prepared.delete(id); }
-    }
-  }
-  if (path && !entry.url) {
-    try {
-      const res = await fetch(API + path);
-      if (res.ok) entry.url = URL.createObjectURL(await res.blob());
-    } catch { /* shown without sound */ }
-  }
-  send({ type: "ready", id: poem.id });
-}
-
-function onPlay({ id, at }) {
-  const entry = prepared.get(id);
-  if (!entry) return;
-  const playingThis = shownId === id && !audio.paused;
-  show(entry);
-  if (!entry.url) return;
-  if (playingThis && Math.abs(audio.currentTime - at) < 1.5) return;   // a resync, not a seek
-  if (audio.src !== entry.url) audio.src = entry.url;
-  whenLoaded(() => {
-    audio.currentTime = Math.min(at, Math.max(0, (audio.duration || at) - 0.05));
-    lastLine = -1;
-    if (!armed) { pendingPlay = { id, at, received: performance.now() }; paint(); return; }
-    audio.play().catch(() => { pendingPlay = { id, at, received: performance.now() }; dom.arm.classList.remove("gone"); });
+/**
+ * Start the audio element. A pending play() is rejected with AbortError
+ * whenever it is paused or replaced before it begins, which is routine;
+ * only NotAllowedError means the browser wants a tap first.
+ */
+function startAudio() {
+  const mine = ++gen;
+  state = "playing";
+  audio.play().catch(err => {
+    if (mine !== gen) return;
+    if (err.name === "NotAllowedError") { state = "waiting"; dom.arm.classList.remove("gone"); }
+    else console.warn("play failed:", err.name, err.message);
   });
 }
+function halt() { gen++; audio.pause(); }
 
-function onPause({ id, at }) {
-  const entry = prepared.get(id);
-  if (!entry) return;
-  show(entry);
-  pendingPlay = null;
-  audio.pause();
-  if (entry.url && audio.src === entry.url) whenLoaded(() => { audio.currentTime = at; lastLine = -1; paint(); });
+async function play(entry) {
+  clearTimeout(gapTimer); gapTimer = 0;
+  const previous = current;
+  halt();
+  current = entry;
+  state = "starting";                // honest during the crossfade
+  release(previous);
+  await show(entry);
+  if (!entry.url) { state = "ended"; rest(); advanceLater(); return; }   // text only
+  audio.src = entry.url;
+  audio.currentTime = 0;
+  if (!armed) { state = "waiting"; return; }
+  startAudio();
 }
 
-function onStop() {
-  pendingPlay = null;
-  audio.pause();
-  audio.removeAttribute("src");
-  showIdle();
+function finish() {
+  state = "ended";
+  rest();
+  advanceLater();
+}
+
+function advanceLater() {
+  if (!queue.length) return;
+  gapTimer = setTimeout(() => { gapTimer = 0; play(queue.shift()); }, GAP_MS);
+}
+
+const busy = () => ["starting", "playing", "paused", "waiting"].includes(state) || !!gapTimer;
+
+async function receive({ mode, poem, audio: path }) {
+  const entry = { poem, url: null, ...typeset(poem) };
+  try {
+    const res = await fetch(API + path);
+    if (res.ok) entry.url = URL.createObjectURL(await res.blob());
+  } catch { /* shown without sound */ }
+  if (mode === "now" || !busy()) return play(entry);
+  queue.push(entry);
+}
+
+function control(action) {
+  if (action === "pause" && (state === "playing" || state === "waiting")) { halt(); state = "paused"; }
+  else if (action === "resume" && state === "paused") startAudio();
+  else if (action === "skip") {
+    clearTimeout(gapTimer); gapTimer = 0;
+    if (queue.length) return play(queue.shift());
+    if (current) { halt(); state = "ended"; rest(); }
+  } else if (action === "stop") {
+    clearTimeout(gapTimer); gapTimer = 0;
+    const dropped = queue; queue = [];
+    dropped.forEach(release);
+    halt();
+    if (current) { state = "stopped"; rest(); }
+  }
+}
+
+function answer(qid) {
+  const d = isFinite(audio.duration) ? audio.duration : current?.poem.duration || 0;
+  send({
+    type: "state", qid, armed, status: state,
+    poem: current ? { title: current.poem.title, author: current.poem.author } : null,
+    position: current ? +audio.currentTime.toFixed(1) : 0,
+    duration: current ? +d.toFixed(1) : 0,
+    queue: queue.map(e => ({ title: e.poem.title, author: e.poem.author }))
+  });
 }
 
 /* ---------- the socket ---------- */
@@ -359,10 +387,9 @@ function connect() {
   ws.onopen = () => {
     backoff = 1000;
     ws.send(JSON.stringify({ type: "hello", key: KEY }));
-    if (armed) ws.send(JSON.stringify({ type: "armed" }));   // a fresh socket starts unarmed
     setStatus("");
     clearInterval(pingTimer);
-    pingTimer = setInterval(() => {
+    pingTimer = setInterval(() => {            // answered by the runtime; the room stays asleep
       if (ws.readyState !== 1) return;
       ws.send("ping");
       clearTimeout(pongTimer);
@@ -372,14 +399,13 @@ function connect() {
   ws.onmessage = e => {
     if (e.data === "pong") { clearTimeout(pongTimer); return; }
     let msg; try { msg = JSON.parse(e.data); } catch { return; }
-    if (msg.type === "prepare") onPrepare(msg);
-    else if (msg.type === "play") onPlay(msg);
-    else if (msg.type === "pause") onPause(msg);
-    else if (msg.type === "stop") onStop();
+    if (msg.type === "poem") inbox = inbox.then(() => receive(msg)).catch(() => {});
+    else if (msg.type === "control") inbox = inbox.then(() => control(msg.action));
+    else if (msg.type === "query") answer(msg.qid);
   };
   ws.onclose = e => {
     clearInterval(pingTimer); clearTimeout(pongTimer);
-    if (e.code === 4401) { gaveUp = true; setStatus("The display key was not accepted."); return; }
+    if (e.code === 4401) { setStatus("The display key was not accepted."); return; }
     setStatus("Reconnecting…");
     setTimeout(connect, backoff);
     backoff = Math.min(backoff * 2, 30000);
@@ -388,27 +414,22 @@ function connect() {
 
 /* ---------- arming ---------- */
 
-let wakeLock = null;
-async function holdScreen() {
-  try { wakeLock = await navigator.wakeLock?.request("screen"); } catch {}
-}
+async function holdScreen() { try { await navigator.wakeLock?.request("screen"); } catch {} }
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && armed) holdScreen(); });
 
 async function arm() {
-  if (armed) return;
-  armed = true;
   dom.arm.classList.add("gone");
-  const keep = audio.getAttribute("src");
-  audio.src = SILENT;
-  try { await audio.play(); } catch {}
-  audio.pause();
-  if (keep) audio.src = keep;
-  holdScreen();
-  send({ type: "armed" });
-  if (pendingPlay) {
-    const p = pendingPlay; pendingPlay = null;
-    onPlay({ id: p.id, at: p.at + (performance.now() - p.received) / 1000 });
+  if (!armed) {
+    armed = true;
+    const keep = audio.getAttribute("src");
+    const at = audio.currentTime;
+    audio.src = SILENT;
+    try { await audio.play(); } catch {}
+    audio.pause();
+    if (keep) { audio.src = keep; audio.currentTime = at; }
+    holdScreen();
   }
+  if (state === "waiting" && current?.url) startAudio();
 }
 dom.arm.addEventListener("pointerdown", arm);
 document.addEventListener("keydown", arm);
@@ -422,8 +443,9 @@ if (!KEY) {
   connect();
 }
 
-// for the end-to-end tests
-window.__aloud = { audio, prepared, get shownId() { return shownId; }, get armed() { return armed; } };
+// read-only handle for the end-to-end tests
+window.__aloud = { audio, get state() { return state; }, get queue() { return queue.map(e => e.poem.title); },
+                   get title() { return current?.poem.title || null; }, get armed() { return armed; } };
 })();
 </script>
 </body>

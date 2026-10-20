@@ -69,7 +69,10 @@ export async function cleanup(key, { page, passage, budget, base }) {
   });
   const out = parseJsonObject(raw);
   const text = typeof out.text === "string" ? out.text.replace(/\r\n?/g, "\n").trim() : "";
-  if (!text) throw new Error("No literary work was found on that page.");
+  if (!text) {
+    throw new Error("No literary work was found on that page. It may be an index or a list of editions, " +
+      "or it may load its text with JavaScript. Try a link to the text itself, or pass the text directly.");
+  }
 
   // a cheap model may "helpfully" fix a line; it must not invent one
   const check = provenance(text, page.text);

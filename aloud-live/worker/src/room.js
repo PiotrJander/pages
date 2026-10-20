@@ -1,16 +1,19 @@
-// One reading room: every display connects here, and every command lands
-// here, so the agent's request and the kiosk's socket always meet.
+// One room that every display joins and every command reaches, so the
+// agent's request and the kiosk's socket always meet.
 //
-// Protocol (JSON over a hibernating WebSocket)
-//   display -> room   hello {key} · armed · ready {id} · ended {id}
-//   room -> display   welcome · prepare {poem,audio} · play {id,at} · pause {id,at} · stop
-// A reading is prepared on every display first, silently, and only once
-// they have the audio does `play` swap it onto the screen.
+// The displays own playback: each keeps its own queue in memory and
+// decides what to play next. The room only pushes and asks.
 //
-// Displays speak only when something changes, never on a timer, and
-// keep-alive pings are answered by the runtime, so between readings the
-// room hibernates however many screens are connected. Anything that must
-// survive hibernation lives in storage or in a socket's attachment.
+//   room -> display   poem {mode: "now" | "queue", poem, audio}
+//                     control {action: pause | resume | skip | stop}
+//                     query {qid}
+//   display -> room   hello {key}            (authentication, first message)
+//                     state {qid, ...}       (only ever in answer to a query)
+//
+// Displays never speak unprompted and keep-alive pings are answered by the
+// runtime, so the room hibernates between commands however many screens
+// are connected. Audio is held in memory only for the moment it takes the
+// displays to fetch it.
 
 import { DurableObject } from "cloudflare:workers";
 import { compose, buildBundle, fitBudget, guessLanguage, normalise } from "./poem.js";
@@ -18,20 +21,17 @@ import { extractFromUrl } from "./extract.js";
 import { cleanup, direct, OPENROUTER } from "./llm.js";
 import { synthesize, VOICES, LEAD, STANZA, BUDGET } from "./speech.js";
 
-const READY_TIMEOUT_MS = 12_000;
 const HELLO_GRACE_MS = 10_000;
+const QUERY_TIMEOUT_MS = 3_000;
+const KEEP_AUDIO = 3;
 const OPTS = { lead: LEAD, stanza: STANZA };
 
 export class Room extends DurableObject {
   constructor(ctx, env) {
     super(ctx, env);
-    this.audio = new Map();        // id -> bytes; memory only, by design
-    this.waiting = null;           // the prepare round in progress
-    this.current = null;
+    this.audio = new Map();       // id -> bytes, the last few readings only
+    this.queries = new Map();     // qid -> pending status query
     ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair("ping", "pong"));
-    ctx.blockConcurrencyWhile(async () => {
-      this.current = (await ctx.storage.get("current")) ?? null;
-    });
   }
 
   // ---------- HTTP: socket upgrade and audio ----------
@@ -71,29 +71,22 @@ export class Room extends DurableObject {
       if (msg.type === "hello" && msg.key && msg.key === this.env.VIEWER_KEY) {
         att.authed = true;
         ws.serializeAttachment(att);
-        this.send(ws, { type: "welcome", displays: this.displays().length });
-        this.greet(ws);
+        this.send(ws, { type: "welcome" });
       } else {
         ws.close(4401, "Unauthorized");
       }
       return;
     }
-
-    if (msg.type === "ready") this.onReady(ws, msg.id);
-    else if (msg.type === "armed" && !att.armed) { att.armed = true; ws.serializeAttachment(att); }
-    else if (msg.type === "ended" && this.current?.bundle.id === msg.id && this.current.status === "playing") {
-      this.current.status = "ended";
-      await this.save();
+    if (msg.type === "state" && this.queries.has(msg.qid)) {
+      const q = this.queries.get(msg.qid);
+      const { type, qid, ...state } = msg;
+      q.replies.set(att.sid, state);
+      if (q.replies.size >= q.expected) q.finish();
     }
   }
 
-  async webSocketClose(ws, code) { this.forget(ws); try { ws.close(code); } catch {} }
-  async webSocketError(ws) { this.forget(ws); }
-
-  forget(ws) {
-    const sid = ws.deserializeAttachment()?.sid;
-    if (this.waiting) { this.waiting.pending.delete(sid); this.release(); }
-  }
+  async webSocketClose(ws, code) { try { ws.close(code); } catch {} }
+  async webSocketError() {}
 
   /** Authenticated displays; sockets that never said hello are closed. */
   displays() {
@@ -108,73 +101,14 @@ export class Room extends DurableObject {
   }
 
   send(ws, msg) { try { ws.send(JSON.stringify(msg)); } catch {} }
-  broadcast(msg) { for (const ws of this.displays()) this.send(ws, msg); }
 
-  /** A display that joins late is brought up to wherever the room is. */
-  greet(ws) {
-    const c = this.current;
-    if (!c || c.status === "stopped") return;
-    const held = this.audio.has(c.bundle.id);
-    this.send(ws, { type: "prepare", poem: c.bundle, audio: held ? `/audio/${c.bundle.id}` : null });
+  broadcast(msg) {
+    const ds = this.displays();
+    for (const ws of ds) this.send(ws, msg);
+    return ds.length;
   }
 
-  onReady(ws, id) {
-    const sid = ws.deserializeAttachment()?.sid;
-    if (this.waiting?.id === id) { this.waiting.pending.delete(sid); this.release(); return; }
-    const c = this.current;
-    if (!c || c.bundle.id !== id) return;
-    if (c.status === "queued") this.start(0);
-    else if (c.status === "playing") this.send(ws, { type: "play", id, at: this.position() });
-    else if (c.status === "paused") this.send(ws, { type: "pause", id, at: c.offset });
-  }
-
-  release() { if (this.waiting && this.waiting.pending.size === 0) this.waiting.finish(); }
-
-  /** Send `prepare` everywhere and wait until every display has the audio. */
-  prepareAll(id) {
-    if (this.waiting) this.waiting.finish();            // a newer reading wins
-    const sockets = this.displays();
-    return new Promise(resolve => {
-      const pending = new Set(sockets.map(ws => ws.deserializeAttachment().sid));
-      const total = pending.size;
-      const round = {
-        id, pending,
-        finish: () => {
-          if (this.waiting !== round) return;
-          clearTimeout(round.timer);
-          this.waiting = null;
-          resolve({ ready: total - pending.size, total });
-        }
-      };
-      round.timer = setTimeout(round.finish, READY_TIMEOUT_MS);
-      this.waiting = round;
-      for (const ws of sockets) this.send(ws, { type: "prepare", poem: this.current.bundle, audio: `/audio/${id}` });
-      if (!total) round.finish();
-    });
-  }
-
-  position() {
-    const c = this.current;
-    if (!c) return 0;
-    if (c.status === "playing") return Math.max(0, (Date.now() - c.startedAt) / 1000);
-    if (c.status === "paused") return c.offset ?? 0;
-    return 0;
-  }
-
-  start(at) {
-    const c = this.current;
-    c.status = "playing";
-    c.startedAt = Date.now() - at * 1000;
-    c.offset = 0;
-    this.broadcast({ type: "play", id: c.bundle.id, at });
-    return this.save();
-  }
-
-  save() {
-    return this.ctx.storage.put("current", this.current);
-  }
-
-  // ---------- commands (called by the Worker over RPC) ----------
+  // ---------- commands, called by the Worker over RPC ----------
 
   async speak(args = {}) {
     const env = this.env;
@@ -182,6 +116,7 @@ export class Room extends DurableObject {
     const hasText = typeof args.text === "string" && args.text.trim();
     const hasUrl = typeof args.url === "string" && args.url.trim();
     if (!!hasText === !!hasUrl) throw new Error("Give either `text` or `url` — exactly one of them.");
+    const mode = args.mode === "now" ? "now" : "queue";
 
     const notes = [];
     let source, title = null, author = null, lang = args.language?.toLowerCase().slice(0, 2) || null;
@@ -223,9 +158,8 @@ export class Room extends DurableObject {
     }
 
     const voice = args.voice || (lang === "pl" ? VOICES.pl : VOICES.en);
-    const spoken = compose(marked, OPTS).spoken;
     const { bytes, alignment } = await synthesize(env.ELEVENLABS_API_KEY, {
-      text: spoken, voice, base: env.ELEVENLABS_BASE || undefined
+      text: compose(marked, OPTS).spoken, voice, base: env.ELEVENLABS_BASE || undefined
     });
 
     const id = crypto.randomUUID();
@@ -233,71 +167,47 @@ export class Room extends DurableObject {
     if (!bundle.exact) notes.push("ElevenLabs returned no usable timings, so the highlighting is estimated.");
 
     this.audio.set(id, bytes);
-    for (const old of [...this.audio.keys()].slice(0, -2)) this.audio.delete(old);   // keep the last two
-    this.current = { bundle, status: "preparing", startedAt: 0, offset: 0 };
-    await this.save();
+    for (const old of [...this.audio.keys()].slice(0, -KEEP_AUDIO)) this.audio.delete(old);
 
-    const round = await this.prepareAll(id);
-    if (this.current?.bundle.id !== id) {
-      return { superseded: true, title: bundle.title, notes: ["A newer reading replaced this one before it started."] };
-    }
-    let played = false;
-    if (round.total === 0) {
-      this.current.status = "queued";
-      await this.save();
-      notes.push("No display is connected. The reading is queued and will start when one connects.");
-    } else {
-      if (round.ready < round.total) notes.push(`${round.total - round.ready} of ${round.total} displays did not load the audio in time.`);
-      await this.start(0);
-      played = true;
-    }
+    const sent = this.broadcast({ type: "poem", mode, poem: bundle, audio: `/audio/${id}` });
+    if (!sent) notes.push("No display is connected, so nothing will be read. Open the display page and send it again.");
 
     return {
-      played, displays: round.total, ready: round.ready,
-      title: bundle.title, author: bundle.author, language: lang, voice,
+      sent, mode, title: bundle.title, author: bundle.author, language: lang, voice,
       lines, seconds: bundle.duration, directed,
       directions: bundle.stanzas.flatMap(s => s.lines.flatMap(l => l.dirs)),
       text: marked, notes
     };
   }
 
-  async control(action) {
-    const c = this.current;
-    if (!c) return { ok: false, message: "Nothing has been read yet." };
-    const id = c.bundle.id;
-    if (action === "pause") {
-      if (c.status !== "playing") return { ok: false, message: `The reading is ${c.status}, not playing.` };
-      c.offset = this.position();
-      c.status = "paused";
-      this.broadcast({ type: "pause", id, at: c.offset });
-      await this.save();
-    } else if (action === "resume") {
-      if (c.status !== "paused") return { ok: false, message: `The reading is ${c.status}, not paused.` };
-      await this.start(c.offset);
-    } else if (action === "restart") {
-      if (c.status === "stopped") return { ok: false, message: "The reading was stopped; read something new instead." };
-      await this.start(0);
-    } else if (action === "stop") {
-      c.status = "stopped";
-      this.broadcast({ type: "stop" });
-      await this.save();
-    } else {
-      return { ok: false, message: `Unknown action: ${action}` };
+  control(action) {
+    if (!["pause", "resume", "skip", "stop"].includes(action)) {
+      return { ok: false, message: `Unknown action "${action}". Use pause, resume, skip or stop.` };
     }
-    return { ok: true, ...this.status() };
+    const sent = this.broadcast({ type: "control", action });
+    return sent
+      ? { ok: true, message: `Sent ${action} to ${sent} display${sent === 1 ? "" : "s"}.` }
+      : { ok: false, message: "No display is connected." };
   }
 
+  /** Ask every display what it is doing, and wait briefly for the answers. */
   status() {
     const ds = this.displays();
-    const c = this.current;
-    return {
-      displays: ds.length,
-      armed: ds.filter(ws => ws.deserializeAttachment()?.armed).length,
-      reading: c ? {
-        title: c.bundle.title, author: c.bundle.author, status: c.status,
-        position: Math.round(Math.min(this.position(), c.bundle.duration || Infinity) * 10) / 10,
-        seconds: c.bundle.duration
-      } : null
-    };
+    if (!ds.length) return Promise.resolve({ displays: 0, answered: 0, states: [] });
+    const qid = crypto.randomUUID().slice(0, 8);
+    return new Promise(resolve => {
+      const q = {
+        expected: ds.length, replies: new Map(),
+        finish: () => {
+          if (!this.queries.has(qid)) return;
+          clearTimeout(q.timer);
+          this.queries.delete(qid);
+          resolve({ displays: ds.length, answered: q.replies.size, states: [...q.replies.values()] });
+        }
+      };
+      q.timer = setTimeout(q.finish, QUERY_TIMEOUT_MS);
+      this.queries.set(qid, q);
+      for (const ws of ds) this.send(ws, { type: "query", qid });
+    });
   }
 }
