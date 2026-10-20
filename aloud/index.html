@@ -1,0 +1,871 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aloud</title>
+<meta name="description" content="Paste a poem, hear it read, and follow the words as they are spoken.">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Spectral:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f7f7f7;
+    --ink:#000;
+    --past:#7a7a7a;
+    --ahead:#c6c6c6;
+    --quiet:#6e6e6e;
+    --rule:#dedede;
+    --mark:#ffe24a;
+    --measure:32rem;
+    --serif:"Spectral",Georgia,"Times New Roman",serif;
+    --sans:"Archivo",system-ui,-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    font-size:16px;
+    line-height:1.5;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+  }
+  ::selection{background:var(--mark);color:var(--ink)}
+  :focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+
+  .page{
+    width:100%;
+    max-width:calc(var(--measure) + 11rem);
+    margin:0 auto;
+    padding:0 1.25rem;
+    flex:1 1 auto;
+    display:flex;
+    flex-direction:column;
+  }
+
+  /* ---------- running head ---------- */
+  .head{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:1rem;
+    padding:1.75rem 0 0;
+    font-size:.8125rem;
+    color:var(--quiet);
+  }
+  .head .title{
+    font-family:var(--serif);
+    font-size:1rem;
+    font-weight:400;
+    font-style:italic;
+    color:var(--ink);
+    margin:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .head .wordmark{letter-spacing:.01em;font-weight:600;color:var(--ink)}
+  .linkish{
+    appearance:none;background:none;border:0;padding:0;
+    font:inherit;color:var(--quiet);
+    text-decoration:underline;text-decoration-thickness:1px;
+    text-underline-offset:.2em;cursor:pointer;
+  }
+  .linkish:hover{color:var(--ink)}
+
+  /* ---------- compose ---------- */
+  .compose{padding:2.5rem 0 3rem;max-width:var(--measure)}
+  .lede{
+    font-family:var(--serif);
+    font-weight:300;
+    font-size:clamp(1.75rem,6vw,2.5rem);
+    line-height:1.22;
+    letter-spacing:-.01em;
+    margin:0 0 .6rem;
+  }
+  .sub{margin:0 0 2rem;color:var(--quiet);font-size:.9375rem;max-width:28rem}
+
+  .field{margin:0 0 1.5rem}
+  .field > .label{
+    display:block;
+    font-size:.8125rem;
+    font-weight:500;
+    margin:0 0 .5rem;
+  }
+  .hint{font-size:.8125rem;color:var(--quiet);margin:.5rem 0 0}
+
+  .toggle{display:inline-flex;border:1px solid var(--ink);background:var(--paper)}
+  .toggle button{
+    appearance:none;border:0;background:none;cursor:pointer;
+    font:inherit;font-size:.875rem;font-weight:500;
+    padding:.5rem 1.1rem;color:var(--quiet);
+  }
+  .toggle button + button{border-left:1px solid var(--rule)}
+  .toggle button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+
+  textarea{
+    display:block;width:100%;
+    min-height:13rem;
+    resize:vertical;
+    background:#fff;
+    border:1px solid var(--rule);
+    border-left:3px solid var(--ink);
+    padding:1.1rem 1.1rem;
+    font-family:var(--serif);
+    font-size:1.0625rem;
+    line-height:1.75;
+    color:var(--ink);
+  }
+  textarea::placeholder{color:var(--ahead);font-style:italic}
+  textarea:focus{border-color:var(--quiet);border-left-color:var(--ink);outline-offset:2px}
+
+  input[type=text],input[type=password]{
+    display:block;width:100%;
+    background:#fff;
+    border:1px solid var(--rule);
+    padding:.6rem .7rem;
+    font-family:var(--sans);
+    font-size:.9375rem;
+    color:var(--ink);
+  }
+  input:focus{border-color:var(--quiet)}
+
+  .count{
+    font-size:.8125rem;color:var(--quiet);
+    margin:.6rem 0 0;
+    font-variant-numeric:tabular-nums;
+  }
+
+  .go{
+    appearance:none;cursor:pointer;
+    background:var(--ink);color:var(--paper);
+    border:0;padding:.85rem 1.6rem;
+    font:inherit;font-size:.9375rem;font-weight:600;
+    position:relative;
+  }
+  .go:hover{background:#2a2a2a}
+  .go:disabled{background:var(--ahead);cursor:not-allowed}
+  .actions{display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap;margin-top:2rem}
+
+  details.settings{margin-top:2.25rem;border-top:1px solid var(--rule);padding-top:1.25rem}
+  details.settings summary{
+    cursor:pointer;font-size:.875rem;font-weight:500;
+    list-style:none;display:flex;align-items:center;gap:.4rem;
+  }
+  details.settings summary::-webkit-details-marker{display:none}
+  details.settings summary::before{content:"+";color:var(--quiet);font-weight:400}
+  details.settings[open] summary::before{content:"–"}
+  .settings-body{display:grid;gap:1.1rem;margin-top:1.1rem;max-width:26rem}
+
+  .notice{
+    border-left:3px solid var(--ink);
+    background:#fff;
+    padding:.8rem .9rem;
+    font-size:.875rem;
+    margin:1.25rem 0 0;
+    max-width:var(--measure);
+  }
+  .notice.quiet{border-left-color:var(--mark)}
+
+  /* ---------- reading ---------- */
+  .reading{padding:2rem 0 9rem;flex:1 1 auto}
+  .verse{
+    max-width:var(--measure);
+    font-family:var(--serif);
+    font-size:clamp(1.0625rem,2.6vw,1.3125rem);
+    line-height:1.95;
+    counter-reset:vline;
+  }
+  .stanza{margin:0 0 1.95em}
+  .stanza:last-child{margin-bottom:0}
+  .vline{
+    position:relative;
+    display:block;
+    width:100%;
+    text-align:left;
+    appearance:none;background:none;border:0;
+    font:inherit;color:var(--ahead);
+    padding:0 0 0 1.2em;
+    text-indent:-1.2em;
+    cursor:pointer;
+    transition:color .25s ease;
+  }
+  .vline:hover{color:var(--past)}
+  .vline[data-state="past"]{color:var(--past)}
+  .vline[data-state="now"]{color:var(--ink)}
+  .vline .num{
+    position:absolute;
+    left:-3.5rem;width:2.5rem;
+    text-align:right;
+    font-family:var(--sans);
+    font-size:.6875rem;
+    color:var(--ahead);
+    top:.65em;
+    font-variant-numeric:tabular-nums;
+    user-select:none;
+  }
+  .vline .indent{padding-left:1.6em;display:inline-block}
+  .w{background-image:none}
+  .vline[data-state="now"] .w.lit{
+    /* a marker stroke: short of the full line box, each band overlapping
+       its neighbour so the pass reads as one unbroken stroke */
+    background-image:linear-gradient(to bottom,
+      transparent 7%, var(--mark) 7%, var(--mark) 92%, transparent 92%);
+    padding:0 .07em;
+    margin:0 -.07em;
+    -webkit-box-decoration-break:clone;
+    box-decoration-break:clone;
+  }
+
+  /* ---------- transport ---------- */
+  .transport{
+    position:fixed;left:0;right:0;bottom:0;
+    background:var(--paper);
+    border-top:1px solid var(--rule);
+    padding:.7rem 0 max(.7rem,env(safe-area-inset-bottom));
+  }
+  .transport-in{
+    width:100%;
+    max-width:calc(var(--measure) + 11rem);
+    margin:0 auto;padding:0 1.25rem;
+    display:flex;align-items:center;gap:.9rem;
+  }
+  .play{
+    appearance:none;cursor:pointer;
+    width:2.5rem;height:2.5rem;flex:0 0 auto;
+    border:1px solid var(--ink);background:var(--paper);
+    display:grid;place-items:center;padding:0;
+  }
+  .play:hover{background:var(--mark)}
+  .play svg{display:block}
+  .scrub{
+    flex:1 1 auto;height:1.5rem;position:relative;cursor:pointer;
+    display:flex;align-items:center;
+  }
+  .scrub .track{height:1px;width:100%;background:var(--rule);position:relative}
+  .scrub .fill{position:absolute;left:0;top:0;height:1px;background:var(--ink)}
+  .scrub .knob{
+    position:absolute;top:50%;width:7px;height:7px;
+    background:var(--ink);transform:translate(-50%,-50%);
+  }
+  .clock{
+    font-size:.8125rem;color:var(--quiet);
+    font-variant-numeric:tabular-nums;flex:0 0 auto;
+  }
+  .transport .save{flex:0 0 auto;font-size:.8125rem}
+  .status{
+    font-size:.875rem;color:var(--quiet);
+    display:flex;align-items:center;gap:.7rem;
+  }
+  .bar{
+    position:relative;height:1px;width:5.5rem;background:var(--rule);overflow:hidden;
+  }
+  .bar::after{
+    content:"";position:absolute;inset:0;background:var(--ink);
+    transform-origin:left;animation:sweep 1.25s ease-in-out infinite;
+  }
+  @keyframes sweep{
+    0%{transform:scaleX(0) translateX(0)}
+    50%{transform:scaleX(1) translateX(0)}
+    100%{transform:scaleX(0) translateX(100%)}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .bar::after{animation:none;transform:scaleX(.35)}
+    .vline,.w{transition:none}
+  }
+
+  .hidden{display:none !important}
+
+  @media (max-width:640px){
+    .vline .num{display:none}
+    .reading{padding-bottom:8.5rem}
+    .transport-in{gap:.65rem}
+    .transport .save{display:none}
+    .head{padding-top:1.1rem}
+  }
+  .save-mobile{display:none}
+  @media (max-width:640px){
+    .save-mobile{display:inline-block;margin-top:2rem;font-size:.875rem}
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <header class="head">
+    <h1 class="title" id="runhead">Aloud</h1>
+    <button class="linkish hidden" id="restart" type="button">New poem</button>
+  </header>
+
+  <!-- ============ COMPOSE ============ -->
+  <main class="compose" id="compose">
+    <p class="lede">Hear a poem, and watch the words as they are spoken.</p>
+    <p class="sub">Paste verse, pick a language, and it is read back to you with the line you are hearing marked on the page.</p>
+
+    <div class="field">
+      <span class="label" id="langlabel">Language of the poem</span>
+      <div class="toggle" role="group" aria-labelledby="langlabel">
+        <button type="button" id="lang-pl" aria-pressed="false">Polish</button>
+        <button type="button" id="lang-en" aria-pressed="true">English</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="label" for="text">The poem</label>
+      <textarea id="text" spellcheck="false" placeholder="Paste a poem here. Keep the line breaks — each line becomes one caption, and a blank line starts a new stanza."></textarea>
+      <p class="count" id="count">Nothing yet</p>
+    </div>
+
+    <details class="settings hidden" id="settings">
+      <summary>Settings</summary>
+      <div class="settings-body">
+        <div id="keywrap">
+          <label class="label" for="key">OpenRouter key</label>
+          <input type="password" id="key" autocomplete="off" spellcheck="false" placeholder="sk-or-v1-…">
+          <p class="hint">Kept in this browser only, so you enter it once.</p>
+        </div>
+        <div id="voicewrap">
+          <label class="label" for="voice">Voice id</label>
+          <input type="text" id="voice" autocomplete="off" spellcheck="false" placeholder="Leave empty for the default voice">
+          <p class="hint">An ElevenLabs voice id. Empty uses one chosen per language.</p>
+        </div>
+      </div>
+    </details>
+
+    <div class="actions">
+      <button class="go" id="go" type="button">Read it aloud</button>
+      <span class="status hidden" id="cstatus"></span>
+    </div>
+
+    <div class="notice hidden" id="error"></div>
+  </main>
+
+  <!-- ============ READING ============ -->
+  <main class="reading hidden" id="reading">
+    <div class="verse" id="verse"></div>
+    <a class="linkish save-mobile hidden" id="save-mobile" download>Save the audio</a>
+  </main>
+</div>
+
+<div class="transport hidden" id="transport">
+  <div class="transport-in">
+    <button class="play" id="play" type="button" aria-label="Play">
+      <svg width="12" height="14" viewBox="0 0 12 14" aria-hidden="true"><path d="M0 0l12 7-12 7z" fill="currentColor"/></svg>
+    </button>
+    <div class="scrub" id="scrub" role="slider" tabindex="0" aria-label="Position in the reading" aria-valuemin="0" aria-valuenow="0" aria-valuemax="100">
+      <div class="track"><div class="fill" id="fill" style="width:0%"></div><div class="knob" id="knob" style="left:0%"></div></div>
+    </div>
+    <span class="clock" id="clock">0:00 / 0:00</span>
+    <a class="linkish save" id="save" download>Save the audio</a>
+  </div>
+</div>
+
+<script>
+(() => {
+"use strict";
+
+/* ------------------------------------------------------------------ *
+ * Configuration from the URL, with defaults per language.
+ * ------------------------------------------------------------------ */
+const qs = new URLSearchParams(location.search);
+const urlKey   = qs.get("key")   || "";
+const urlVoice = qs.get("voice") || "";
+const urlModel = qs.get("model") || "";
+const urlLang  = (qs.get("lang") || "").toLowerCase();
+
+const VOICES = { pl: "ozf4fnQ34uFcOcKX71uX", en: "auq43ws1oslv0tO4BDa7" };
+const MODELS = { pl: "elevenlabs/eleven-multilingual-v2", en: "elevenlabs/eleven-v4" };
+const MAX_CHARS = 4500;
+const ENDPOINT = "https://openrouter.ai/api/v1/audio/speech";
+
+const store = {
+  get(k, d = "") { try { return localStorage.getItem("aloud." + k) ?? d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem("aloud." + k, v); } catch {} }
+};
+
+const el = id => document.getElementById(id);
+const dom = {
+  compose: el("compose"), reading: el("reading"), verse: el("verse"),
+  text: el("text"), count: el("count"), go: el("go"), cstatus: el("cstatus"),
+  error: el("error"), settings: el("settings"), key: el("key"), voice: el("voice"),
+  keywrap: el("keywrap"), voicewrap: el("voicewrap"),
+  langPl: el("lang-pl"), langEn: el("lang-en"),
+  transport: el("transport"), play: el("play"), scrub: el("scrub"),
+  fill: el("fill"), knob: el("knob"), clock: el("clock"),
+  save: el("save"), saveMobile: el("save-mobile"),
+  runhead: el("runhead"), restart: el("restart")
+};
+
+let lang = (urlLang === "pl" || urlLang === "en") ? urlLang : (store.get("lang", "en") === "pl" ? "pl" : "en");
+let timeline = null;       // { lines:[{start,end,words:[{start,end,node}]}] }
+let audio = null;
+let blobUrl = null;
+let rafId = 0;
+let lastLine = -1;
+let userScrolledAt = 0;
+
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+if (reduced) document.body.classList.add("reduced");
+
+/* ------------------------------------------------------------------ *
+ * Compose screen wiring
+ * ------------------------------------------------------------------ */
+if (!urlKey || !urlVoice) {
+  dom.settings.classList.remove("hidden");
+  if (urlKey) dom.keywrap.classList.add("hidden");
+  if (urlVoice) dom.voicewrap.classList.add("hidden");
+}
+dom.key.value = urlKey || store.get("key");
+dom.voice.value = urlVoice || store.get("voice");
+dom.text.value = store.get("draft");
+
+function paintLang() {
+  dom.langPl.setAttribute("aria-pressed", lang === "pl" ? "true" : "false");
+  dom.langEn.setAttribute("aria-pressed", lang === "en" ? "true" : "false");
+}
+function setLang(next) { lang = next; store.set("lang", next); paintLang(); }
+dom.langPl.addEventListener("click", () => setLang("pl"));
+dom.langEn.addEventListener("click", () => setLang("en"));
+paintLang();
+
+dom.key.addEventListener("input", () => store.set("key", dom.key.value.trim()));
+dom.voice.addEventListener("input", () => store.set("voice", dom.voice.value.trim()));
+
+function describeLength() {
+  const raw = dom.text.value.trim();
+  if (!raw) { dom.count.textContent = "Nothing yet"; return; }
+  const words = raw.split(/\s+/).length;
+  const mins = words / 140;                       // measured ~140 wpm for verse
+  const label = mins < 0.75
+    ? "under a minute"
+    : "about " + (mins < 1.5 ? "a minute" : Math.round(mins) + " minutes");
+  let s = words + (words === 1 ? " word, " : " words, ") + label + " read aloud";
+  if (raw.length > MAX_CHARS) s += " — too long by " + (raw.length - MAX_CHARS) + " characters";
+  dom.count.textContent = s;
+}
+dom.text.addEventListener("input", () => { store.set("draft", dom.text.value); describeLength(); });
+describeLength();
+
+function fail(message) {
+  dom.error.textContent = message;
+  dom.error.classList.remove("hidden");
+}
+function clearFail() { dom.error.classList.add("hidden"); dom.error.textContent = ""; }
+
+/* ------------------------------------------------------------------ *
+ * Parsing the poem into stanzas, lines and words
+ * ------------------------------------------------------------------ */
+const PAUSE = { ",": 2.5, ";": 3, ":": 3, ".": 5, "!": 5, "?": 5, "—": 3, "–": 3, "…": 5 };
+
+function parse(raw) {
+  const stanzas = [];
+  let current = [];
+  for (const rawLine of raw.replace(/\r/g, "").split("\n")) {
+    const line = rawLine.trim();
+    if (!line) { if (current.length) { stanzas.push(current); current = []; } continue; }
+    current.push({ text: line, indented: /^\s{2,}|^\t/.test(rawLine) });
+  }
+  if (current.length) stanzas.push(current);
+
+  const lines = [];
+  stanzas.forEach((stanza, si) => {
+    stanza.forEach((line, li) => {
+      const words = line.text.split(/\s+/).filter(Boolean).map(w => {
+        const tail = w.slice(-1);
+        return { text: w, weight: w.replace(/[^\p{L}\p{N}]/gu, "").length + 1 + (PAUSE[tail] || 0) };
+      });
+      const endOfStanza = li === stanza.length - 1;
+      if (words.length) words[words.length - 1].weight += endOfStanza ? 6 : 1.5;
+      lines.push({ words, indented: line.indented, stanza: si, endOfStanza });
+    });
+  });
+  return { stanzas, lines };
+}
+
+/* ------------------------------------------------------------------ *
+ * Typesetting
+ * ------------------------------------------------------------------ */
+function typeset(parsed) {
+  dom.verse.textContent = "";
+  let lineNo = 0;
+  const lineNodes = [];
+
+  parsed.stanzas.forEach(stanza => {
+    const box = document.createElement("div");
+    box.className = "stanza";
+    stanza.forEach(() => {
+      const line = parsed.lines[lineNodes.length];
+      lineNo += 1;
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "vline";
+      btn.dataset.state = "ahead";
+      btn.dataset.index = String(lineNodes.length);
+
+      if (lineNo % 5 === 0) {
+        const n = document.createElement("span");
+        n.className = "num";
+        n.textContent = String(lineNo);
+        btn.appendChild(n);
+      }
+      const holder = line.indented ? document.createElement("span") : btn;
+      if (line.indented) { holder.className = "indent"; btn.appendChild(holder); }
+
+      line.words.forEach((word, wi) => {
+        const span = document.createElement("span");
+        span.className = "w";
+        // the trailing space lives inside the span so the stroke runs unbroken
+        span.textContent = word.text + (wi < line.words.length - 1 ? " " : "");
+        holder.appendChild(span);
+        word.node = span;
+      });
+      box.appendChild(btn);
+      lineNodes.push(btn);
+    });
+    dom.verse.appendChild(box);
+  });
+
+  lineNodes.forEach((node, i) => node.addEventListener("click", () => seekToLine(i)));
+
+  const first = parsed.lines[0];
+  if (first) {
+    const head = first.words.map(w => w.text).join(" ");
+    if (head.length <= 58 && !/[.,;:!?]$/.test(head)) {
+      dom.runhead.textContent = head.replace(/\s+/g, " ");
+    } else {
+      dom.runhead.textContent = "Aloud";
+    }
+  }
+  return lineNodes;
+}
+
+/* ------------------------------------------------------------------ *
+ * Where the silences are. OpenRouter returns audio only, with no
+ * timing data, so the alignment is measured from the waveform:
+ * a proportional estimate from word length, with every line start
+ * snapped to a real pause in the recording when one is near.
+ * ------------------------------------------------------------------ */
+function findSilences(buffer) {
+  const data = buffer.getChannelData(0);
+  const rate = buffer.sampleRate;
+  const frame = Math.max(128, Math.round(rate * 0.02));
+  const frames = [];
+  for (let i = 0; i + frame <= data.length; i += frame) {
+    let sum = 0;
+    for (let j = i; j < i + frame; j++) sum += data[j] * data[j];
+    frames.push(Math.sqrt(sum / frame));
+  }
+  if (!frames.length) return { silences: [], speechStart: 0, speechEnd: buffer.duration };
+
+  const sorted = [...frames].sort((a, b) => a - b);
+  const floor = sorted[Math.floor(sorted.length * 0.05)];
+  const peak = sorted[Math.floor(sorted.length * 0.98)];
+  const threshold = Math.max(floor * 3, peak * 0.04, 1e-4);
+  const secs = i => (i * frame) / rate;
+
+  let first = frames.findIndex(v => v > threshold);
+  let last = frames.length - 1;
+  while (last > 0 && frames[last] <= threshold) last--;
+  if (first < 0) first = 0;
+
+  const silences = [];
+  let runStart = -1;
+  for (let i = first; i <= last; i++) {
+    if (frames[i] <= threshold) {
+      if (runStart < 0) runStart = i;
+    } else if (runStart >= 0) {
+      const a = secs(runStart), b = secs(i);
+      if (b - a >= 0.11) silences.push({ start: a, end: b, mid: (a + b) / 2 });
+      runStart = -1;
+    }
+  }
+  return { silences, speechStart: secs(first), speechEnd: Math.min(buffer.duration, secs(last + 1)) };
+}
+
+function buildTimeline(parsed, buffer) {
+  const { silences, speechStart, speechEnd } = findSilences(buffer);
+  const lines = parsed.lines;
+  const span = Math.max(0.2, speechEnd - speechStart);
+  const total = lines.reduce((s, l) => s + l.words.reduce((t, w) => t + w.weight, 0), 0) || 1;
+
+  // Proportional first pass.
+  const bounds = [speechStart];
+  let acc = 0;
+  for (const line of lines) {
+    acc += line.words.reduce((t, w) => t + w.weight, 0);
+    bounds.push(speechStart + (acc / total) * span);
+  }
+
+  // Snap interior line starts onto a nearby real pause.
+  const avgLine = span / lines.length;
+  const tol = Math.min(0.9, Math.max(0.22, avgLine * 0.42));
+  for (let i = 1; i < bounds.length - 1; i++) {
+    let best = null, bestGap = Infinity;
+    for (const s of silences) {
+      const gap = Math.abs(s.mid - bounds[i]);
+      if (gap < bestGap && gap <= tol) { bestGap = gap; best = s; }
+    }
+    if (best) bounds[i] = best.mid;
+  }
+  // Keep it strictly increasing with a floor on line length.
+  for (let i = 1; i < bounds.length; i++) {
+    const floor = bounds[i - 1] + 0.12;
+    if (bounds[i] < floor) bounds[i] = floor;
+  }
+  const overshoot = bounds[bounds.length - 1] - speechEnd;
+  if (overshoot > 0) bounds[bounds.length - 1] = speechEnd;
+
+  // Spread words inside each line by weight.
+  const out = [];
+  lines.forEach((line, i) => {
+    const start = bounds[i], end = Math.max(bounds[i] + 0.12, bounds[i + 1]);
+    const w = line.words.reduce((t, x) => t + x.weight, 0) || 1;
+    let run = 0;
+    const words = line.words.map(word => {
+      const a = start + (run / w) * (end - start);
+      run += word.weight;
+      const b = start + (run / w) * (end - start);
+      return { start: a, end: b, node: word.node };
+    });
+    out.push({ start, end, words, node: null });
+  });
+  return { lines: out, speechStart, snapped: silences.length };
+}
+
+/* ------------------------------------------------------------------ *
+ * Synthesis
+ * ------------------------------------------------------------------ */
+async function synthesize(text, key, voice, model) {
+  const res = await fetch(ENDPOINT, {
+    method: "POST",
+    headers: {
+      "Authorization": "Bearer " + key,
+      "Content-Type": "application/json",
+      "X-Title": "Aloud"
+    },
+    body: JSON.stringify({ model, input: text, voice, response_format: "mp3" })
+  });
+
+  if (!res.ok) {
+    let detail = "";
+    try {
+      const body = await res.json();
+      detail = body?.error?.message || body?.message || "";
+    } catch { detail = await res.text().catch(() => ""); }
+    if (res.status === 401 || res.status === 403) {
+      throw new Error("The key was rejected. Open settings and check it." + (detail ? " (" + detail + ")" : ""));
+    }
+    if (res.status === 402) throw new Error("The key is out of credit on OpenRouter.");
+    if (res.status === 429) throw new Error("OpenRouter is rate limiting this key. Wait a moment and read it again.");
+    throw new Error(detail || ("The request failed with status " + res.status + "."));
+  }
+  const bytes = await res.arrayBuffer();
+  if (bytes.byteLength < 1024) throw new Error("The audio came back empty. Try a shorter passage.");
+  return bytes;
+}
+
+async function run() {
+  clearFail();
+  const raw = dom.text.value.trim();
+  const key = (urlKey || dom.key.value).trim();
+  const voice = (urlVoice || dom.voice.value).trim() || VOICES[lang];
+  const model = urlModel || MODELS[lang];
+
+  if (!raw) { fail("Paste a poem first."); dom.text.focus(); return; }
+  if (raw.length > MAX_CHARS) {
+    fail("That is " + raw.length + " characters and the limit is " + MAX_CHARS + ". Read it in two parts.");
+    return;
+  }
+  if (!key) {
+    fail("Add an OpenRouter key in settings to read anything aloud.");
+    dom.settings.open = true; dom.key.focus(); return;
+  }
+
+  const parsed = parse(raw);
+  if (!parsed.lines.length) { fail("No lines found in that text."); return; }
+
+  dom.go.disabled = true;
+  dom.cstatus.classList.remove("hidden");
+  dom.cstatus.innerHTML = '<span class="bar"></span><span>Preparing the audio</span>';
+
+  try {
+    const bytes = await synthesize(raw, key, voice, model);
+
+    // decodeAudioData detaches its input, so analyse a copy and keep the original for playback.
+    const copy = bytes.slice(0);
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const buffer = await ctx.decodeAudioData(copy);
+    ctx.close?.();
+
+    const lineNodes = typeset(parsed);
+    timeline = buildTimeline(parsed, buffer);
+    timeline.lines.forEach((line, i) => { line.node = lineNodes[i]; });
+
+    if (blobUrl) URL.revokeObjectURL(blobUrl);
+    blobUrl = URL.createObjectURL(new Blob([bytes], { type: "audio/mpeg" }));
+    const slug = (dom.runhead.textContent || "reading").toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "reading";
+    dom.save.href = blobUrl; dom.save.download = slug + ".mp3";
+    dom.saveMobile.href = blobUrl; dom.saveMobile.download = slug + ".mp3";
+    dom.saveMobile.classList.remove("hidden");
+
+    audio = new Audio(blobUrl);
+    audio.preload = "auto";
+    audio.addEventListener("timeupdate", paintClock);
+    audio.addEventListener("ended", () => { setPlayIcon(false); stopLoop(); });
+    audio.addEventListener("play", () => { setPlayIcon(true); startLoop(); });
+    audio.addEventListener("pause", () => { setPlayIcon(false); stopLoop(); });
+
+    dom.compose.classList.add("hidden");
+    dom.reading.classList.remove("hidden");
+    dom.transport.classList.remove("hidden");
+    dom.restart.classList.remove("hidden");
+    paintClock();
+    window.scrollTo(0, 0);
+    audio.play().catch(() => setPlayIcon(false));   // some browsers want a second tap
+  } catch (err) {
+    fail(err.message || String(err));
+  } finally {
+    dom.go.disabled = false;
+    dom.cstatus.classList.add("hidden");
+    dom.cstatus.textContent = "";
+  }
+}
+dom.go.addEventListener("click", run);
+
+/* ------------------------------------------------------------------ *
+ * Playback, highlighting, scrubbing
+ * ------------------------------------------------------------------ */
+function setPlayIcon(playing) {
+  dom.play.setAttribute("aria-label", playing ? "Pause" : "Play");
+  dom.play.innerHTML = playing
+    ? '<svg width="12" height="14" viewBox="0 0 12 14" aria-hidden="true"><rect x="0" y="0" width="4" height="14" fill="currentColor"/><rect x="8" y="0" width="4" height="14" fill="currentColor"/></svg>'
+    : '<svg width="12" height="14" viewBox="0 0 12 14" aria-hidden="true"><path d="M0 0l12 7-12 7z" fill="currentColor"/></svg>';
+}
+function clock(t) {
+  if (!isFinite(t)) t = 0;
+  const m = Math.floor(t / 60), s = Math.floor(t % 60);
+  return m + ":" + String(s).padStart(2, "0");
+}
+function paintClock() {
+  if (!audio) return;
+  const d = isFinite(audio.duration) ? audio.duration : 0;
+  const pct = d ? (audio.currentTime / d) * 100 : 0;
+  dom.fill.style.width = pct + "%";
+  dom.knob.style.left = pct + "%";
+  dom.clock.textContent = clock(audio.currentTime) + " / " + clock(d);
+  dom.scrub.setAttribute("aria-valuenow", String(Math.round(pct)));
+}
+
+function paintWords() {
+  if (!timeline || !audio) return;
+  const t = audio.currentTime;
+  const lines = timeline.lines;
+
+  let index = -1;
+  for (let i = 0; i < lines.length; i++) {
+    if (t >= lines[i].start && t < lines[i].end) { index = i; break; }
+    if (t >= lines[i].end) index = i;
+  }
+  if (index < 0) index = 0;
+
+  if (index !== lastLine) {
+    lines.forEach((line, i) => {
+      const state = i < index ? "past" : i === index ? "now" : "ahead";
+      if (line.node.dataset.state !== state) line.node.dataset.state = state;
+      if (i !== index) line.words.forEach(w => w.node.classList.remove("lit"));
+    });
+    lastLine = index;
+    if (Date.now() - userScrolledAt > 2600) keepInView(lines[index].node);
+  }
+  for (const word of lines[index].words) {
+    const lit = t >= word.start;
+    if (lit !== word.node.classList.contains("lit")) word.node.classList.toggle("lit", lit);
+  }
+}
+
+function keepInView(node) {
+  const rect = node.getBoundingClientRect();
+  const lower = window.innerHeight * 0.62;
+  const upper = window.innerHeight * 0.18;
+  if (rect.top > lower || rect.top < upper) {
+    const target = window.scrollY + rect.top - window.innerHeight * 0.38;
+    window.scrollTo({ top: Math.max(0, target), behavior: reduced ? "auto" : "smooth" });
+  }
+}
+["wheel", "touchmove", "keydown"].forEach(ev =>
+  window.addEventListener(ev, e => {
+    if (ev === "keydown" && !["ArrowDown", "ArrowUp", "PageDown", "PageUp", "Home", "End"].includes(e.key)) return;
+    userScrolledAt = Date.now();
+  }, { passive: true })
+);
+
+function loop() { paintWords(); rafId = requestAnimationFrame(loop); }
+function startLoop() { if (!rafId) rafId = requestAnimationFrame(loop); }
+function stopLoop() { if (rafId) { cancelAnimationFrame(rafId); rafId = 0; } paintWords(); }
+
+function seekToLine(i) {
+  if (!audio || !timeline) return;
+  audio.currentTime = Math.max(0, timeline.lines[i].start - 0.04);
+  lastLine = -1;
+  paintWords(); paintClock();
+  if (audio.paused) audio.play().catch(() => {});
+}
+
+dom.play.addEventListener("click", () => {
+  if (!audio) return;
+  if (audio.paused) audio.play().catch(() => {}); else audio.pause();
+});
+
+function scrubTo(clientX) {
+  if (!audio || !isFinite(audio.duration)) return;
+  const box = dom.scrub.getBoundingClientRect();
+  const ratio = Math.min(1, Math.max(0, (clientX - box.left) / box.width));
+  audio.currentTime = ratio * audio.duration;
+  lastLine = -1;
+  paintWords(); paintClock();
+}
+let scrubbing = false;
+dom.scrub.addEventListener("pointerdown", e => { scrubbing = true; dom.scrub.setPointerCapture(e.pointerId); scrubTo(e.clientX); });
+dom.scrub.addEventListener("pointermove", e => { if (scrubbing) scrubTo(e.clientX); });
+dom.scrub.addEventListener("pointerup", () => { scrubbing = false; });
+dom.scrub.addEventListener("keydown", e => {
+  if (!audio) return;
+  const step = e.shiftKey ? 15 : 5;
+  if (e.key === "ArrowRight") { audio.currentTime = Math.min(audio.duration, audio.currentTime + step); e.preventDefault(); }
+  if (e.key === "ArrowLeft") { audio.currentTime = Math.max(0, audio.currentTime - step); e.preventDefault(); }
+  lastLine = -1; paintWords(); paintClock();
+});
+
+window.addEventListener("keydown", e => {
+  if (e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLInputElement) return;
+  if (e.code === "Space" && audio) {
+    e.preventDefault();
+    if (audio.paused) audio.play().catch(() => {}); else audio.pause();
+  }
+});
+
+dom.restart.addEventListener("click", () => {
+  if (audio) { audio.pause(); audio.src = ""; audio = null; }
+  stopLoop();
+  timeline = null; lastLine = -1;
+  dom.reading.classList.add("hidden");
+  dom.transport.classList.add("hidden");
+  dom.restart.classList.add("hidden");
+  dom.compose.classList.remove("hidden");
+  dom.runhead.textContent = "Aloud";
+  dom.saveMobile.classList.add("hidden");
+  window.scrollTo(0, 0);
+  dom.text.focus();
+});
+
+setPlayIcon(false);
+})();
+</script>
+</body>
+</html>
