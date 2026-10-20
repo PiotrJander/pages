@@ -50,7 +50,7 @@ export default {
           status: 401, headers: { "Content-Type": "application/json" }
         }));
       }
-      return withCors(await handleMcp(request, room));
+      return withCors(await handleMcp(request, room, env));
     }
 
     if (url.pathname === "/") {

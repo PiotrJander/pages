@@ -93,6 +93,23 @@
   .progress{position:fixed;left:0;right:0;bottom:0;height:2px;background:var(--rule)}
   .progress i{display:block;height:100%;width:0;background:var(--ink)}
 
+  /* controls: quiet until reached for */
+  .controls{
+    position:fixed;left:50%;bottom:calc(1rem + env(safe-area-inset-bottom));transform:translateX(-50%);
+    display:flex;gap:.5rem;opacity:.6;transition:opacity .3s ease;
+  }
+  .controls:hover,.controls:focus-within{opacity:1}
+  body.turning .controls{opacity:.25}
+  .controls button{
+    appearance:none;width:3rem;height:3rem;padding:0;display:grid;place-items:center;
+    background:var(--paper);color:var(--ink);border:1px solid var(--rule);cursor:pointer;
+  }
+  .controls button.primary{border-color:var(--ink)}
+  .controls button:hover:not(:disabled){border-color:var(--ink);background:var(--mark)}
+  .controls button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+  .controls button:disabled{color:var(--ahead);cursor:default}
+  .controls svg{display:block}
+
   .status{
     position:fixed;right:1rem;bottom:.9rem;font-size:.8125rem;color:var(--quiet);
   }
@@ -135,6 +152,15 @@
 </div>
 
 <div class="progress hidden" id="progress"><i id="fill"></i></div>
+<nav class="controls hidden" id="controls" aria-label="Reading">
+  <button type="button" id="btn-back" aria-label="Back to the beginning">
+    <svg width="16" height="14" viewBox="0 0 16 14" aria-hidden="true"><rect x="1" y="1" width="2" height="12" fill="currentColor"/><path d="M15 1 L5 7 L15 13 Z" fill="currentColor"/></svg>
+  </button>
+  <button type="button" id="btn-play" class="primary" aria-label="Pause"></button>
+  <button type="button" id="btn-next" aria-label="Next in the queue">
+    <svg width="16" height="14" viewBox="0 0 16 14" aria-hidden="true"><path d="M1 1 L11 7 L1 13 Z" fill="currentColor"/><rect x="13" y="1" width="2" height="12" fill="currentColor"/></svg>
+  </button>
+</nav>
 <div class="status" id="status" role="status" aria-live="polite"></div>
 
 <div class="arm" id="arm" role="button" tabindex="0" aria-label="Turn on sound">
@@ -164,7 +190,8 @@ const GAP_MS = 2500;          // after a poem ends, a pause before the queue mov
 
 const $ = id => document.getElementById(id);
 const dom = { title: $("title"), author: $("author"), stage: $("stage"), idle: $("idle"),
-              progress: $("progress"), fill: $("fill"), status: $("status"), arm: $("arm") };
+              progress: $("progress"), fill: $("fill"), status: $("status"), arm: $("arm"),
+              controls: $("controls"), back: $("btn-back"), play: $("btn-play"), next: $("btn-next") };
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
@@ -385,6 +412,28 @@ async function play(entry) {
   startAudio();
 }
 
+/** Back to the first word of the current poem, replayed from memory. */
+async function restart() {
+  if (!current?.url) return;
+  clearTimeout(gapTimer); gapTimer = 0;
+  const mine = ++turn;
+  const voiceOn = state === "playing" && !audio.paused;
+  pauseRequested = false;
+  state = "starting";
+  if (voiceOn) await fadeVoice(400);
+  if (mine !== turn) return;
+  halt();
+  lastLine = -1;
+  current.lines.forEach(l => { l.node.dataset.state = "ahead"; clearWords(l); });
+  dom.fill.style.width = "0";
+  scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
+  audio.currentTime = 0;
+  await sleep(BEAT_MS);
+  if (mine !== turn) return;
+  if (!armed) { state = "waiting"; return; }
+  startAudio();
+}
+
 function finish() {
   state = "ended";
   rest();
@@ -416,6 +465,8 @@ function control(action) {
   } else if (action === "resume") {
     if (state === "starting") pauseRequested = false;
     else if (state === "paused") { if (armed) startAudio(); else state = "waiting"; }
+  } else if (action === "restart") {
+    return restart();
   } else if (action === "skip") {
     clearTimeout(gapTimer); gapTimer = 0;
     if (queue.length) { play(queue.shift()); return; }
@@ -449,6 +500,48 @@ function answer(qid) {
     queue: queue.map(e => ({ title: e.poem.title, author: e.poem.author }))
   });
 }
+
+/* ---------- controls on the page ---------- */
+
+const ICONS = {
+  play: '<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2 1 L13 7 L2 13 Z" fill="currentColor"/></svg>',
+  pause: '<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><rect x="2" y="1" width="3.5" height="12" fill="currentColor"/><rect x="8.5" y="1" width="3.5" height="12" fill="currentColor"/></svg>'
+};
+let shownIcon = "";
+function renderControls() {
+  dom.controls.classList.toggle("hidden", !current);
+  if (!current) return;
+  const sounding = state === "playing" || (state === "starting" && !pauseRequested);
+  const icon = sounding ? "pause" : "play";
+  if (icon !== shownIcon) {
+    dom.play.innerHTML = ICONS[icon];
+    dom.play.setAttribute("aria-label", sounding ? "Pause" : state === "ended" || state === "stopped" ? "Play again" : "Play");
+    shownIcon = icon;
+  }
+  dom.play.disabled = dom.back.disabled = !current.url;
+  dom.next.disabled = queue.length === 0;
+}
+setInterval(renderControls, 200);
+
+function togglePlay() {
+  if (state === "playing") control("pause");
+  else if (state === "paused") control("resume");
+  else if (state === "starting") pauseRequested = !pauseRequested;
+  else if (state === "ended" || state === "stopped") restart();
+  else if (state === "waiting") arm();
+  renderControls();
+}
+dom.play.addEventListener("click", togglePlay);
+dom.back.addEventListener("click", () => { restart(); renderControls(); });
+dom.next.addEventListener("click", () => { if (queue.length) control("skip"); renderControls(); });
+
+document.addEventListener("keydown", e => {
+  if (!armed) { arm(); return; }
+  if (e.target instanceof HTMLButtonElement && (e.key === " " || e.key === "Enter")) return;   // the button handles it
+  if (e.key === " ") { e.preventDefault(); togglePlay(); }
+  else if (e.key === "ArrowLeft") { e.preventDefault(); restart(); }
+  else if (e.key === "ArrowRight" && queue.length) { e.preventDefault(); control("skip"); }
+});
 
 /* ---------- the socket ---------- */
 
@@ -514,7 +607,6 @@ async function arm() {
   if (state === "waiting" && current?.url) startAudio();
 }
 dom.arm.addEventListener("pointerdown", arm);
-document.addEventListener("keydown", arm);
 
 /* ---------- start ---------- */
 

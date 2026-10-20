@@ -10,40 +10,7 @@ export const TAG = /\[[^\]\n]*\]/g;
 export const stripTags = s => s.replace(TAG, "");
 
 export function normalise(raw) {
-  return String(raw ?? "").replace(/\r\n?/g, "\n").replace(/ /g, " ");
-}
-
-/**
- * Keep a model's tags, never its words: each tag is moved onto the original
- * text in front of the word it preceded. Quote, dash and case differences
- * are tolerated; any real change to the words returns null.
- */
-export function transplantTags(original, directed) {
-  const loose = w => w.normalize("NFKC")
-    .replace(/[\u2018\u2019\u201B\u2032`]/g, "'").replace(/[\u201C\u201D\u201E\u2033]/g, '"')
-    .replace(/[\u2010-\u2015\u2212]/g, "-").replace(/\u2026/g, "...").toLowerCase();
-  // whole tags first: a tag may hold spaces, as [drawn out] does
-  const tokens = [...directed.matchAll(/\[[^\]\n]*\]|[^\s\[]+/g)].map(m => m[0]);
-  const words = [...normalise(original).matchAll(/\S+/g)];
-  const inserts = [];
-  let pending = [], wi = 0;
-  for (const tok of tokens) {
-    if (/^\[[^\]\n]*\]$/.test(tok)) { pending.push(tok); continue; }
-    if (wi >= words.length || loose(tok) !== loose(words[wi][0])) return null;
-    if (pending.length) { inserts.push({ at: words[wi].index, tags: pending }); pending = []; }
-    wi++;
-  }
-  if (wi !== words.length) return null;
-  let out = normalise(original);
-  for (const { at, tags } of inserts.reverse()) out = out.slice(0, at) + tags.join(" ") + " " + out.slice(at);
-  return out;
-}
-
-/** Same words, same lines, ignoring tags and runs of whitespace. */
-export function sameShape(original, candidate) {
-  const norm = s => normalise(s).trim().split("\n").map(l => l.trim().replace(/\s+/g, " "));
-  const a = norm(original), b = norm(stripTags(candidate));
-  return a.length === b.length && a.every((line, i) => line === b[i]);
+  return String(raw ?? "").replace(/\r\n?/g, "\n").replace(/\u00a0/g, " ");
 }
 
 /**
@@ -261,15 +228,6 @@ export function fitBudget(source, budget, opts) {
     }
   }
   return { text: text.slice(0, Math.max(0, budget - 40)).trim(), truncated: true };
-}
-
-/** How much of `clean` appears verbatim in the page it came from. */
-export function provenance(clean, source) {
-  const squash = s => normalise(s).replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/\s+/g, " ").trim();
-  const hay = squash(source);
-  const lines = normalise(clean).split("\n").map(l => l.trim()).filter(Boolean);
-  const missing = lines.filter(l => !hay.includes(squash(l)));
-  return { ratio: lines.length ? 1 - missing.length / lines.length : 0, missing, lines: lines.length };
 }
 
 /** Everything the page needs to typeset and highlight, nothing it doesn't. */

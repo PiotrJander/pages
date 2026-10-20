@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import {
-  compose, parse, sameShape, buildBundle, fitBudget, provenance, transplantTags, undoubleSpace,
+  compose, parse, buildBundle, fitBudget, undoubleSpace,
   detectForm, detectTitle, guessLanguage, stripTags
 } from "../src/poem.js";
 
@@ -30,12 +30,6 @@ test("tags are spoken but never displayed, and are recorded as directions", () =
 test("every displayed character maps to the same character in the spoken text", () => {
   const c = compose("Alpha beta,\n[whispers] gamma delta.\n\nEpsilon.", OPTS);
   for (let i = 0; i < c.display.length; i++) assert.equal(c.spoken[c.d2s[i]], c.display[i]);
-});
-
-test("sameShape ignores tags and whitespace runs but nothing else", () => {
-  assert.ok(sameShape("A line,\nanother.", "[wry] A  line,\nanother."));
-  assert.ok(!sameShape("A line,\nanother.", "A line,\nanother!"));
-  assert.ok(!sameShape("A line,\nanother.", "A line, another."));
 });
 
 test("a real ElevenLabs v4 alignment yields exact word times", () => {
@@ -97,18 +91,6 @@ test("fitBudget leaves short text alone", () => {
   assert.deepEqual(r, { text: "Short.", truncated: false });
 });
 
-test("provenance flags a line the page never contained", () => {
-  const page = "Menu Home About\nThe Poem\nFirst line of it,\nsecond line too.\n© 2024 Site";
-  assert.equal(provenance("First line of it,\nsecond line too.", page).ratio, 1);
-  const bad = provenance("First line of it,\nsecond line, improved.", page);
-  assert.equal(bad.ratio, 0.5);
-  assert.deepEqual(bad.missing, ["second line, improved."]);
-});
-
-test("provenance tolerates curly versus straight quotes", () => {
-  assert.equal(provenance("It’s here.", "It's here.").ratio, 1);
-});
-
 test("form, title and language heuristics", () => {
   assert.equal(detectForm(parse("Short line,\nshort line.").valueOf()), "verse");
   const prose = "x".repeat(300) + " end.\n\n" + "y".repeat(280) + " end.";
@@ -118,23 +100,6 @@ test("form, title and language heuristics", () => {
   assert.equal(guessLanguage("Litwo! Ojczyzno moja! ty jesteś jak zdrowie."), "pl");
   assert.equal(guessLanguage("I want a hero."), "en");
   assert.equal(stripTags("[wry] a [pause] b"), " a  b");
-});
-
-test("transplantTags keeps the original characters and only borrows the tag positions", () => {
-  const original = "\u201cLook on my Works,\u201d he said \u2014\nand nothing\u2019s left.";
-  const directed = '[slowly] "Look on my works," he said -\nand [softly] nothing\'s left.';
-  assert.equal(transplantTags(original, directed),
-    "[slowly] \u201cLook on my Works,\u201d he said \u2014\nand [softly] nothing\u2019s left.");
-});
-
-test("transplantTags refuses a reworded line", () => {
-  assert.equal(transplantTags("the lone and level sands", "[wry] the lone and endless sands"), null);
-  assert.equal(transplantTags("one two three", "[pause] one two"), null);
-});
-
-test("transplantTags keeps tags that contain spaces, and tags glued to words", () => {
-  assert.equal(transplantTags("I met a traveller\nfrom an antique land", "[drawn out] I met a traveller\nfrom an[pause] antique land"),
-    "[drawn out] I met a traveller\nfrom an [pause] antique land");
 });
 
 test("undoubleSpace joins a poem double-spaced by its page, and leaves real stanzas alone", () => {

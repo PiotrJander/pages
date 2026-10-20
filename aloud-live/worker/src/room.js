@@ -5,7 +5,7 @@
 // decides what to play next. The room only pushes and asks.
 //
 //   room -> display   poem {mode: "now" | "queue", poem, audio}
-//                     control {action: pause | resume | skip | stop}
+//                     control {action: pause | resume | restart | skip | stop}
 //                     query {qid}
 //   display -> room   hello {key}            (authentication, first message)
 //                     state {qid, ...}       (only ever in answer to a query)
@@ -18,7 +18,7 @@
 import { DurableObject } from "cloudflare:workers";
 import { compose, buildBundle, fitBudget, guessLanguage, normalise, undoubleSpace } from "./poem.js";
 import { extractFromUrl } from "./extract.js";
-import { cleanup, direct, OPENROUTER } from "./llm.js";
+import { cleanup, direct, OPENROUTER, DIRECTOR_MODELS } from "./llm.js";
 import { synthesize, VOICES, LEAD, STANZA, BUDGET } from "./speech.js";
 
 const HELLO_GRACE_MS = 10_000;
@@ -117,9 +117,12 @@ export class Room extends DurableObject {
     const hasUrl = typeof args.url === "string" && args.url.trim();
     if (!!hasText === !!hasUrl) throw new Error("Give either `text` or `url` — exactly one of them.");
     const mode = args.mode === "now" ? "now" : "queue";
+    const instructions = typeof args.instructions === "string" && args.instructions.trim() ? args.instructions.trim() : null;
+    const model = args.model === "opus" ? "opus" : "sonnet";
+    const explicitLang = args.language?.toLowerCase().slice(0, 2) || null;
 
     const notes = [];
-    let source, title = null, author = null, lang = args.language?.toLowerCase().slice(0, 2) || null;
+    let source, title = null, author = null, lang = explicitLang;
 
     if (hasUrl) {
       const page = await extractFromUrl(args.url.trim());
@@ -141,23 +144,33 @@ export class Room extends DurableObject {
     if (fitted.truncated) notes.push("The text was longer than one reading, so it was cut at a stanza or paragraph boundary.");
     source = fitted.text;
 
+    // instructions imply a director, even with direct: false
     let marked = source, directed = false;
-    if (args.direct !== false) {
+    if (args.direct !== false || instructions) {
       try {
-        const out = await direct(env.OPENROUTER_API_KEY, source, llmBase);
-        if (out) { marked = out; directed = true; }
-        else notes.push("The director changed words rather than only adding tags, so the reading is undirected.");
+        const out = await direct(env.OPENROUTER_API_KEY, {
+          text: source, instructions, model: DIRECTOR_MODELS[model], base: llmBase
+        });
+        marked = out.text;
+        directed = true;
+        if (out.title) title = out.title;
+        if (out.language && !explicitLang) lang = out.language;
       } catch (e) {
         notes.push(`Direction failed (${e.message}), so the reading is undirected.`);
       }
     }
-    marked = fitBudget(marked, BUDGET, OPTS).text;
+    const fitted2 = fitBudget(marked, BUDGET, OPTS);
+    if (fitted2.truncated && !fitted.truncated) notes.push("The directed text was longer than one reading, so it was cut at a stanza or paragraph boundary.");
+    marked = fitted2.text;
 
     if (args.dry_run) {
-      return { dryRun: true, title, author, language: lang, directed, text: marked, notes };
+      return { dryRun: true, title, author, language: lang, directed, model, instructions, text: marked, notes };
     }
 
     const voice = args.voice || (lang === "pl" ? VOICES.pl : VOICES.en);
+    if (!args.voice && lang !== "en" && lang !== "pl") {
+      notes.push(`No voice was chosen for "${lang}", so the default English voice reads it; find_voices can suggest a native one.`);
+    }
     const { bytes, alignment } = await synthesize(env.ELEVENLABS_API_KEY, {
       text: compose(marked, OPTS).spoken, voice, base: env.ELEVENLABS_BASE || undefined
     });
@@ -174,15 +187,15 @@ export class Room extends DurableObject {
 
     return {
       sent, mode, title: bundle.title, author: bundle.author, language: lang, voice,
-      lines, seconds: bundle.duration, directed,
+      lines, seconds: bundle.duration, directed, model, instructions,
       directions: bundle.stanzas.flatMap(s => s.lines.flatMap(l => l.dirs)),
       text: marked, notes
     };
   }
 
   control(action) {
-    if (!["pause", "resume", "skip", "stop"].includes(action)) {
-      return { ok: false, message: `Unknown action "${action}". Use pause, resume, skip or stop.` };
+    if (!["pause", "resume", "restart", "skip", "stop"].includes(action)) {
+      return { ok: false, message: `Unknown action "${action}". Use pause, resume, restart, skip or stop.` };
     }
     const sent = this.broadcast({ type: "control", action });
     return sent
