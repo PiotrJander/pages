@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aloud Live</title>
+<meta name="description" content="A display that reads aloud whatever it is sent, highlighting each word as it is spoken.">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f7f7f7; --ink:#000; --past:#7a7a7a; --ahead:#c6c6c6;
+    --quiet:#6e6e6e; --rule:#dedede; --mark:#ffe24a;
+    --serif:"Spectral",Georgia,"Times New Roman",serif;
+    --sans:"Archivo",system-ui,-apple-system,sans-serif;
+    --verse:clamp(1.2rem, 1.05rem + 1.25vw, 2.5rem);
+    --measure:34em;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--paper);color:var(--ink);
+    font-family:var(--sans);font-size:16px;line-height:1.5;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--mark)}
+
+  .page{
+    width:100%;max-width:calc(var(--measure) * 1.0);
+    margin:0 auto;padding:0 clamp(1rem, 4vw, 3rem);
+    font-size:var(--verse);
+  }
+
+  /* running head: the work's title and author, as a book prints them */
+  .head{
+    display:flex;justify-content:space-between;align-items:baseline;gap:1em;
+    padding:clamp(1.25rem, 4vh, 3rem) 0 0;
+    font-size:max(.875rem, .42em);
+    min-height:3em;
+  }
+  .head .title{font-family:var(--serif);font-style:italic;font-weight:400;margin:0;
+               overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .head .author{color:var(--quiet);white-space:nowrap}
+
+  .stage{padding:clamp(1.5rem, 6vh, 4rem) 0 clamp(5rem, 30vh, 16rem);transition:opacity .6s ease}
+  .stage.fading{opacity:0}
+
+  .idle{
+    font-family:var(--serif);font-style:italic;font-weight:300;
+    color:var(--ahead);margin:12vh 0 0;
+  }
+
+  /* the poem */
+  .poem{font-family:var(--serif);font-weight:400;line-height:1.85}
+  .stanza{margin:0 0 1.85em}
+  .stanza:last-child{margin-bottom:0}
+  .vline{position:relative;color:var(--ahead);transition:color .3s ease}
+  .vline[data-state="past"]{color:var(--past)}
+  .vline[data-state="now"],.vline[data-state="rest"]{color:var(--ink)}
+  .vline .body{display:block;padding-left:1.2em;text-indent:-1.2em}
+  .vline .indent{padding-left:1.6em;display:inline-block}
+  .vline .num{
+    position:absolute;right:calc(100% + 1.1em);top:.9em;
+    font-family:var(--sans);font-size:max(.6875rem, .3em);color:var(--ahead);
+    font-variant-numeric:tabular-nums;
+  }
+  .dir{
+    display:block;font-family:var(--sans);font-size:max(.75rem, .34em);
+    line-height:1.4;color:var(--past);margin:0 0 .1em;
+  }
+  .dir::before{content:"— "}
+
+  .prose .vline .body{padding-left:0;text-indent:0}
+  .prose .stanza{margin-bottom:1.1em}
+  .prose .vline .num{display:none}
+
+  .w{background-repeat:no-repeat;background-size:0 100%}
+  .vline[data-state="now"] .w.lit{
+    background-image:linear-gradient(to bottom,
+      transparent 7%, var(--mark) 7%, var(--mark) 92%, transparent 92%);
+    background-size:var(--fill,100%) 100%;
+    padding:0 .07em;margin:0 -.07em;
+    -webkit-box-decoration-break:clone;box-decoration-break:clone;
+  }
+
+  /* progress: a hairline along the foot of the screen */
+  .progress{position:fixed;left:0;right:0;bottom:0;height:2px;background:var(--rule)}
+  .progress i{display:block;height:100%;width:0;background:var(--ink)}
+
+  .status{
+    position:fixed;right:1rem;bottom:.9rem;font-size:.8125rem;color:var(--quiet);
+  }
+
+  /* the one tap a browser needs before a page may make sound */
+  .arm{
+    position:fixed;inset:0;background:var(--paper);
+    display:flex;flex-direction:column;justify-content:center;
+    padding:0 clamp(1.5rem, 8vw, 8rem);cursor:pointer;
+  }
+  .arm h1{
+    font-family:var(--serif);font-weight:300;
+    font-size:clamp(2rem, 1.4rem + 3vw, 4.5rem);line-height:1.15;
+    margin:0 0 .5em;max-width:14em;
+  }
+  .arm h1 .w{background-image:linear-gradient(to bottom,
+      transparent 7%, var(--mark) 7%, var(--mark) 92%, transparent 92%);
+    background-size:100% 100%;padding:0 .07em;margin:0 -.07em}
+  .arm p{margin:0;color:var(--quiet);font-size:clamp(.9375rem, .85rem + .4vw, 1.25rem);max-width:30em}
+  .arm.gone{opacity:0;pointer-events:none;transition:opacity .5s ease}
+
+  .hidden{display:none !important}
+
+  @media (max-width:700px){ .vline .num{display:none} }
+  @media (prefers-reduced-motion:reduce){
+    .stage,.vline,.arm.gone{transition:none}
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <header class="head">
+    <h1 class="title" id="title">Aloud</h1>
+    <span class="author" id="author"></span>
+  </header>
+  <main class="stage" id="stage">
+    <p class="idle" id="idle">The next reading will appear here.</p>
+  </main>
+</div>
+
+<div class="progress hidden" id="progress"><i id="fill"></i></div>
+<div class="status" id="status" role="status" aria-live="polite"></div>
+
+<div class="arm" id="arm" role="button" tabindex="0" aria-label="Turn on sound">
+  <h1>Tap anywhere to turn <span class="w">on sound</span>.</h1>
+  <p>This screen then reads aloud whatever it is sent, and marks each word as it is spoken.</p>
+</div>
+
+<script>
+(() => {
+"use strict";
+
+const qs = new URLSearchParams(location.search);
+const hs = new URLSearchParams(location.hash.slice(1));
+const API = (qs.get("api") || "https://aloud-live.pjander2.workers.dev").replace(/\/$/, "");
+const KEY = hs.get("key") || qs.get("key") || "";
+const SILENT = "data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjYwLjE2LjEwMAAAAAAAAAAAAAAA//NwwAAAAAAAAAAAAEluZm8AAAAPAAAACgAABMsAOzs7Ozs7Ozs7UVFRUVFRUVFRUWdnZ2dnZ2dnZ2d9fX19fX19fX19kpKSkpKSkpKSkqioqKioqKioqKi+vr6+vr6+vr6+1NTU1NTU1NTU1Orq6urq6urq6ur/////////////AAAAAExhdmM2MC4zMQAAAAAAAAAAAAAAACQDBgAAAAAAAATL+A9CeQAAAAAAAAAAAAAAAAD/80DEAAAAA0gAAAAATEFNRTMuMTAwVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsRbAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQMSkAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NCxKMAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NAxKQAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/80LEowAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/80DEpAAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsSjAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQMSkAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NCxKMAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV";
+
+const $ = id => document.getElementById(id);
+const dom = { title: $("title"), author: $("author"), stage: $("stage"), idle: $("idle"),
+              progress: $("progress"), fill: $("fill"), status: $("status"), arm: $("arm") };
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const audio = new Audio();          // one element for everything, unlocked once
+audio.preload = "auto";
+const prepared = new Map();         // id -> {poem, url, view, lines}
+let shownId = null, armed = false, pendingPlay = null, rafId = 0, lastLine = -1;
+let ws = null, backoff = 1000, pingTimer = 0, pongTimer = 0, gaveUp = false;
+
+const setStatus = text => { dom.status.textContent = text || ""; };
+
+/* ---------- typesetting ---------- */
+
+function typeset(poem) {
+  const view = document.createElement("article");
+  view.className = "poem " + (poem.form === "prose" ? "prose" : "verse");
+  const lines = [];
+  let n = 0;
+  for (const stanza of poem.stanzas) {
+    const box = document.createElement("div");
+    box.className = "stanza";
+    for (const line of stanza.lines) {
+      n++;
+      const el = document.createElement("div");
+      el.className = "vline";
+      el.dataset.state = "ahead";
+      if (n % 5 === 0) {
+        const num = document.createElement("span");
+        num.className = "num"; num.textContent = String(n);
+        el.appendChild(num);
+      }
+      if (line.dirs && line.dirs.length) {
+        const d = document.createElement("span");
+        d.className = "dir"; d.textContent = line.dirs.join(", ");
+        el.appendChild(d);
+      }
+      const body = document.createElement("span");
+      body.className = "body";
+      el.appendChild(body);
+      const holder = line.indented ? Object.assign(document.createElement("span"), { className: "indent" }) : body;
+      if (holder !== body) body.appendChild(holder);
+      const words = line.words.map((w, i) => {
+        const span = document.createElement("span");
+        span.className = "w";
+        // the trailing space lives inside the span so the stroke runs unbroken
+        span.textContent = w.t + (i < line.words.length - 1 ? " " : "");
+        holder.appendChild(span);
+        return { node: span, s: w.s, e: w.e };
+      });
+      box.appendChild(el);
+      lines.push({ node: el, start: line.start, end: line.end, words });
+    }
+    view.appendChild(box);
+  }
+  return { view, lines };
+}
+
+function show(entry) {
+  if (shownId === entry.poem.id) return;
+  const swap = () => {
+    dom.stage.replaceChildren(entry.view);
+    dom.title.textContent = entry.poem.title || "Aloud";
+    dom.author.textContent = entry.poem.author || "";
+    dom.progress.classList.remove("hidden");
+    window.scrollTo(0, 0);
+    dom.stage.classList.remove("fading");
+  };
+  shownId = entry.poem.id;
+  lastLine = -1;
+  entry.lines.forEach(l => { l.node.dataset.state = "ahead"; });
+  if (reduced || !dom.stage.firstElementChild || dom.stage.firstElementChild === dom.idle) { swap(); return; }
+  dom.stage.classList.add("fading");
+  setTimeout(swap, 600);
+}
+
+function showIdle() {
+  shownId = null;
+  dom.stage.replaceChildren(dom.idle);
+  dom.title.textContent = "Aloud";
+  dom.author.textContent = "";
+  dom.progress.classList.add("hidden");
+  dom.fill.style.width = "0";
+}
+
+/* ---------- highlighting ---------- */
+
+function paint() {
+  const entry = prepared.get(shownId);
+  if (!entry) return;
+  const t = audio.currentTime;
+  const lines = entry.lines;
+  let index = 0;
+  for (let i = 0; i < lines.length; i++) {
+    const end = lines[i].end ?? Infinity;
+    if (t >= lines[i].start && t < end) { index = i; break; }
+    if (t >= end) index = i;
+  }
+  if (index !== lastLine) {
+    lines.forEach((l, i) => {
+      const state = i < index ? "past" : i === index ? "now" : "ahead";
+      if (l.node.dataset.state !== state) l.node.dataset.state = state;
+      if (i !== index) l.words.forEach(w => { w.node.classList.remove("lit"); w.node.style.removeProperty("--fill"); });
+    });
+    lastLine = index;
+    keepInView(lines[index].node);
+  }
+  for (const w of lines[index].words) {
+    if (t >= w.e) { w.node.classList.add("lit"); w.node.style.removeProperty("--fill"); }
+    else if (t >= w.s) {
+      w.node.classList.add("lit");
+      const f = Math.max(0, Math.min(1, (t - w.s) / Math.max(0.001, w.e - w.s)));
+      w.node.style.setProperty("--fill", (f * 100).toFixed(1) + "%");
+    } else { w.node.classList.remove("lit"); w.node.style.removeProperty("--fill"); }
+  }
+  const d = isFinite(audio.duration) ? audio.duration : 0;
+  dom.fill.style.width = d ? (Math.min(1, t / d) * 100) + "%" : "0";
+}
+
+function keepInView(node) {
+  const r = node.getBoundingClientRect();
+  if (r.top > innerHeight * 0.6 || r.top < innerHeight * 0.15) {
+    scrollTo({ top: Math.max(0, scrollY + r.top - innerHeight * 0.36), behavior: reduced ? "auto" : "smooth" });
+  }
+}
+
+const loop = () => { paint(); rafId = requestAnimationFrame(loop); };
+const startLoop = () => { if (!rafId) rafId = requestAnimationFrame(loop); };
+const stopLoop = () => { cancelAnimationFrame(rafId); rafId = 0; paint(); };
+
+audio.addEventListener("play", startLoop);
+audio.addEventListener("pause", stopLoop);
+audio.addEventListener("ended", () => {
+  stopLoop();
+  const entry = prepared.get(shownId);
+  if (entry) {
+    entry.lines.forEach(l => { l.node.dataset.state = "rest"; l.words.forEach(w => w.node.classList.remove("lit")); });
+    dom.fill.style.width = "100%";
+    send({ type: "ended", id: entry.poem.id });
+  }
+});
+
+/* ---------- commands from the room ---------- */
+
+function whenLoaded(fn) {
+  if (audio.readyState >= 1) fn();
+  else audio.addEventListener("loadedmetadata", fn, { once: true });
+}
+
+async function onPrepare({ poem, audio: path }) {
+  let entry = prepared.get(poem.id);
+  if (!entry) {
+    entry = { poem, url: null, ...typeset(poem) };
+    prepared.set(poem.id, entry);
+    for (const [id, old] of prepared) {          // keep the last two
+      if (prepared.size <= 2) break;
+      if (id !== poem.id && id !== shownId) { if (old.url) URL.revokeObjectURL(old.url); prepared.delete(id); }
+    }
+  }
+  if (path && !entry.url) {
+    try {
+      const res = await fetch(API + path);
+      if (res.ok) entry.url = URL.createObjectURL(await res.blob());
+    } catch { /* shown without sound */ }
+  }
+  send({ type: "ready", id: poem.id });
+}
+
+function onPlay({ id, at }) {
+  const entry = prepared.get(id);
+  if (!entry) return;
+  const playingThis = shownId === id && !audio.paused;
+  show(entry);
+  if (!entry.url) return;
+  if (playingThis && Math.abs(audio.currentTime - at) < 1.5) return;   // a resync, not a seek
+  if (audio.src !== entry.url) audio.src = entry.url;
+  whenLoaded(() => {
+    audio.currentTime = Math.min(at, Math.max(0, (audio.duration || at) - 0.05));
+    lastLine = -1;
+    if (!armed) { pendingPlay = { id, at, received: performance.now() }; paint(); return; }
+    audio.play().catch(() => { pendingPlay = { id, at, received: performance.now() }; dom.arm.classList.remove("gone"); });
+  });
+}
+
+function onPause({ id, at }) {
+  const entry = prepared.get(id);
+  if (!entry) return;
+  show(entry);
+  pendingPlay = null;
+  audio.pause();
+  if (entry.url && audio.src === entry.url) whenLoaded(() => { audio.currentTime = at; lastLine = -1; paint(); });
+}
+
+function onStop() {
+  pendingPlay = null;
+  audio.pause();
+  audio.removeAttribute("src");
+  showIdle();
+}
+
+/* ---------- the socket ---------- */
+
+function send(msg) { if (ws && ws.readyState === 1) ws.send(JSON.stringify(msg)); }
+
+function connect() {
+  ws = new WebSocket(API.replace(/^http/, "ws") + "/ws");
+  ws.onopen = () => {
+    backoff = 1000;
+    ws.send(JSON.stringify({ type: "hello", key: KEY }));
+    if (armed) ws.send(JSON.stringify({ type: "armed" }));   // a fresh socket starts unarmed
+    setStatus("");
+    clearInterval(pingTimer);
+    pingTimer = setInterval(() => {
+      if (ws.readyState !== 1) return;
+      ws.send("ping");
+      clearTimeout(pongTimer);
+      pongTimer = setTimeout(() => ws.close(), 10000);
+    }, 25000);
+  };
+  ws.onmessage = e => {
+    if (e.data === "pong") { clearTimeout(pongTimer); return; }
+    let msg; try { msg = JSON.parse(e.data); } catch { return; }
+    if (msg.type === "prepare") onPrepare(msg);
+    else if (msg.type === "play") onPlay(msg);
+    else if (msg.type === "pause") onPause(msg);
+    else if (msg.type === "stop") onStop();
+  };
+  ws.onclose = e => {
+    clearInterval(pingTimer); clearTimeout(pongTimer);
+    if (e.code === 4401) { gaveUp = true; setStatus("The display key was not accepted."); return; }
+    setStatus("Reconnecting…");
+    setTimeout(connect, backoff);
+    backoff = Math.min(backoff * 2, 30000);
+  };
+}
+
+/* ---------- arming ---------- */
+
+let wakeLock = null;
+async function holdScreen() {
+  try { wakeLock = await navigator.wakeLock?.request("screen"); } catch {}
+}
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && armed) holdScreen(); });
+
+async function arm() {
+  if (armed) return;
+  armed = true;
+  dom.arm.classList.add("gone");
+  const keep = audio.getAttribute("src");
+  audio.src = SILENT;
+  try { await audio.play(); } catch {}
+  audio.pause();
+  if (keep) audio.src = keep;
+  holdScreen();
+  send({ type: "armed" });
+  if (pendingPlay) {
+    const p = pendingPlay; pendingPlay = null;
+    onPlay({ id: p.id, at: p.at + (performance.now() - p.received) / 1000 });
+  }
+}
+dom.arm.addEventListener("pointerdown", arm);
+document.addEventListener("keydown", arm);
+
+/* ---------- start ---------- */
+
+if (!KEY) {
+  dom.arm.classList.add("gone");
+  setStatus("This display needs its key: add #key=… to the address.");
+} else {
+  connect();
+}
+
+// for the end-to-end tests
+window.__aloud = { audio, prepared, get shownId() { return shownId; }, get armed() { return armed; } };
+})();
+</script>
+</body>
+</html>
