@@ -321,6 +321,7 @@
       <label class="label" for="text">The poem</label>
       <textarea id="text" spellcheck="false" placeholder="Paste a poem here. Keep the line breaks — each line becomes one caption, and a blank line starts a new stanza."></textarea>
       <p class="count" id="count">Nothing yet</p>
+      <p class="hint">Direct the reading with tags in square brackets, like [whispers] or [slowly]. They are spoken as instructions and stay off the page.</p>
     </div>
 
     <details class="settings hidden" id="settings">
@@ -385,6 +386,23 @@ const VOICES = { pl: "ozf4fnQ34uFcOcKX71uX", en: "auq43ws1oslv0tO4BDa7" };
 const MODELS = { pl: "eleven_v4", en: "eleven_v4" };
 const MAX_CHARS = 4500;
 const OUTPUT = "mp3_44100_128";
+
+/* Delivery, tuned for recitation rather than for a steady narrator.
+   Low stability lets the reading vary line to line, style adds colour,
+   and a slightly slow speed gives the verse room. All overridable. */
+const num = (name, dflt, lo, hi) => {
+  const v = parseFloat(qs.get(name));
+  return Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : dflt;
+};
+const VOICE_SETTINGS = {
+  stability: num("stability", 0.3, 0, 1),
+  similarity_boost: num("similarity", 0.8, 0, 1),
+  style: num("style", 0.5, 0, 1),
+  use_speaker_boost: true,
+  speed: num("speed", 0.95, 0.7, 1.2)
+};
+const LEAD = qs.has("tag") ? qs.get("tag").trim() : "[slowly]";
+const STANZA = "[pause] ";
 const endpointFor = voice =>
   "https://api.elevenlabs.io/v1/text-to-speech/" + encodeURIComponent(voice) +
   "/with-timestamps?output_format=" + OUTPUT;
@@ -469,10 +487,45 @@ function clearFail() { dom.error.classList.add("hidden"); dom.error.textContent 
  * ------------------------------------------------------------------ */
 const PAUSE = { ",": 2.5, ";": 3, ":": 3, ".": 5, "!": 5, "?": 5, "—": 3, "–": 3, "…": 5 };
 
-function parse(raw) {
-  // Normalise first and keep this exact string as the one sent for synthesis,
-  // so character offsets here line up with the timings that come back.
-  const text = raw.replace(/\r\n?/g, "\n");
+/* Two strings come out of the reader's text: the verse as it appears on
+   the page, and the text actually sent, which carries delivery directions
+   the voice follows but no one should read. d2s maps every displayed
+   character to its place in the sent text, so exact timings still land on
+   the right word. Square-bracket tags the reader writes are treated the
+   same way: spoken as directions, kept off the page. */
+function compose(raw) {
+  const source = raw.replace(/\r\n?/g, "\n");
+  let display = "", spoken = "";
+  const d2s = [];
+  const both = ch => { d2s[display.length] = spoken.length; display += ch; spoken += ch; };
+  const aside = s => { spoken += s; };
+
+  if (LEAD) aside(LEAD + " ");
+  const lines = source.split("\n");
+  let pendingBreak = false;
+
+  lines.forEach((line, li) => {
+    const last = li === lines.length - 1;
+    if (!line.trim()) {
+      if (display.trim()) pendingBreak = true;
+      if (!last) both("\n");
+      return;
+    }
+    if (pendingBreak) { aside(STANZA); pendingBreak = false; }   // let stanzas breathe
+    let i = 0;
+    while (i < line.length) {
+      if (line[i] === "[") {
+        const close = line.indexOf("]", i);
+        if (close > i) { aside(line.slice(i, close + 1)); i = close + 1; continue; }
+      }
+      both(line[i]); i++;
+    }
+    if (!last) both("\n");
+  });
+  return { display, spoken, d2s };
+}
+
+function parse(text) {
   const stanzas = [];
   let current = [];
   let cursor = 0;
@@ -600,16 +653,22 @@ function charTimes(text, al) {
   return { start, end };
 }
 
-function timelineFromAlignment(parsed, al, duration) {
-  const t = charTimes(parsed.text, al);
+function timelineFromAlignment(parsed, comp, al, duration) {
+  const t = charTimes(comp.spoken, al);
   if (!t) return null;
 
   const flat = [];
   const lines = parsed.lines.map(line => {
     const words = line.words.map(word => {
       let a = null, b = null;
-      for (let i = word.from; i < word.to; i++) if (t.start[i] != null) { a = t.start[i]; break; }
-      for (let i = word.to - 1; i >= word.from; i--) if (t.end[i] != null) { b = t.end[i]; break; }
+      for (let i = word.from; i < word.to; i++) {
+        const si = comp.d2s[i];
+        if (si != null && t.start[si] != null) { a = t.start[si]; break; }
+      }
+      for (let i = word.to - 1; i >= word.from; i--) {
+        const si = comp.d2s[i];
+        if (si != null && t.end[si] != null) { b = t.end[si]; break; }
+      }
       const entry = { start: a, end: b, node: word.node };
       flat.push(entry);
       return entry;
@@ -757,7 +816,7 @@ async function synthesize(text, key, voice, model) {
   const res = await fetch(endpointFor(voice), {
     method: "POST",
     headers: { "xi-api-key": key, "Content-Type": "application/json" },
-    body: JSON.stringify({ text, model_id: model })
+    body: JSON.stringify({ text, model_id: model, voice_settings: VOICE_SETTINGS })
   });
 
   if (!res.ok) {
@@ -796,24 +855,26 @@ async function run() {
   const model = urlModel || MODELS[lang];
 
   if (!raw) { fail("Paste a poem first."); dom.text.focus(); return; }
-  if (raw.length > MAX_CHARS) {
-    fail("That is " + raw.length + " characters and the limit is " + MAX_CHARS + ". Read it in two parts.");
-    return;
-  }
   if (!key) {
     fail("Add an ElevenLabs key in settings to read anything aloud.");
     dom.settings.open = true; dom.key.focus(); return;
   }
 
-  const parsed = parse(raw);
+  const comp = compose(raw);
+  const parsed = parse(comp.display);
   if (!parsed.lines.length) { fail("No lines found in that text."); return; }
+  if (comp.spoken.length > MAX_CHARS) {
+    fail("That comes to " + comp.spoken.length + " characters to speak and the limit is "
+         + MAX_CHARS + ". Read it in two parts.");
+    return;
+  }
 
   dom.go.disabled = true;
   dom.cstatus.classList.remove("hidden");
   dom.cstatus.innerHTML = '<span class="bar"></span><span>Preparing the audio</span>';
 
   try {
-    const { bytes, alignment } = await synthesize(parsed.text, key, voice, model);
+    const { bytes, alignment } = await synthesize(comp.spoken, key, voice, model);
 
     // decodeAudioData detaches its input, so analyse a copy and keep the original for playback.
     const copy = bytes.slice(0);
@@ -822,7 +883,7 @@ async function run() {
     ctx.close?.();
 
     const lineNodes = typeset(parsed);                 // assigns a node to every word
-    timeline = (alignment && timelineFromAlignment(parsed, alignment, buffer.duration))
+    timeline = (alignment && timelineFromAlignment(parsed, comp, alignment, buffer.duration))
             || buildTimeline(parsed, buffer);
     timeline.lines.forEach((line, i) => { line.node = lineNodes[i]; });
     dom.estimated.classList.toggle("hidden", !!timeline.exact);
