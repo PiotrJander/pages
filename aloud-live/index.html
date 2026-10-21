@@ -447,11 +447,80 @@ function advanceLater() {
 
 const busy = () => ["starting", "playing", "paused", "waiting"].includes(state) || !!gapTimer;
 
+/* ---------- when the audio came without timings ---------- */
+
+/** Stretches of near-silence in the audio, and where speech begins and ends. */
+function findSilences(buffer) {
+  const data = buffer.getChannelData(0), rate = buffer.sampleRate;
+  const frame = Math.max(128, Math.round(rate * 0.02));
+  const rms = [];
+  for (let i = 0; i + frame <= data.length; i += frame) {
+    let sum = 0;
+    for (let j = i; j < i + frame; j++) sum += data[j] * data[j];
+    rms.push(Math.sqrt(sum / frame));
+  }
+  if (!rms.length) return { silences: [], speechStart: 0, speechEnd: buffer.duration };
+  const sorted = [...rms].sort((a, b) => a - b);
+  const threshold = Math.max(sorted[Math.floor(sorted.length * 0.05)] * 3, sorted[Math.floor(sorted.length * 0.98)] * 0.04, 1e-4);
+  const at = i => (i * frame) / rate;
+  let first = rms.findIndex(v => v > threshold), last = rms.length - 1;
+  while (last > 0 && rms[last] <= threshold) last--;
+  if (first < 0) first = 0;
+  const silences = [];
+  let run = -1;
+  for (let i = first; i <= last; i++) {
+    if (rms[i] <= threshold) { if (run < 0) run = i; }
+    else if (run >= 0) { if (at(i) - at(run) >= 0.11) silences.push({ start: at(run), end: at(i) }); run = -1; }
+  }
+  return { silences, speechStart: at(first), speechEnd: Math.min(buffer.duration, at(last + 1)) };
+}
+
+/**
+ * The Worker's estimate spreads words by length; the audio says where the
+ * voice actually pauses. Each line's start is moved to the end of the
+ * nearest real pause, and its words are stretched to fit.
+ */
+async function refineTimings(entry, bytes) {
+  try {
+    const buffer = await new OfflineAudioContext(1, 1, 44100).decodeAudioData(bytes);
+    const { silences, speechStart, speechEnd } = findSilences(buffer);
+    const lines = entry.lines.filter(l => l.words.length);
+    if (lines.length < 1) return;
+    const old = lines.map(l => ({ s: l.words[0].s, e: l.words[l.words.length - 1].e }));
+    const starts = old.map(o => o.s);
+    starts[0] = speechStart;
+    const tol = Math.min(0.9, Math.max(0.22, ((speechEnd - speechStart) / lines.length) * 0.42));
+    for (let i = 1; i < lines.length; i++) {
+      let best = null, gap = Infinity;
+      for (const z of silences) {
+        const d = Math.abs(z.end - starts[i]);
+        if (d < gap && d <= tol) { gap = d; best = z; }
+      }
+      if (best) starts[i] = best.end;
+    }
+    for (let i = 1; i < starts.length; i++) if (starts[i] < starts[i - 1] + 0.15) starts[i] = starts[i - 1] + 0.15;
+    lines.forEach((l, i) => {
+      const next = i + 1 < lines.length ? starts[i + 1] : speechEnd;
+      const pause = silences.find(z => Math.abs(z.end - next) < 0.01);
+      const end = Math.max(starts[i] + 0.1, pause ? pause.start : next);
+      const k = (end - starts[i]) / Math.max(0.05, old[i].e - old[i].s);
+      l.words.forEach(w => { w.s = starts[i] + (w.s - old[i].s) * k; w.e = starts[i] + (w.e - old[i].s) * k; });
+      l.start = i === 0 ? 0 : starts[i];
+      l.end = i + 1 < lines.length ? starts[i + 1] : null;
+    });
+    entry.refined = true;
+  } catch { /* keep the Worker's estimate */ }
+}
+
 async function receive({ mode, poem, audio: path }) {
   const entry = { poem, url: null, ...typeset(poem) };
   try {
     const res = await fetch(API + path);
-    if (res.ok) entry.url = URL.createObjectURL(await res.blob());
+    if (res.ok) {
+      const bytes = await res.arrayBuffer();
+      entry.url = URL.createObjectURL(new Blob([bytes], { type: "audio/mpeg" }));
+      if (!poem.exact) await refineTimings(entry, bytes.slice(0));
+    }
   } catch { /* shown without sound */ }
   if (mode === "now" || !busy()) play(entry);     // not awaited: the next message needn't wait for the turn
   else queue.push(entry);
@@ -620,6 +689,8 @@ if (!KEY) {
 // read-only handle for the end-to-end tests
 window.__aloud = { audio, get state() { return state; }, get queue() { return queue.map(e => e.poem.title); },
                    get title() { return current?.poem.title || null; }, get armed() { return armed; },
+                   get starts() { return current ? current.lines.map(l => +(l.words[0]?.s ?? 0).toFixed(2)) : []; },
+                   get refined() { return !!current?.refined; },
                    get gain() { return gain ? gain.gain.value : audio.volume; } };
 })();
 </script>

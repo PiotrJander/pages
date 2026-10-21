@@ -36,6 +36,46 @@ export async function synthesize(key, { text, voice, model = MODEL, base = "http
 }
 
 /**
+ * The fallback: ElevenLabs through OpenRouter, used when a direct call fails
+ * (a spent quota, say). OpenRouter returns audio only, without timings, so
+ * the caller estimates the highlighting from the audio's length.
+ */
+export async function synthesizeViaOpenRouter(key, { text, voice, base = "https://openrouter.ai" }) {
+  const res = await fetch(`${base}/api/v1/audio/speech`, {
+    method: "POST",
+    headers: { "Authorization": `Bearer ${key}`, "Content-Type": "application/json", "X-Title": "Aloud Live" },
+    body: JSON.stringify({ model: "elevenlabs/eleven-v4", input: text, voice, response_format: "mp3" })
+  });
+  if (!res.ok) {
+    const detail = await res.text().catch(() => "");
+    throw new Error(`OpenRouter speech returned ${res.status}${detail ? `: ${detail.slice(0, 200)}` : ""}`);
+  }
+  const bytes = new Uint8Array(await res.arrayBuffer());
+  if (bytes.byteLength < 1024) throw new Error("OpenRouter returned no audio.");
+  return { bytes, alignment: null, duration: mp3Duration(bytes) };
+}
+
+/** Seconds of audio in a constant-bitrate MP3, read from its first frame header. */
+export function mp3Duration(bytes) {
+  let i = 0;
+  if (bytes[0] === 0x49 && bytes[1] === 0x44 && bytes[2] === 0x33) {            // "ID3" tag: skip it
+    i = 10 + ((bytes[6] & 0x7f) << 21 | (bytes[7] & 0x7f) << 14 | (bytes[8] & 0x7f) << 7 | (bytes[9] & 0x7f));
+  }
+  for (; i + 4 < bytes.length; i++) {
+    if (bytes[i] !== 0xff || (bytes[i + 1] & 0xe0) !== 0xe0) continue;
+    const version = (bytes[i + 1] >> 3) & 3;                                       // 3 = MPEG-1
+    const layer = (bytes[i + 1] >> 1) & 3;                                         // 1 = Layer III
+    const index = bytes[i + 2] >> 4;
+    if (layer !== 1 || index === 0 || index === 15) continue;
+    const kbps = version === 3
+      ? [0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320][index]
+      : [0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160][index];
+    return Math.round(((bytes.length - i) * 8) / (kbps * 1000) * 1000) / 1000;
+  }
+  return null;
+}
+
+/**
  * Search the ElevenLabs voice library. Library voices can be used by id on a
  * paid plan. Needs the key's "Voices: Read" permission.
  */

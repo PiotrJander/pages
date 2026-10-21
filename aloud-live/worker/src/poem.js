@@ -117,7 +117,7 @@ export function charTimes(spoken, alignment) {
  * Word and line times. Exact when the alignment is usable; otherwise spread
  * by word length over an estimated duration, so the page still works.
  */
-export function timeline(parsed, comp, alignment) {
+export function timeline(parsed, comp, alignment, knownDuration = null) {
   const t = charTimes(comp.spoken, alignment);
   const flat = [];
   for (const line of parsed.lines) for (const word of line.words) {
@@ -137,17 +137,23 @@ export function timeline(parsed, comp, alignment) {
 
   const matched = flat.filter(w => w.s != null).length;
   const exact = !!t && flat.length > 0 && matched >= flat.length * 0.6;
-  const duration = t ? t.last : comp.spoken.length / 14;
+  const duration = t ? t.last : knownDuration || comp.spoken.length / 14;
 
   if (!exact) {
-    // proportional fallback
-    const total = flat.reduce((n, w) => n + w.word.text.length + 1, 0) || 1;
+    // estimated: spread the words over the audio by length, giving extra time
+    // where a reader pauses — punctuation, line ends, stanza breaks, [pause]
+    const weights = estimateWeights(parsed, comp);
+    const lead = Math.min(0.4, duration * 0.02);
+    const span = Math.max(0.1, duration - lead - Math.min(0.6, duration * 0.03));
+    const total = weights.reduce((a, b) => a + b.before + b.self + b.after, 0) || 1;
     let run = 0;
-    for (const w of flat) {
-      w.s = (run / total) * duration;
-      run += w.word.text.length + 1;
-      w.e = (run / total) * duration;
-    }
+    flat.forEach((w, i) => {
+      run += weights[i].before;
+      w.s = lead + (run / total) * span;
+      run += weights[i].self;
+      w.e = lead + (run / total) * span;
+      run += weights[i].after;
+    });
   } else {
     // bridge any word the alignment missed across its neighbours' gap
     for (let i = 0; i < flat.length; i++) {
@@ -169,6 +175,25 @@ export function timeline(parsed, comp, alignment) {
   }
   const byWord = new Map(flat.map(w => [w.word, w]));
   return { byWord, exact, duration };
+}
+
+const PAUSE = { ",": 2.5, ";": 3, ":": 3, ".": 5, "!": 5, "?": 5, "—": 3, "–": 3, "…": 5, "।": 5 };
+
+/** Relative time each word takes, and the pause around it, for estimating. */
+function estimateWeights(parsed, comp) {
+  const pausedBefore = new Set(comp.directions.filter(d => /pause/i.test(d.text)).map(d => d.at));
+  const out = [];
+  parsed.lines.forEach((line, li) => {
+    const lastOfStanza = li === parsed.lines.length - 1 || parsed.lines[li + 1].stanza !== line.stanza;
+    line.words.forEach((w, wi) => {
+      const letters = w.text.replace(/[^\p{L}\p{N}\p{M}]/gu, "").length;
+      let after = PAUSE[w.text.slice(-1)] || 0.6;
+      if (wi === line.words.length - 1) after += lastOfStanza ? 8 : 2;
+      out.push({ before: pausedBefore.has(w.from) ? 8 : 0, self: Math.max(1, letters), after });
+    });
+  });
+  if (out.length) out[out.length - 1].after = 0;        // nothing follows the last word
+  return out;
 }
 
 /** Which displayed line each written direction belongs to. */
@@ -231,10 +256,10 @@ export function fitBudget(source, budget, opts) {
 }
 
 /** Everything the page needs to typeset and highlight, nothing it doesn't. */
-export function buildBundle({ id, source, alignment, lead, stanza, title, author, lang }) {
+export function buildBundle({ id, source, alignment, lead, stanza, title, author, lang, duration: known = null }) {
   const comp = compose(source, { lead, stanza });
   const parsed = parse(comp.display);
-  const { byWord, exact, duration } = timeline(parsed, comp, alignment);
+  const { byWord, exact, duration } = timeline(parsed, comp, alignment, known);
   const dirs = directionsByLine(parsed, comp.directions);
 
   const flatLines = parsed.lines.map((line, i) => {

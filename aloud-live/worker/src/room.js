@@ -19,7 +19,7 @@ import { DurableObject } from "cloudflare:workers";
 import { compose, buildBundle, fitBudget, guessLanguage, normalise, undoubleSpace } from "./poem.js";
 import { extractFromUrl } from "./extract.js";
 import { cleanup, direct, OPENROUTER, DIRECTOR_MODELS } from "./llm.js";
-import { synthesize, VOICES, LEAD, STANZA, BUDGET } from "./speech.js";
+import { synthesize, synthesizeViaOpenRouter, VOICES, LEAD, STANZA, BUDGET } from "./speech.js";
 
 const HELLO_GRACE_MS = 10_000;
 const QUERY_TIMEOUT_MS = 3_000;
@@ -171,13 +171,27 @@ export class Room extends DurableObject {
     if (!args.voice && lang !== "en" && lang !== "pl") {
       notes.push(`No voice was chosen for "${lang}", so the default English voice reads it; find_voices can suggest a native one.`);
     }
-    const { bytes, alignment } = await synthesize(env.ELEVENLABS_API_KEY, {
-      text: compose(marked, OPTS).spoken, voice, base: env.ELEVENLABS_BASE || undefined
-    });
+    const spoken = compose(marked, OPTS).spoken;
+    let speech, via = "elevenlabs";
+    try {
+      speech = await synthesize(env.ELEVENLABS_API_KEY, { text: spoken, voice, base: env.ELEVENLABS_BASE || undefined });
+    } catch (e) {
+      try {
+        speech = await synthesizeViaOpenRouter(env.OPENROUTER_API_KEY, { text: spoken, voice, base: env.OPENROUTER_BASE || undefined });
+        via = "openrouter";
+        notes.push(`ElevenLabs refused (${e.message}), so the voice came through OpenRouter instead. ` +
+                   "That route returns no timings, so the highlighting is estimated from the audio's length.");
+      } catch (e2) {
+        throw new Error(`ElevenLabs failed (${e.message}), and so did the fallback through OpenRouter (${e2.message}).`);
+      }
+    }
 
     const id = crypto.randomUUID();
-    const { bundle, lines } = buildBundle({ id, source: marked, alignment, ...OPTS, title, author, lang });
-    if (!bundle.exact) notes.push("ElevenLabs returned no usable timings, so the highlighting is estimated.");
+    const { bundle, lines } = buildBundle({
+      id, source: marked, alignment: speech.alignment, duration: speech.duration, ...OPTS, title, author, lang
+    });
+    const { bytes } = speech;
+    if (!bundle.exact && via === "elevenlabs") notes.push("ElevenLabs returned no usable timings, so the highlighting is estimated.");
 
     this.audio.set(id, bytes);
     for (const old of [...this.audio.keys()].slice(0, -KEEP_AUDIO)) this.audio.delete(old);
@@ -187,7 +201,7 @@ export class Room extends DurableObject {
 
     return {
       sent, mode, title: bundle.title, author: bundle.author, language: lang, voice,
-      lines, seconds: bundle.duration, directed, model, instructions,
+      lines, seconds: bundle.duration, directed, model, instructions, via,
       directions: bundle.stanzas.flatMap(s => s.lines.flatMap(l => l.dirs)),
       text: marked, notes
     };

@@ -107,3 +107,15 @@ test("undoubleSpace joins a poem double-spaced by its page, and leaves real stan
   assert.equal(undoubleSpace("one\ntwo\n\nthree\nfour"), "one\ntwo\n\nthree\nfour");
   assert.equal(undoubleSpace("a haiku\n\nin parts"), "a haiku\n\nin parts");   // too short to judge
 });
+
+test("an estimated timeline fills the audio and lingers at stanza breaks", () => {
+  const source = "One two three,\nfour five six.\n\nSeven eight nine,\nten eleven twelve.";
+  const { bundle } = buildBundle({ id: "e", source, alignment: null, duration: 20, lead: "[slowly]", stanza: "[pause] ", lang: "en" });
+  const words = bundle.stanzas.flatMap(s => s.lines.flatMap(l => l.words));
+  assert.equal(bundle.exact, false);
+  assert.equal(bundle.duration, 20);
+  assert.ok(words.at(-1).e <= 20 && words.at(-1).e > 17, `ends at ${words.at(-1).e}`);
+  for (let i = 1; i < words.length; i++) assert.ok(words[i].s >= words[i - 1].e);
+  const gapAtStanza = words[6].s - words[5].e, gapInLine = words[1].s - words[0].e;
+  assert.ok(gapAtStanza > gapInLine * 4, `stanza gap ${gapAtStanza} vs word gap ${gapInLine}`);
+});
