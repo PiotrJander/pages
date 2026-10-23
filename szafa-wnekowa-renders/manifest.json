@@ -172,7 +172,7 @@
   }
  },
  {
-  "img": "20261022-210547_92b0e6.jpg",
+  "img": "20261022-224151_670885.jpg",
   "name": "Przedpokój szeroko · październikowa noc, wszystkie lampy",
   "shot": "hall-night",
   "szafa": 1,
@@ -187,7 +187,8 @@
   "other_lamps": true,
   "bulb_k": 2700,
   "doors": "closed",
-  "quality": "standard",
+  "w1_right_hinge": "R",
+  "quality": "final",
   "exposure": "auto",
   "ev_comp": 0.0,
   "ev100": 6.0,
@@ -210,17 +211,17 @@
    ],
    "overlay_applied": 0,
    "overlay_unmatched": [],
-   "render_seconds": 154.3,
-   "samples": 640,
+   "render_seconds": 1068.7,
+   "samples": 2048,
    "ev100": 8.11,
-   "avg_luminance_cd": 34.54,
+   "avg_luminance_cd": 34.48,
    "wb_gains": [
     0.6,
-    0.984,
-    2.336
+    0.983,
+    2.345
    ],
-   "width": 1600,
-   "height": 1067
+   "width": 2400,
+   "height": 1600
   },
   "sun": {
    "elevation": -32.0,
@@ -233,7 +234,7 @@
   }
  },
  {
-  "img": "20261022-213812_df99d9.jpg",
+  "img": "20261023-002342_c031e5.jpg",
   "name": "Przedpokój szeroko · październikowa noc, wszystkie lampy",
   "shot": "hall-night",
   "szafa": 1,
@@ -248,7 +249,8 @@
   "other_lamps": true,
   "bulb_k": 2700,
   "doors": "closed",
-  "quality": "standard",
+  "w1_right_hinge": "R",
+  "quality": "final",
   "exposure": "auto",
   "ev_comp": 0.0,
   "ev100": 6.0,
@@ -321,17 +323,17 @@
    ],
    "overlay_applied": 46,
    "overlay_unmatched": [],
-   "render_seconds": 150.3,
-   "samples": 640,
+   "render_seconds": 1009.4,
+   "samples": 2048,
    "ev100": 8.04,
-   "avg_luminance_cd": 32.95,
+   "avg_luminance_cd": 32.89,
    "wb_gains": [
     0.589,
     0.982,
-    2.385
+    2.393
    ],
-   "width": 1600,
-   "height": 1067
+   "width": 2400,
+   "height": 1600
   },
   "sun": {
    "elevation": -32.0,
@@ -674,7 +676,7 @@
   }
  },
  {
-  "img": "20261022-211216_eb95d9.jpg",
+  "img": "20261022-225940_cbcd5c.jpg",
   "name": "Szafa 1 · noc, jedna lampa w przedpokoju",
   "shot": "w1-night",
   "szafa": 1,
@@ -689,7 +691,8 @@
   "other_lamps": false,
   "bulb_k": 2700,
   "doors": "closed",
-  "quality": "standard",
+  "w1_right_hinge": "R",
+  "quality": "final",
   "exposure": "auto",
   "ev_comp": 0.0,
   "ev100": 6.0,
@@ -706,17 +709,17 @@
    ],
    "overlay_applied": 0,
    "overlay_unmatched": [],
-   "render_seconds": 107.3,
-   "samples": 640,
-   "ev100": 6.72,
-   "avg_luminance_cd": 12.04,
+   "render_seconds": 890.6,
+   "samples": 2048,
+   "ev100": 6.73,
+   "avg_luminance_cd": 12.13,
    "wb_gains": [
     0.563,
-    0.981,
-    2.473
+    0.98,
+    2.48
    ],
-   "width": 1600,
-   "height": 1067
+   "width": 2400,
+   "height": 1600
   },
   "sun": {
    "elevation": -39.83,
@@ -729,7 +732,7 @@
   }
  },
  {
-  "img": "20261022-214450_e9e7c1.jpg",
+  "img": "20261023-004033_0b2d27.jpg",
   "name": "Szafa 1 · noc, jedna lampa w przedpokoju",
   "shot": "w1-night",
   "szafa": 1,
@@ -744,7 +747,8 @@
   "other_lamps": false,
   "bulb_k": 2700,
   "doors": "closed",
-  "quality": "standard",
+  "w1_right_hinge": "R",
+  "quality": "final",
   "exposure": "auto",
   "ev_comp": 0.0,
   "ev100": 6.0,
@@ -811,17 +815,17 @@
    ],
    "overlay_applied": 46,
    "overlay_unmatched": [],
-   "render_seconds": 116.1,
-   "samples": 640,
-   "ev100": 7.04,
-   "avg_luminance_cd": 15.79,
+   "render_seconds": 915.2,
+   "samples": 2048,
+   "ev100": 7.05,
+   "avg_luminance_cd": 15.88,
    "wb_gains": [
     0.615,
-    0.985,
-    2.284
+    0.984,
+    2.291
    ],
-   "width": 1600,
-   "height": 1067
+   "width": 2400,
+   "height": 1600
   },
   "sun": {
    "elevation": -39.83,
@@ -1002,7 +1006,7 @@
   }
  },
  {
-  "img": "20261022-211557_8868b1.jpg",
+  "img": "20261022-231432_f11ebc.jpg",
   "name": "Nisza z bliska · wieczór, obie lampy w przedpokoju",
   "shot": "niche-evening",
   "szafa": 1,
@@ -1017,7 +1021,8 @@
   "other_lamps": false,
   "bulb_k": 2700,
   "doors": "closed",
-  "quality": "standard",
+  "w1_right_hinge": "R",
+  "quality": "final",
   "exposure": "auto",
   "ev_comp": 0.0,
   "ev100": 6.0,
@@ -1035,17 +1040,17 @@
    ],
    "overlay_applied": 0,
    "overlay_unmatched": [],
-   "render_seconds": 125.9,
-   "samples": 640,
+   "render_seconds": 916.9,
+   "samples": 2048,
    "ev100": 7.48,
-   "avg_luminance_cd": 22.38,
+   "avg_luminance_cd": 22.35,
    "wb_gains": [
-    0.531,
-    0.973,
-    2.65
+    0.532,
+    0.972,
+    2.657
    ],
-   "width": 1600,
-   "height": 1067
+   "width": 2400,
+   "height": 1600
   },
   "sun": {
    "elevation": -18.58,
@@ -1058,7 +1063,7 @@
   }
  },
  {
-  "img": "20261022-214837_4f0b37.jpg",
+  "img": "20261023-005549_9c0240.jpg",
   "name": "Nisza z bliska · wieczór, obie lampy w przedpokoju",
   "shot": "niche-evening",
   "szafa": 1,
@@ -1073,7 +1078,8 @@
   "other_lamps": false,
   "bulb_k": 2700,
   "doors": "closed",
-  "quality": "standard",
+  "w1_right_hinge": "R",
+  "quality": "final",
   "exposure": "auto",
   "ev_comp": 0.0,
   "ev100": 6.0,
@@ -1141,17 +1147,17 @@
    ],
    "overlay_applied": 46,
    "overlay_unmatched": [],
-   "render_seconds": 133.5,
-   "samples": 640,
+   "render_seconds": 1002.7,
+   "samples": 2048,
    "ev100": 8.05,
-   "avg_luminance_cd": 33.17,
+   "avg_luminance_cd": 33.15,
    "wb_gains": [
     0.609,
-    0.985,
-    2.303
+    0.984,
+    2.312
    ],
-   "width": 1600,
-   "height": 1067
+   "width": 2400,
+   "height": 1600
   },
   "sun": {
    "elevation": -18.58,
@@ -1164,7 +1170,7 @@
   }
  },
  {
-  "img": "20261022-211804_bb1078.jpg",
+  "img": "20261022-232951_aab34b.jpg",
   "name": "Szafa 1 wnętrze · otwarte drzwi, wieczór",
   "shot": "w1-inside-evening",
   "szafa": 1,
@@ -1179,7 +1185,8 @@
   "other_lamps": false,
   "bulb_k": 2700,
   "doors": "open",
-  "quality": "standard",
+  "w1_right_hinge": "R",
+  "quality": "final",
   "exposure": "auto",
   "ev_comp": 0.0,
   "ev100": 6.0,
@@ -1197,17 +1204,17 @@
    ],
    "overlay_applied": 0,
    "overlay_unmatched": [],
-   "render_seconds": 142.4,
-   "samples": 640,
-   "ev100": 6.57,
-   "avg_luminance_cd": 10.58,
+   "render_seconds": 1086.4,
+   "samples": 2048,
+   "ev100": 6.74,
+   "avg_luminance_cd": 12.26,
    "wb_gains": [
-    0.564,
-    0.979,
-    2.493
+    0.539,
+    0.974,
+    2.615
    ],
-   "width": 1600,
-   "height": 1067
+   "width": 2400,
+   "height": 1600
   },
   "sun": {
    "elevation": -9.28,
@@ -1220,7 +1227,7 @@
   }
  },
  {
-  "img": "20261022-215051_8411e0.jpg",
+  "img": "20261023-011233_32961b.jpg",
   "name": "Szafa 1 wnętrze · otwarte drzwi, wieczór",
   "shot": "w1-inside-evening",
   "szafa": 1,
@@ -1235,7 +1242,8 @@
   "other_lamps": false,
   "bulb_k": 2700,
   "doors": "open",
-  "quality": "standard",
+  "w1_right_hinge": "R",
+  "quality": "final",
   "exposure": "auto",
   "ev_comp": 0.0,
   "ev100": 6.0,
@@ -1303,17 +1311,17 @@
    ],
    "overlay_applied": 46,
    "overlay_unmatched": [],
-   "render_seconds": 119.3,
-   "samples": 640,
-   "ev100": 6.39,
-   "avg_luminance_cd": 9.07,
+   "render_seconds": 933.9,
+   "samples": 2048,
+   "ev100": 6.72,
+   "avg_luminance_cd": 12.05,
    "wb_gains": [
-    0.561,
-    0.983,
-    2.465
+    0.568,
+    0.984,
+    2.431
    ],
-   "width": 1600,
-   "height": 1067
+   "width": 2400,
+   "height": 1600
   },
   "sun": {
    "elevation": -9.28,
@@ -1638,7 +1646,7 @@
   }
  },
  {
-  "img": "20261022-212438_69c41d.jpg",
+  "img": "20261022-234758_d5e605.jpg",
   "name": "Szafa 2 · noc, lampa przy salonie (pionowo)",
   "shot": "w2-night",
   "szafa": 2,
@@ -1653,7 +1661,8 @@
   "other_lamps": false,
   "bulb_k": 2700,
   "doors": "closed",
-  "quality": "standard",
+  "w1_right_hinge": "R",
+  "quality": "final",
   "exposure": "auto",
   "ev_comp": 0.0,
   "ev100": 6.0,
@@ -1670,17 +1679,17 @@
    ],
    "overlay_applied": 0,
    "overlay_unmatched": [],
-   "render_seconds": 139.2,
-   "samples": 640,
-   "ev100": 6.33,
-   "avg_luminance_cd": 8.64,
+   "render_seconds": 1099.9,
+   "samples": 2048,
+   "ev100": 6.34,
+   "avg_luminance_cd": 8.74,
    "wb_gains": [
-    0.602,
-    0.984,
-    2.328
+    0.6,
+    0.985,
+    2.327
    ],
-   "width": 1280,
-   "height": 1600
+   "width": 1920,
+   "height": 2400
   },
   "sun": {
    "elevation": -39.83,
@@ -1693,7 +1702,7 @@
   }
  },
  {
-  "img": "20261022-215624_0c5f70.jpg",
+  "img": "20261023-012808_fb8f2c.jpg",
   "name": "Szafa 2 · noc, lampa przy salonie (pionowo)",
   "shot": "w2-night",
   "szafa": 2,
@@ -1708,7 +1717,8 @@
   "other_lamps": false,
   "bulb_k": 2700,
   "doors": "closed",
-  "quality": "standard",
+  "w1_right_hinge": "R",
+  "quality": "final",
   "exposure": "auto",
   "ev_comp": 0.0,
   "ev100": 6.0,
@@ -1775,17 +1785,17 @@
    ],
    "overlay_applied": 46,
    "overlay_unmatched": [],
-   "render_seconds": 130.0,
-   "samples": 640,
-   "ev100": 6.49,
-   "avg_luminance_cd": 9.87,
+   "render_seconds": 1047.9,
+   "samples": 2048,
+   "ev100": 6.5,
+   "avg_luminance_cd": 9.96,
    "wb_gains": [
-    0.612,
+    0.611,
     0.984,
-    2.298
+    2.303
    ],
-   "width": 1280,
-   "height": 1600
+   "width": 1920,
+   "height": 2400
   },
   "sun": {
    "elevation": -39.83,
@@ -2140,7 +2150,7 @@
   }
  },
  {
-  "img": "20261022-213159_a405ee.jpg",
+  "img": "20261023-000620_3d344e.jpg",
   "name": "Przedpokój od wejścia · grudniowy zmierzch, wszystkie lampy",
   "shot": "hall-entrance-dusk",
   "szafa": 2,
@@ -2155,7 +2165,8 @@
   "other_lamps": true,
   "bulb_k": 2700,
   "doors": "closed",
-  "quality": "standard",
+  "w1_right_hinge": "R",
+  "quality": "final",
   "exposure": "auto",
   "ev_comp": 0.0,
   "ev100": 6.0,
@@ -2178,17 +2189,17 @@
    ],
    "overlay_applied": 0,
    "overlay_unmatched": [],
-   "render_seconds": 156.8,
-   "samples": 640,
+   "render_seconds": 1037.1,
+   "samples": 2048,
    "ev100": 7.93,
-   "avg_luminance_cd": 30.56,
+   "avg_luminance_cd": 30.49,
    "wb_gains": [
     0.579,
-    0.983,
-    2.41
+    0.982,
+    2.416
    ],
-   "width": 1600,
-   "height": 1067
+   "width": 2400,
+   "height": 1600
   },
   "sun": {
    "elevation": -8.06,
@@ -2201,7 +2212,7 @@
   }
  },
  {
-  "img": "20261022-220218_1b7843.jpg",
+  "img": "20261023-014537_f87d4f.jpg",
   "name": "Przedpokój od wejścia · grudniowy zmierzch, wszystkie lampy",
   "shot": "hall-entrance-dusk",
   "szafa": 2,
@@ -2216,7 +2227,8 @@
   "other_lamps": true,
   "bulb_k": 2700,
   "doors": "closed",
-  "quality": "standard",
+  "w1_right_hinge": "R",
+  "quality": "final",
   "exposure": "auto",
   "ev_comp": 0.0,
   "ev100": 6.0,
@@ -2289,17 +2301,17 @@
    ],
    "overlay_applied": 46,
    "overlay_unmatched": [],
-   "render_seconds": 140.7,
-   "samples": 640,
-   "ev100": 8.22,
-   "avg_luminance_cd": 37.22,
+   "render_seconds": 1047.4,
+   "samples": 2048,
+   "ev100": 8.21,
+   "avg_luminance_cd": 37.14,
    "wb_gains": [
-    0.614,
+    0.613,
     0.984,
-    2.291
+    2.3
    ],
-   "width": 1600,
-   "height": 1067
+   "width": 2400,
+   "height": 1600
   },
   "sun": {
    "elevation": -8.06,

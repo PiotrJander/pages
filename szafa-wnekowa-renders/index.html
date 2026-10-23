@@ -74,7 +74,8 @@ function caption(e) {
   const lamps = [e.hall_lamp_1 && "lampa 1", e.hall_lamp_2 && "lampa 2", e.other_lamps && "pozostałe pokoje"].filter(Boolean);
   const sun = e.sun.elevation > 0 ? `słońce ${e.sun.elevation.toFixed(0)}° nad horyzontem` : "po zachodzie słońca";
   const bits = [`${d} ${MONTHS[m - 1]}, ${e.time}`, WEATHER[e.weather], sun,
-    lamps.length ? `światło: ${lamps.join(", ")}` : "lampy wyłączone", DOORS[e.doors]];
+    lamps.length ? `światło: ${lamps.join(", ")}` : "lampy wyłączone",
+    e.door_angle !== undefined ? (e.door_angle ? `drzwi otwarte ${e.door_angle}°` : DOORS.closed) : DOORS[e.doors]];
   if (e.w1_right_hinge === "R") bits.push("prawe drzwi szafy 1 na zawiasach z prawej");
   return `<b>${e.name}</b> · ${bits.join(" · ")} · ${e.meta.width}×${e.meta.height}`;
 }
