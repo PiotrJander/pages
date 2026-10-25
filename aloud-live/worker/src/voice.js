@@ -93,6 +93,7 @@ async function fireRoutine(env, text) {
     headers: {
       Authorization: `Bearer ${env.ROUTINE_TOKEN}`,
       "anthropic-version": "2026-10-21",
+      "anthropic-beta": "experimental-cc-routine-2026-04-01",
       "Content-Type": "application/json"
     },
     body: JSON.stringify({ text })
