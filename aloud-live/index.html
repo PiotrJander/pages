@@ -114,6 +114,24 @@
     position:fixed;right:1rem;bottom:.9rem;font-size:.8125rem;color:var(--quiet);
   }
 
+  /* a reading on its way: what was asked for, while its audio is prepared */
+  .notice{
+    position:fixed;left:1rem;bottom:.9rem;max-width:calc(50% - 7rem);
+    font-size:.8125rem;color:var(--quiet);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    opacity:0;transition:opacity .4s ease;
+  }
+  .notice.on{opacity:1}
+  .notice.on::before{
+    content:"";display:inline-block;width:.45em;height:.45em;margin-right:.55em;
+    border-radius:50%;background:var(--quiet);vertical-align:.1em;
+    animation:breathe 1.6s ease-in-out infinite;
+  }
+  .notice.failed::before{animation:none;background:#b3261e}
+  @keyframes breathe{0%,100%{opacity:.25}50%{opacity:1}}
+  @media (prefers-reduced-motion: reduce){.notice.on::before{animation:none}}
+  @media (max-width:640px){.notice{bottom:3.6rem;max-width:calc(100% - 2rem)}}
+
   /* the one tap a browser needs before a page may make sound */
   .arm{
     position:fixed;inset:0;background:var(--paper);
@@ -161,6 +179,7 @@
     <svg width="16" height="14" viewBox="0 0 16 14" aria-hidden="true"><path d="M1 1 L11 7 L1 13 Z" fill="currentColor"/><rect x="13" y="1" width="2" height="12" fill="currentColor"/></svg>
   </button>
 </nav>
+<div class="notice" id="notice" role="status" aria-live="polite"></div>
 <div class="status" id="status" role="status" aria-live="polite"></div>
 
 <div class="arm" id="arm" role="button" tabindex="0" aria-label="Turn on sound">
@@ -190,7 +209,7 @@ const GAP_MS = 2500;          // after a poem ends, a pause before the queue mov
 
 const $ = id => document.getElementById(id);
 const dom = { title: $("title"), author: $("author"), stage: $("stage"), idle: $("idle"),
-              progress: $("progress"), fill: $("fill"), status: $("status"), arm: $("arm"),
+              progress: $("progress"), fill: $("fill"), status: $("status"), notice: $("notice"), arm: $("arm"),
               controls: $("controls"), back: $("btn-back"), play: $("btn-play"), next: $("btn-next") };
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -212,6 +231,26 @@ let rafId = 0, lastLine = -1;
 let ws = null, backoff = 1000, pingTimer = 0, pongTimer = 0;
 
 const setStatus = text => { dom.status.textContent = text || ""; };
+
+/* A reading on its way. The Worker sends `preparing` when one is asked for
+   (stage "requested", before a poem is chosen) and again while it is being
+   voiced (stage "preparing", with title and author once known). The `poem`
+   message that follows clears it; `prepared` with ok: false reports a failure. */
+let noticeTimer = 0;
+function setNotice(text, { failed = false, ms = 180000 } = {}) {
+  clearTimeout(noticeTimer);
+  dom.notice.textContent = text || "";
+  dom.notice.classList.toggle("on", !!text);
+  dom.notice.classList.toggle("failed", !!text && failed);
+  if (text) noticeTimer = setTimeout(() => setNotice(""), ms);
+}
+function preparing({ stage, request, title, author }) {
+  const work = title ? `“${title}”${author ? ` by ${author}` : ""}` : author ? `a poem by ${author}` : null;
+  const asked = request ? `“${request}”` : null;
+  setNotice(stage === "requested"
+    ? `Asked for ${asked || "a reading"} · choosing a poem…`
+    : `Preparing ${work || asked || "a reading"} · the audio is on its way…`);
+}
 
 /* ---------- typesetting ---------- */
 
@@ -633,7 +672,9 @@ function connect() {
   ws.onmessage = e => {
     if (e.data === "pong") { clearTimeout(pongTimer); return; }
     let msg; try { msg = JSON.parse(e.data); } catch { return; }
-    if (msg.type === "poem") inbox = inbox.then(() => receive(msg)).catch(() => {});
+    if (msg.type === "poem") { setNotice(""); inbox = inbox.then(() => receive(msg)).catch(() => {}); }
+    else if (msg.type === "preparing") preparing(msg);
+    else if (msg.type === "prepared" && !msg.ok) setNotice("Couldn't prepare that reading.", { failed: true, ms: 8000 });
     else if (msg.type === "control") inbox = inbox.then(() => control(msg.action));
     else if (msg.type === "query") answer(msg.qid);
   };

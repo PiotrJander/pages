@@ -24,6 +24,7 @@ import { synthesize, synthesizeViaOpenRouter, VOICES, LEAD, STANZA, BUDGET } fro
 const HELLO_GRACE_MS = 10_000;
 const QUERY_TIMEOUT_MS = 3_000;
 const KEEP_AUDIO = 3;
+const REQUEST_TTL_MS = 5 * 60_000;  // how long a voice request waits for the reading it asked for
 const OPTS = { lead: LEAD, stanza: STANZA };
 
 export class Room extends DurableObject {
@@ -110,7 +111,43 @@ export class Room extends DurableObject {
 
   // ---------- commands, called by the Worker over RPC ----------
 
+  /**
+   * Tell the displays a reading is on its way, before its audio exists.
+   * stage "requested": someone asked (the voice route, before a poem is chosen);
+   * stage "preparing": the reading is being extracted, directed and voiced.
+   * A `poem` message supersedes it; `prepared` with ok: false withdraws it.
+   */
+  async announce(info = {}) {
+    const s = v => (typeof v === "string" && v.trim() ? v.trim().slice(0, 200) : null);
+    // a voice request is kept briefly, so the reading it leads to can show it
+    // even when the agent doesn't pass `request` along
+    if (info.stage === "requested" && s(info.request)) {
+      await this.ctx.storage.put("lastRequest", { text: s(info.request), at: Date.now() });
+    }
+    return this.broadcast({
+      type: "preparing",
+      stage: info.stage === "requested" ? "requested" : "preparing",
+      request: s(info.request), title: s(info.title), author: s(info.author)
+    });
+  }
+
   async speak(args = {}) {
+    if (args.dry_run) return this.prepare(args);
+    if (!args.request) {
+      const last = await this.ctx.storage.get("lastRequest");
+      if (last && Date.now() - last.at < REQUEST_TTL_MS) args = { ...args, request: last.text };
+    }
+    await this.ctx.storage.delete("lastRequest");
+    await this.announce({ stage: "preparing", request: args.request });
+    try {
+      return await this.prepare(args);
+    } catch (e) {
+      this.broadcast({ type: "prepared", ok: false, error: String(e.message || e).slice(0, 200) });
+      throw e;
+    }
+  }
+
+  async prepare(args) {
     const env = this.env;
     const llmBase = env.OPENROUTER_BASE || OPENROUTER;
     const hasText = typeof args.text === "string" && args.text.trim();
@@ -134,6 +171,7 @@ export class Room extends DurableObject {
       author = clean.author;
       lang ||= clean.language;
       notes.push(`Extracted with ${page.via} and cleaned by the cleanup model.`);
+      if (!args.dry_run && (title || author)) await this.announce({ stage: "preparing", request: args.request, title, author });
     } else {
       source = normalise(args.text).trim();
     }

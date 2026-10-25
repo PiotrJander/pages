@@ -80,8 +80,15 @@ export async function transcribe(key, audio, name, base = "https://api.elevenlab
     method: "POST", headers: { "xi-api-key": key }, body: form
   });
   if (!res.ok) {
-    const detail = (await res.text().catch(() => "")).slice(0, 300);
-    throw new Error(`Speech recognition failed (${res.status}): ${detail}`);
+    const raw = await res.text().catch(() => "");
+    let reason = null;
+    try { const d = JSON.parse(raw).detail; reason = typeof d === "string" ? d : d?.message; } catch {}
+    const err = new Error(`Speech recognition failed (${res.status}): ${reason || raw.slice(0, 300)}`);
+    err.short = /speech_to_text/.test(raw)
+      ? "The ElevenLabs key can't do speech-to-text: enable that permission or set ELEVENLABS_STT_KEY."
+      : res.status === 401 ? "ElevenLabs rejected the key."
+      : `Couldn't transcribe that (ElevenLabs ${res.status}).`;
+    throw err;
   }
   const out = await res.json();
   return { text: String(out.text || "").trim(), language: out.language_code || null };
@@ -121,9 +128,11 @@ export async function handleVoice(request, room, env) {
   if (cmd.audio) {
     if (cmd.audio.size > MAX_AUDIO_BYTES) return json({ error: "Recording too long." }, 413);
     try {
-      ({ text: heard, language } = await transcribe(env.ELEVENLABS_API_KEY, cmd.audio, cmd.name, env.ELEVENLABS_BASE || undefined));
+      const key = env.ELEVENLABS_STT_KEY || env.ELEVENLABS_API_KEY;
+      ({ text: heard, language } = await transcribe(key, cmd.audio, cmd.name, env.ELEVENLABS_BASE || undefined));
     } catch (e) {
-      return json({ error: e.message, message: "Couldn't transcribe that." }, 502);
+      console.error("voice: transcription failed:", e.message);
+      return json({ error: e.message, message: e.short || "Couldn't transcribe that." }, 502);
     }
   }
   heard = (heard || "").slice(0, MAX_TEXT);
@@ -145,8 +154,10 @@ export async function handleVoice(request, room, env) {
   }
   try {
     const session_url = await fireRoutine(env, heard);
+    await room.announce({ stage: "requested", request: heard });
     return json({ heard, language, did: "routine", session_url, message: `On it: “${heard}”` });
   } catch (e) {
+    console.error("voice: routine fire failed:", e.message);
     return json({ heard, language, did: "nothing", error: e.message, message: "The routine didn't start." }, 502);
   }
 }

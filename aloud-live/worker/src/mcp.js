@@ -33,7 +33,8 @@ const TOOLS = [
         direct: { type: "boolean", description: "Let a model add delivery directions. Defaults to true. Ignored when instructions are given." },
         language: { type: "string", description: "Two-letter language code such as en or pl, which picks the voice. Detected when omitted." },
         voice: { type: "string", description: "An ElevenLabs voice id, overriding the voice picked by language. Find one with find_voices; pick a native speaker for a translation." },
-        dry_run: { type: "boolean", description: "Return the text that would be read, with its directions, without speaking or changing the display." }
+        dry_run: { type: "boolean", description: "Return the text that would be read, with its directions, without speaking or changing the display." },
+        request: { type: "string", description: "What the person asked for, in their own words (such as a voice command). Shown on the display while the audio is being prepared." }
       }
     },
     annotations: { title: "Read aloud on the display", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true }

@@ -13,4 +13,5 @@
   // secrets, set with `wrangler secret put`:
   //   ELEVENLABS_API_KEY  OPENROUTER_API_KEY  VIEWER_KEY  CONTROL_KEY
   //   ROUTINE_URL  ROUTINE_TOKEN   (the Claude Code routine behind /voice)
+  //   ELEVENLABS_STT_KEY  optional: a key with the speech_to_text permission, if the main one lacks it
 }
