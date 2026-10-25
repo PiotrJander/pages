@@ -12,4 +12,5 @@
   "observability": { "enabled": true }
   // secrets, set with `wrangler secret put`:
   //   ELEVENLABS_API_KEY  OPENROUTER_API_KEY  VIEWER_KEY  CONTROL_KEY
+  //   ROUTINE_URL  ROUTINE_TOKEN   (the Claude Code routine behind /voice)
 }

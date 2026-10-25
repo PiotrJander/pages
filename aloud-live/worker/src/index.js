@@ -6,9 +6,12 @@
 //   POST /mcp/:key      MCP endpoint; the control key is part of the URL so
 //                       it works as a no-auth connector in claude.ai.
 //                       `Authorization: Bearer <key>` on /mcp works too.
+//   POST /voice/:key    spoken or typed command from a shortcut (see voice.js);
+//                       same control key, same Bearer alternative.
 
 import { Room } from "./room.js";
 import { handleMcp } from "./mcp.js";
+import { handleVoice } from "./voice.js";
 
 export { Room };
 
@@ -42,15 +45,16 @@ export default {
     if (url.pathname === "/ws") return room.fetch(request);
     if (url.pathname.startsWith("/audio/")) return withCors(await room.fetch(request));
 
-    const mcp = url.pathname.match(/^\/mcp(?:\/([^/]+))?\/?$/);
-    if (mcp) {
-      const key = mcp[1] || (request.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
+    const keyed = url.pathname.match(/^\/(mcp|voice)(?:\/([^/]+))?\/?$/);
+    if (keyed) {
+      const key = keyed[2] || (request.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
       if (!sameSecret(key, env.CONTROL_KEY)) {
         return withCors(new Response(JSON.stringify({ error: "unauthorized" }), {
           status: 401, headers: { "Content-Type": "application/json" }
         }));
       }
-      return withCors(await handleMcp(request, room, env));
+      const handler = keyed[1] === "mcp" ? handleMcp : handleVoice;
+      return withCors(await handler(request, room, env));
     }
 
     if (url.pathname === "/") {
