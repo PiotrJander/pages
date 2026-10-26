@@ -98,3 +98,11 @@ test("StreamTimer releases words as their alignment arrives, then the rest", () 
   assert.deepEqual(rest.map(w => w[0]), [2]);
   assert.ok(rest[0][1] >= 0.8);
 });
+
+test("page footnote marks are dropped, the routine's own tags kept", async () => {
+  const { stripFootnotes } = await import("../src/plan.js");
+  assert.equal(stripFootnotes("Did he who made the Lamb make thee?[8][9]"), "Did he who made the Lamb make thee?");
+  assert.equal(stripFootnotes("a line [citation needed] here [a]"), "a line here");
+  const r = resolve({ url: "x", firstLine: "one", lastLine: "two", tags: [{ line: 2, tag: "[softly]" }] }, ["one [1]", "two [10]"]);
+  assert.equal(r.source, "one\n[softly] two");
+});

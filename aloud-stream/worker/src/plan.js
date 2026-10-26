@@ -93,8 +93,14 @@ export function applyTags(lines, tags = []) {
   return { lines: out, notes };
 }
 
+// Reference marks pages put after a line ("[8]", "[a]", "[citation needed]"), which would
+// otherwise be taken for delivery tags and spoken.
+const FOOTNOTE = /\s*\[(?:\d{1,3}|[a-z]|[ivx]{1,4}|note \d+|nb \d+|citation needed|clarification needed|sic)\]/gi;
+export const stripFootnotes = line => line.replace(FOOTNOTE, "");
+
 /** Plan to tagged source text, cut to one reading. */
 export function resolve(plan, pageLines = null) {
+  if (pageLines) pageLines = pageLines.map(stripFootnotes);
   const notes = [];
   let source;
   if (typeof plan.text === "string" && plan.text.trim()) {
