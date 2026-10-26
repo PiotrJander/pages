@@ -63,3 +63,33 @@ export async function synthesize(key, { text, voice, base = "https://api.elevenl
   for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
   return { bytes, alignment: body.alignment || body.normalized_alignment || null };
 }
+
+/**
+ * Search the ElevenLabs voice library. Library voices can be used by id on a
+ * paid plan. Needs the key's "Voices: Read" permission.
+ */
+export async function findVoices(key, q = {}, base = "https://api.elevenlabs.io") {
+  const p = new URLSearchParams({ page_size: String(Math.min(Math.max(Number(q.limit) || 10, 1), 30)) });
+  for (const k of ["language", "gender", "age", "accent", "search"]) if (q[k]) p.set(k, String(q[k]).trim().toLowerCase());
+  if (q.use_case) p.set("use_cases", String(q.use_case).trim().toLowerCase());
+  const res = await fetch(`${base}/v1/shared-voices?${p}`, { headers: { "xi-api-key": key } });
+  if (!res.ok) {
+    let detail = "";
+    try { const b = await res.json(); detail = typeof b?.detail === "string" ? b.detail : b?.detail?.message || ""; } catch {}
+    if (/voices_read/.test(detail)) {
+      throw new Error("The ElevenLabs key is missing the \"Voices: Read\" permission. Turn it on for the key in ElevenLabs, then search again.");
+    }
+    throw new Error(`ElevenLabs returned ${res.status}${detail ? `: ${detail}` : ""}`);
+  }
+  const body = await res.json();
+  return {
+    more: !!body.has_more,
+    voices: (body.voices || []).map(v => ({
+      voice_id: v.voice_id, name: v.name, gender: v.gender, age: v.age, accent: v.accent,
+      language: v.language, use_case: v.use_case, descriptive: v.descriptive,
+      description: (v.description || "").replace(/\s+/g, " ").trim().slice(0, 180) || null,
+      preview_url: v.preview_url || null,
+      rate: typeof v.rate === "number" && v.rate !== 1 ? v.rate : undefined      // credit multiplier
+    }))
+  };
+}

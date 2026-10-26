@@ -5,6 +5,11 @@ models. An agent reads a web page as numbered lines, then sends a small plan say
 poem starts and ends and where delivery tags go; the Worker takes the words from the page itself,
 so the agent never types the poem out.
 
+The same operations are an MCP server at `/mcp/<CONTROL_KEY>` (add it as a custom connector,
+then include it in a routine): `read_page`, `read_poem` (the plan below as its arguments),
+`control`, `status` and `find_voices`. Connector calls reach the Worker through Anthropic's
+servers, so a routine needs no network allowlist for it. Plain REST is kept alongside:
+
 ```
 GET  /k/<CONTROL_KEY>/extract?url=…     the page as numbered lines (&find=word · &from=&to=)
 POST /k/<CONTROL_KEY>/read              a plan, as JSON (below)
