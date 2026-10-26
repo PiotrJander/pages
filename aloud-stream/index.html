@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aloud Stream</title>
+<meta name="description" content="A reading kiosk that streams a voice and marks each word as it is spoken.">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500&family=Spectral:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f7f7f7; --ink:#000; --past:#7a7a7a; --ahead:#c6c6c6;
+    --quiet:#6e6e6e; --rule:#dedede; --mark:#ffe24a;
+    --serif:"Spectral",Georgia,"Times New Roman",serif;
+    --sans:"Archivo",system-ui,-apple-system,sans-serif;
+    --verse:clamp(1.2rem, 1.05rem + 1.25vw, 2.5rem);
+    --measure:34em;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--paper);color:var(--ink);
+    font-family:var(--sans);font-size:16px;line-height:1.5;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--mark)}
+
+  .page{
+    width:100%;max-width:calc(var(--measure) * 1.0);
+    margin:0 auto;padding:0 clamp(1rem, 4vw, 3rem);
+    font-size:var(--verse);
+  }
+
+  /* running head: the work's title and author, as a book prints them */
+  .head{
+    display:flex;justify-content:space-between;align-items:baseline;gap:1em;
+    padding:clamp(1.25rem, 4vh, 3rem) 0 0;
+    font-size:max(.875rem, .42em);
+    min-height:3em;
+  }
+  .head .title{font-family:var(--serif);font-style:italic;font-weight:400;margin:0;
+               overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .head .author{color:var(--quiet);white-space:nowrap}
+
+  .stage{padding:clamp(1.5rem, 6vh, 4rem) 0 clamp(5rem, 30vh, 16rem)}
+
+  /* turning from one poem to the next: head, verse and progress dim together */
+  .page,.progress{transition:opacity .65s ease}
+  body.turning .page,body.turning .progress{opacity:0}
+
+  .idle{
+    font-family:var(--serif);font-style:italic;font-weight:300;
+    color:var(--ahead);margin:12vh 0 0;
+  }
+
+  /* the poem */
+  .poem{font-family:var(--serif);font-weight:400;line-height:1.85}
+  .stanza{margin:0 0 1.85em}
+  .stanza:last-child{margin-bottom:0}
+  .vline{position:relative;color:var(--ahead);transition:color .3s ease}
+  .vline[data-state="past"]{color:var(--past)}
+  .vline[data-state="now"],.vline[data-state="rest"]{color:var(--ink)}
+  .vline .body{display:block;padding-left:1.2em;text-indent:-1.2em}
+  .vline .indent{padding-left:1.6em;display:inline-block}
+  .vline .num{
+    position:absolute;right:calc(100% + 1.1em);top:.9em;
+    font-family:var(--sans);font-size:max(.6875rem, .3em);color:var(--ahead);
+    font-variant-numeric:tabular-nums;
+  }
+  .dir{
+    display:block;font-family:var(--sans);font-size:max(.75rem, .34em);
+    line-height:1.4;color:var(--past);margin:0 0 .1em;
+  }
+  .dir::before{content:"— "}
+
+  .prose .vline .body{padding-left:0;text-indent:0}
+  .prose .stanza{margin-bottom:1.1em}
+  .prose .vline .num{display:none}
+
+  .w{background-repeat:no-repeat;background-size:0 100%}
+  .vline[data-state="now"] .w.lit{
+    background-image:linear-gradient(to bottom,
+      transparent 7%, var(--mark) 7%, var(--mark) 92%, transparent 92%);
+    background-size:var(--fill,100%) 100%;
+    padding:0 .07em;margin:0 -.07em;
+    -webkit-box-decoration-break:clone;box-decoration-break:clone;
+  }
+
+  /* progress: a hairline along the foot of the screen */
+  .progress{position:fixed;left:0;right:0;bottom:0;height:2px;background:var(--rule)}
+  .progress i{display:block;height:100%;width:0;background:var(--ink)}
+
+  /* controls: quiet until reached for */
+  .controls{
+    position:fixed;left:50%;bottom:calc(1rem + env(safe-area-inset-bottom));transform:translateX(-50%);
+    display:flex;gap:.5rem;opacity:.6;transition:opacity .3s ease;
+  }
+  .controls:hover,.controls:focus-within{opacity:1}
+  body.turning .controls{opacity:.25}
+  .controls button{
+    appearance:none;width:3rem;height:3rem;padding:0;display:grid;place-items:center;
+    background:var(--paper);color:var(--ink);border:1px solid var(--rule);cursor:pointer;
+  }
+  .controls button.primary{border-color:var(--ink)}
+  .controls button:hover:not(:disabled){border-color:var(--ink);background:var(--mark)}
+  .controls button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+  .controls button:disabled{color:var(--ahead);cursor:default}
+  .controls svg{display:block}
+
+  .status{
+    position:fixed;right:1rem;bottom:.9rem;font-size:.8125rem;color:var(--quiet);
+  }
+  /* the one tap a browser needs before a page may make sound */
+  .arm{
+    position:fixed;inset:0;background:var(--paper);
+    display:flex;flex-direction:column;justify-content:center;
+    padding:0 clamp(1.5rem, 8vw, 8rem);cursor:pointer;
+  }
+  .arm h1{
+    font-family:var(--serif);font-weight:300;
+    font-size:clamp(2rem, 1.4rem + 3vw, 4.5rem);line-height:1.15;
+    margin:0 0 .5em;max-width:14em;
+  }
+  .arm h1 .w{background-image:linear-gradient(to bottom,
+      transparent 7%, var(--mark) 7%, var(--mark) 92%, transparent 92%);
+    background-size:100% 100%;padding:0 .07em;margin:0 -.07em}
+  .arm p{margin:0;color:var(--quiet);font-size:clamp(.9375rem, .85rem + .4vw, 1.25rem);max-width:30em}
+  .arm.gone{opacity:0;pointer-events:none;transition:opacity .5s ease}
+
+  .hidden{display:none !important}
+
+  @media (max-width:700px){ .vline .num{display:none} }
+  @media (prefers-reduced-motion:reduce){
+    .page,.progress,.vline,.arm.gone{transition:none}
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <header class="head">
+    <h1 class="title" id="title">Aloud</h1>
+    <span class="author" id="author"></span>
+  </header>
+  <main class="stage" id="stage">
+    <p class="idle" id="idle">The next reading will appear here.</p>
+  </main>
+</div>
+
+<div class="progress hidden" id="progress"><i id="fill"></i></div>
+<nav class="controls hidden" id="controls" aria-label="Reading">
+  <button type="button" id="btn-back" aria-label="Back to the beginning">
+    <svg width="16" height="14" viewBox="0 0 16 14" aria-hidden="true"><rect x="1" y="1" width="2" height="12" fill="currentColor"/><path d="M15 1 L5 7 L15 13 Z" fill="currentColor"/></svg>
+  </button>
+  <button type="button" id="btn-play" class="primary" aria-label="Pause"></button>
+  <button type="button" id="btn-next" aria-label="Next in the queue">
+    <svg width="16" height="14" viewBox="0 0 16 14" aria-hidden="true"><path d="M1 1 L11 7 L1 13 Z" fill="currentColor"/><rect x="13" y="1" width="2" height="12" fill="currentColor"/></svg>
+  </button>
+</nav>
+<div class="status" id="status" role="status" aria-live="polite"></div>
+
+<div class="arm" id="arm" role="button" tabindex="0" aria-label="Turn on sound">
+  <h1>Tap anywhere to turn <span class="w">on sound</span>.</h1>
+  <p>This screen then reads aloud whatever it is sent, and marks each word as it is spoken.</p>
+</div>
+
+<script>
+(() => {
+"use strict";
+
+// One kiosk. Everything plays through Web Audio: a streamed reading arrives
+// as `start` (the whole poem, laid out at once), `chunk`s of 24 kHz PCM with
+// the words they time, and `end`; a reading sent while another plays comes
+// whole as `poem`, an MP3 fetched from the Worker, and waits in the queue.
+// The highlight follows the audio actually scheduled, so a late chunk holds
+// it back rather than letting it run ahead of the voice.
+
+const qs = new URLSearchParams(location.search);
+const hs = new URLSearchParams(location.hash.slice(1));
+const API = (qs.get("api") || "https://aloud-stream.pjander2.workers.dev").replace(/\/$/, "");
+const KEY = hs.get("key") || qs.get("key") || "";
+const RATE = 24000;
+const TURN_MS = 650, BEAT_S = 0.6, GAP_MS = 2500, LEAD_S = 0.12;
+
+const $ = id => document.getElementById(id);
+const dom = { title: $("title"), author: $("author"), stage: $("stage"), idle: $("idle"),
+              progress: $("progress"), fill: $("fill"), status: $("status"), arm: $("arm"),
+              controls: $("controls"), back: $("btn-back"), play: $("btn-play"), next: $("btn-next") };
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const setStatus = t => { dom.status.textContent = t || ""; };
+
+const AC = window.AudioContext || window.webkitAudioContext;
+const ctx = new AC();                     // starts suspended; the first tap resumes it
+let armed = false, paused = false;
+let current = null;                       // the entry on screen
+let queue = [];                           // entries waiting their turn
+let pending = null;                       // an entry that wanted to play before the tap
+let turn = 0, rafId = 0, lastLine = -1, gapTimer = 0;
+let ws = null, backoff = 1000, pingTimer = 0, pongTimer = 0;
+const entries = new Map();
+
+/* ---------- typesetting ---------- */
+
+function typeset(poem) {
+  const view = document.createElement("article");
+  view.className = "poem " + (poem.form === "prose" ? "prose" : "verse");
+  const lines = [], words = [];
+  let n = 0;
+  for (const stanza of poem.stanzas) {
+    const box = document.createElement("div");
+    box.className = "stanza";
+    for (const line of stanza.lines) {
+      n++;
+      const el = document.createElement("div");
+      el.className = "vline"; el.dataset.state = "ahead";
+      if (n % 5 === 0) el.append(Object.assign(document.createElement("span"), { className: "num", textContent: String(n) }));
+      if (line.dirs?.length) el.append(Object.assign(document.createElement("span"), { className: "dir", textContent: line.dirs.join(", ") }));
+      const body = Object.assign(document.createElement("span"), { className: "body" });
+      el.append(body);
+      const holder = line.indented ? body.appendChild(Object.assign(document.createElement("span"), { className: "indent" })) : body;
+      const L = { node: el, words: [] };
+      line.words.forEach((w, k) => {
+        const span = document.createElement("span");
+        span.className = "w";
+        span.textContent = w.t + (k < line.words.length - 1 ? " " : "");
+        holder.append(span);
+        const word = { node: span, s: null, e: null, line: L };
+        words[w.i] = word; L.words.push(word);
+      });
+      box.append(el); lines.push(L);
+    }
+    view.append(box);
+  }
+  return { view, lines, words };
+}
+
+function makeEntry(msg) {
+  const entry = { id: msg.id, poem: msg.poem, ...typeset(msg.poem),
+    parts: [], received: 0, done: false, duration: null, failed: false,
+    carry: null, sources: [], t0: 0, playing: false, finished: false, mp3: null };
+  entries.set(entry.id, entry);
+  for (const id of [...entries.keys()].slice(0, -6)) if (entries.get(id) !== current && !queue.includes(entries.get(id))) entries.delete(id);
+  return entry;
+}
+
+function timeWords(entry, list) {
+  for (const [i, s, e] of list || []) { const w = entry.words[i]; if (w) { w.s = s; w.e = e; } }
+}
+
+/* ---------- audio ---------- */
+
+function pcm(entry, b64) {
+  const bin = atob(b64);
+  let bytes = new Uint8Array(bin.length + (entry.carry ? 1 : 0));
+  let o = 0;
+  if (entry.carry) { bytes[0] = entry.carry[0]; o = 1; entry.carry = null; }
+  for (let i = 0; i < bin.length; i++) bytes[o + i] = bin.charCodeAt(i);
+  if (bytes.length % 2) { entry.carry = bytes.slice(-1); bytes = bytes.slice(0, -1); }
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const out = new Float32Array(bytes.length / 2);
+  for (let i = 0; i < out.length; i++) out[i] = view.getInt16(i * 2, true) / 32768;
+  return out;
+}
+
+function bufferOf(part) {
+  if (!part.buf) {
+    part.buf = ctx.createBuffer(1, part.data.length, RATE);
+    part.buf.copyToChannel(part.data, 0);
+  }
+  return part.buf;
+}
+
+function schedule(entry, part) {
+  const buf = bufferOf(part);
+  let when = entry.t0 + part.at;
+  const now = ctx.currentTime;
+  let offset = 0;
+  if (when < now + 0.02) {
+    if (part.at + buf.duration <= now - entry.t0) return;       // wholly in the past (a replay)
+    if (part.late) { entry.t0 = now + 0.05 - part.at; when = now + 0.05; }  // underrun: wait for it
+    else { offset = now - when; when = now; }
+  }
+  const src = ctx.createBufferSource();
+  src.buffer = buf; src.connect(ctx.destination);
+  src.start(when, offset);
+  entry.sources.push(src);
+  src.onended = () => { entry.sources = entry.sources.filter(s => s !== src); };
+}
+
+function silence(entry) {
+  if (!entry) return;
+  for (const s of entry.sources) { try { s.onended = null; s.stop(); } catch {} }
+  entry.sources = [];
+  entry.playing = false;
+}
+
+const position = entry => Math.max(0, Math.min(ctx.currentTime - entry.t0, entry.received));
+
+/* ---------- what is on screen ---------- */
+
+async function show(entry, my) {
+  document.body.classList.toggle("prose", entry.poem.form === "prose");
+  const swap = () => {
+    dom.stage.replaceChildren(entry.view);
+    dom.title.textContent = entry.poem.title || "Aloud";
+    dom.author.textContent = entry.poem.author || "";
+    dom.progress.classList.remove("hidden");
+    dom.controls.classList.remove("hidden");
+    scrollTo(0, 0);
+  };
+  const hasPoem = dom.stage.firstElementChild && dom.stage.firstElementChild !== dom.idle;
+  if (reduced || !hasPoem || dom.stage.firstElementChild === entry.view) { swap(); return; }
+  document.body.classList.add("turning");
+  await sleep(TURN_MS);
+  if (my !== turn) return;
+  swap();
+  document.body.classList.remove("turning");
+}
+
+async function play(entry) {
+  const my = ++turn;
+  clearTimeout(gapTimer);
+  if (current && current !== entry) silence(current);
+  current = entry;
+  entry.finished = false;
+  entry.lines.forEach(l => { l.node.dataset.state = "ahead"; l.words.forEach(w => { w.node.classList.remove("lit"); w.node.style.removeProperty("--fill"); }); });
+  lastLine = -1;
+  await show(entry, my);
+  if (my !== turn) return;
+  if (!armed) { pending = entry; report(); return; }
+  if (entry.mp3 && !entry.parts.length) await decodeMp3(entry);
+  if (my !== turn) return;
+  silence(entry);
+  entry.t0 = ctx.currentTime + (entry.parts.length ? BEAT_S : LEAD_S + BEAT_S);
+  entry.playing = true;
+  for (const p of entry.parts) schedule(entry, p);
+  if (paused) { paused = false; await ctx.resume(); }
+  renderControls(); report(); startLoop();
+}
+
+async function decodeMp3(entry) {
+  try {
+    const buf = await ctx.decodeAudioData(entry.mp3.slice(0));
+    entry.parts = [{ buf, at: 0 }];
+    entry.received = entry.duration = buf.duration;
+    entry.done = true;
+  } catch { entry.failed = true; entry.done = true; }
+}
+
+function finish(entry) {
+  entry.playing = false; entry.finished = true;
+  entry.lines.forEach(l => { l.node.dataset.state = "rest"; l.words.forEach(w => { w.node.classList.remove("lit"); w.node.style.removeProperty("--fill"); }); });
+  dom.fill.style.width = "100%";
+  stopLoop(); renderControls();
+  if (queue.length) gapTimer = setTimeout(() => { if (current === entry && !entry.playing) play(queue.shift()); }, GAP_MS);
+  report();
+}
+
+/* ---------- highlighting ---------- */
+
+function paint() {
+  const entry = current;
+  if (!entry) return;
+  const t = position(entry);
+  let index = -1;
+  entry.lines.forEach((l, i) => { const s = l.words[0]?.s; if (s != null && s <= t + 0.02) index = i; });
+  if (index < 0) index = 0;
+  if (index !== lastLine) {
+    entry.lines.forEach((l, i) => {
+      const state = i < index ? "past" : i === index ? "now" : "ahead";
+      if (l.node.dataset.state !== state) l.node.dataset.state = state;
+      if (i !== index) l.words.forEach(w => { w.node.classList.remove("lit"); w.node.style.removeProperty("--fill"); });
+    });
+    lastLine = index;
+    keepInView(entry.lines[index].node);
+  }
+  for (const w of entry.lines[index].words) {
+    if (w.s == null || t < w.s) { w.node.classList.remove("lit"); w.node.style.removeProperty("--fill"); continue; }
+    w.node.classList.add("lit");
+    if (t >= w.e) w.node.style.removeProperty("--fill");
+    else w.node.style.setProperty("--fill", (Math.min(1, (t - w.s) / Math.max(0.001, w.e - w.s)) * 100).toFixed(1) + "%");
+  }
+  const total = entry.done ? entry.duration : Math.max(entry.received, entry.words.reduce((m, w) => Math.max(m, w?.e || 0), 0));
+  dom.fill.style.width = total ? (Math.min(1, t / total) * 100) + "%" : "0";
+  if (entry.playing && entry.done && ctx.currentTime - entry.t0 >= entry.duration + 0.15) finish(entry);
+}
+
+function keepInView(node) {
+  const r = node.getBoundingClientRect();
+  if (r.top > innerHeight * 0.6 || r.top < innerHeight * 0.15) {
+    scrollTo({ top: Math.max(0, scrollY + r.top - innerHeight * 0.36), behavior: reduced ? "auto" : "smooth" });
+  }
+}
+
+const loop = () => { paint(); rafId = current?.playing ? requestAnimationFrame(loop) : 0; };
+const startLoop = () => { if (!rafId) rafId = requestAnimationFrame(loop); };
+const stopLoop = () => { cancelAnimationFrame(rafId); rafId = 0; };
+
+/* ---------- messages from the room ---------- */
+
+const busy = () => !!(current && !current.finished && (current.playing || pending === current)) || queue.length > 0;
+
+function enqueue(entry, mode) {
+  if (mode === "now" || !busy()) play(entry);
+  else { queue.push(entry); renderControls(); report(); }
+}
+
+function onStart(msg) { enqueue(makeEntry(msg), msg.mode); }
+
+function onChunk(msg) {
+  const entry = entries.get(msg.id);
+  if (!entry) return;
+  timeWords(entry, msg.words);
+  if (!msg.audio) return;
+  const data = pcm(entry, msg.audio);
+  if (!data.length) return;
+  const part = { data, at: entry.received, late: true };
+  entry.parts.push(part);
+  entry.received += data.length / RATE;
+  if (entry === current && entry.playing) schedule(entry, part);
+}
+
+function onEnd(msg) {
+  const entry = entries.get(msg.id);
+  if (!entry) return;
+  timeWords(entry, msg.words);
+  entry.done = true;
+  entry.duration = Math.max(entry.received, 0.01);
+}
+
+async function onPoem(msg) {
+  const entry = makeEntry(msg);
+  timeWords(entry, msg.words);
+  try {
+    const res = await fetch(API + msg.audio);
+    if (!res.ok) throw new Error(res.status);
+    entry.mp3 = await res.arrayBuffer();
+  } catch { setStatus("Couldn't fetch a queued reading's audio."); return; }
+  enqueue(entry, msg.mode);
+}
+
+function onFailed(msg) {
+  const entry = entries.get(msg.id);
+  if (!entry) return;
+  entry.failed = true; entry.done = true; entry.duration = entry.received;
+  queue = queue.filter(e => e !== entry);
+  if (entry === current && !entry.received) { setStatus("That reading failed."); setTimeout(() => setStatus(""), 6000); }
+}
+
+function control(action) {
+  if (action === "pause") { if (current?.playing) { paused = true; ctx.suspend(); } }
+  else if (action === "resume") { if (paused) { paused = false; ctx.resume(); } else if (current && !current.playing && !current.finished && armed) play(current); }
+  else if (action === "restart") { if (current) play(current); }
+  else if (action === "skip") { if (queue.length) play(queue.shift()); else if (current) { silence(current); finish(current); } }
+  else if (action === "stop") {
+    queue = []; clearTimeout(gapTimer); pending = null;
+    if (current) { silence(current); finish(current); }
+    if (paused) { paused = false; ctx.resume(); }
+  }
+  renderControls(); report();
+}
+
+/* ---------- controls on the page ---------- */
+
+const ICON_PAUSE = '<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><rect x="2" y="1" width="3.5" height="12" fill="currentColor"/><rect x="8.5" y="1" width="3.5" height="12" fill="currentColor"/></svg>';
+const ICON_PLAY = '<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2 1 L13 7 L2 13 Z" fill="currentColor"/></svg>';
+function renderControls() {
+  const on = current?.playing && !paused;
+  dom.play.innerHTML = on ? ICON_PAUSE : ICON_PLAY;
+  dom.play.setAttribute("aria-label", on ? "Pause" : "Play");
+  dom.next.disabled = !queue.length;
+  dom.back.disabled = !current;
+}
+function togglePlay() {
+  if (!current) return;
+  if (current.playing && !paused) control("pause");
+  else if (paused) control("resume");
+  else play(current);
+}
+dom.play.addEventListener("click", togglePlay);
+dom.back.addEventListener("click", () => control("restart"));
+dom.next.addEventListener("click", () => control("skip"));
+document.addEventListener("keydown", e => {
+  if (!armed) return;
+  if (e.code === "Space") { e.preventDefault(); togglePlay(); }
+  else if (e.code === "ArrowLeft") control("restart");
+  else if (e.code === "ArrowRight") control("skip");
+});
+
+/* ---------- the socket ---------- */
+
+function send(msg) { if (ws && ws.readyState === 1) ws.send(JSON.stringify(msg)); }
+function report() {
+  send({ type: "state", busy: busy(), armed, paused, queued: queue.length, title: current?.poem.title || null });
+}
+
+function connect() {
+  ws = new WebSocket(API.replace(/^http/, "ws") + "/ws");
+  ws.onopen = () => {
+    backoff = 1000;
+    ws.send(JSON.stringify({ type: "hello", key: KEY }));
+    setStatus("");
+    clearInterval(pingTimer);
+    pingTimer = setInterval(() => {
+      if (ws.readyState !== 1) return;
+      ws.send("ping");
+      clearTimeout(pongTimer);
+      pongTimer = setTimeout(() => ws.close(), 10000);
+    }, 25000);
+  };
+  ws.onmessage = e => {
+    if (e.data === "pong") { clearTimeout(pongTimer); return; }
+    let msg; try { msg = JSON.parse(e.data); } catch { return; }
+    if (msg.type === "welcome") report();
+    else if (msg.type === "start") onStart(msg);
+    else if (msg.type === "chunk") onChunk(msg);
+    else if (msg.type === "end") onEnd(msg);
+    else if (msg.type === "poem") onPoem(msg);
+    else if (msg.type === "failed") onFailed(msg);
+    else if (msg.type === "control") control(msg.action);
+  };
+  ws.onclose = e => {
+    clearInterval(pingTimer); clearTimeout(pongTimer);
+    if (e.code === 4401) { setStatus("The display key was not accepted."); return; }
+    if (e.code === 4000) { setStatus("This kiosk was opened on another screen."); return; }
+    setStatus("Reconnecting…");
+    setTimeout(connect, backoff);
+    backoff = Math.min(backoff * 2, 30000);
+  };
+}
+
+/* ---------- arming ---------- */
+
+async function holdScreen() { try { await navigator.wakeLock?.request("screen"); } catch {} }
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && armed) holdScreen(); });
+
+async function arm() {
+  if (armed) return;
+  armed = true;
+  dom.arm.classList.add("gone");
+  try {
+    await ctx.resume();
+    const s = ctx.createBufferSource();              // iOS unlocks on a sound started in the gesture
+    s.buffer = ctx.createBuffer(1, 1, RATE); s.connect(ctx.destination); s.start();
+  } catch {}
+  holdScreen();
+  report();
+  if (pending) { const p = pending; pending = null; play(p); }
+}
+dom.arm.addEventListener("pointerdown", arm);
+dom.arm.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") arm(); });
+
+/* ---------- start ---------- */
+
+renderControls();
+if (!KEY) { dom.arm.classList.add("gone"); setStatus("This display needs its key: add #key=… to the address."); }
+else connect();
+
+// for tests
+window.__aloud = { ctx, get current() { return current; }, get queue() { return queue; }, get armed() { return armed; },
+                   get paused() { return paused; }, position: () => current ? position(current) : 0 };
+})();
+</script>
+</body>
+</html>

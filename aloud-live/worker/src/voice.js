@@ -4,6 +4,7 @@
 //
 // The body is either a recording (multipart form with one file field, or the
 // raw audio bytes) or JSON `{"text": "..."}` for a command already in words.
+// Either may also name the routine to fire (see routingFrom below).
 // A recording is transcribed with ElevenLabs Scribe. Playback commands
 // (pause, stop, skip, ...) go straight to the room, which takes well under a
 // second; anything else is handed to the Claude Code routine, which picks a
@@ -46,28 +47,61 @@ export function matchControl(text) {
   return null;
 }
 
+// Which routine to fire, and where playback commands go, can come with the
+// request, so one entry point serves several routines and kiosks:
+//   routine        a routine id (trig_…) or its full fire URL
+//   routine_token  that routine's bearer token
+//   control_url    optional: where bare playback commands are POSTed as
+//                  {"action": …}, e.g. https://aloud-stream.pjander2.workers.dev/k/<key>/control
+// Without them, the routine in this Worker's secrets is used and playback
+// commands go to this Worker's own room.
+const FIRE_URL = /^https:\/\/api\.anthropic\.com\/v1\/claude_code\/routines\/(trig_[A-Za-z0-9]+)\/fire$/;
+const CONTROL_URL = /^https:\/\/[a-z0-9-]+\.pjander2\.workers\.dev\/[^\s]*$/;
+
+export function routingFrom(get) {
+  const str = k => { const v = get(k); return typeof v === "string" && v.trim() ? v.trim() : null; };
+  const out = {};
+  const routine = str("routine"), token = str("routine_token"), control = str("control_url");
+  if (routine || token) {
+    const url = /^trig_[A-Za-z0-9]+$/.test(routine || "")
+      ? `https://api.anthropic.com/v1/claude_code/routines/${routine}/fire` : routine;
+    if (!url || !FIRE_URL.test(url)) return { error: "`routine` must be a routine id (trig_…) or its api.anthropic.com fire URL." };
+    if (!token) return { error: "`routine` needs `routine_token` with it." };
+    out.routine = { url, token };
+  }
+  if (control) {
+    if (!CONTROL_URL.test(control)) return { error: "`control_url` must be an https URL on pjander2.workers.dev." };
+    out.controlUrl = control;
+  }
+  return out;
+}
+
 async function readCommand(request) {
   const type = (request.headers.get("Content-Type") || "").toLowerCase();
   if (type.startsWith("application/json")) {
     const body = await request.json().catch(() => null);
+    const routing = routingFrom(k => body?.[k]);
+    if (routing.error) return routing;
     const text = typeof body?.text === "string" ? body.text.trim() : "";
-    return text ? { text } : { error: "JSON body needs a non-empty `text`." };
+    return text ? { text, routing } : { error: "JSON body needs a non-empty `text`." };
   }
   if (type.startsWith("multipart/form-data")) {
     const form = await request.formData().catch(() => null);
     if (!form) return { error: "Could not read the form." };
+    const routing = routingFrom(k => form.get(k));
+    if (routing.error) return routing;
     for (const [, value] of form) {
       if (typeof value === "object" && value && typeof value.arrayBuffer === "function") {
-        return { audio: value, name: value.name || "recording.m4a" };
+        return { audio: value, name: value.name || "recording.m4a", routing };
       }
     }
     const text = form.get("text");
-    if (typeof text === "string" && text.trim()) return { text: text.trim() };
+    if (typeof text === "string" && text.trim()) return { text: text.trim(), routing };
     return { error: "The form holds no file. Send the recording as a File field." };
   }
   const bytes = await request.arrayBuffer();
   if (!bytes.byteLength) return { error: "Empty body. Send a recording or JSON {\"text\": ...}." };
-  return { audio: new Blob([bytes], { type: type || "audio/mp4" }), name: "recording.m4a" };
+  return { audio: new Blob([bytes], { type: type || "audio/mp4" }), name: "recording.m4a", routing: {} };
 }
 
 export async function transcribe(key, audio, name, base = "https://api.elevenlabs.io") {
@@ -94,11 +128,11 @@ export async function transcribe(key, audio, name, base = "https://api.elevenlab
   return { text: String(out.text || "").trim(), language: out.language_code || null };
 }
 
-async function fireRoutine(env, text) {
-  const res = await fetch(env.ROUTINE_URL, {
+async function fireRoutine(routine, text) {
+  const res = await fetch(routine.url, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${env.ROUTINE_TOKEN}`,
+      Authorization: `Bearer ${routine.token}`,
       "anthropic-version": "2026-10-21",
       "anthropic-beta": "experimental-cc-routine-2026-04-01",
       "Content-Type": "application/json"
@@ -142,19 +176,33 @@ export async function handleVoice(request, room, env) {
     return json({ heard, language, did: "transcribed", message: `Heard: “${heard}”` });
   }
 
+  const { routing } = cmd;
+  const own = !routing.routine;           // the routine and room this Worker was set up with
   const action = matchControl(heard);
-  if (action) {
-    const result = await room.control(action);
+  if (action && (own || routing.controlUrl)) {
+    let result;
+    if (routing.controlUrl) {
+      try {
+        const res = await fetch(routing.controlUrl, {
+          method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action })
+        });
+        const body = await res.json().catch(() => ({}));
+        result = { ok: res.ok, message: body.message || body.error || `HTTP ${res.status}` };
+      } catch (e) { result = { ok: false, message: `The kiosk didn't answer: ${e.message}` }; }
+    } else {
+      result = await room.control(action);
+    }
     return json({ heard, language, did: `control:${action}`, message: result.message || action }, result.ok ? 200 : 409);
   }
 
-  if (!env.ROUTINE_URL || !env.ROUTINE_TOKEN) {
-    return json({ heard, language, did: "nothing", error: "ROUTINE_URL and ROUTINE_TOKEN are not set on the Worker.",
-      message: "Heard you, but the routine isn't connected yet." }, 503);
+  const routine = routing.routine || (env.ROUTINE_URL && env.ROUTINE_TOKEN ? { url: env.ROUTINE_URL, token: env.ROUTINE_TOKEN } : null);
+  if (!routine) {
+    return json({ heard, language, did: "nothing", error: "No routine: send routine and routine_token, or set ROUTINE_URL and ROUTINE_TOKEN.",
+      message: "Heard you, but no routine is connected." }, 503);
   }
   try {
-    const session_url = await fireRoutine(env, heard);
-    await room.announce({ stage: "requested", request: heard });
+    const session_url = await fireRoutine(routine, heard);
+    if (own) await room.announce({ stage: "requested", request: heard });
     return json({ heard, language, did: "routine", session_url, message: `On it: “${heard}”` });
   } catch (e) {
     console.error("voice: routine fire failed:", e.message);
