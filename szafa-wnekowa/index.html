@@ -3,15 +3,252 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>Szafa wnękowa · Preact</title>
+<title>Szafa wnękowa Tkacka</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<!-- pomiary z 8 października: A1–A6 i zwis G2 -->
 <meta name="color-scheme" content="light dark" />
-<link rel="stylesheet" href="style.css" />
+<style>
+/* ---------- tokeny ---------- */
+:root{
+  --bg:#f4f2ee; --panel:#fffefb; --ink:#1d1f21; --dim:#6b6f74; --line:#dcd7cd;
+  --acc:#8a5a2b; --acc-soft:#f0e6d8; --ok:#2e7d52; --warn:#b03a2e; --todo:#9aa0a6;
+  --r:12px; --sh:0 1px 2px rgba(0,0,0,.05), 0 8px 24px rgba(0,0,0,.05);
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font:16px/1.6 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+  -webkit-text-size-adjust:100%;
+}
+body.fs-on{overflow:hidden}
+
+main{max-width:940px;margin:0 auto;padding:0 16px 80px}
+section{margin-top:18px}
+h1{font-size:1.5rem;margin:.2em 0 .1em;letter-spacing:-.01em}
+h2{font-size:1.2rem;margin:1.4em 0 .4em;letter-spacing:-.01em}
+h3{font-size:1.02rem;margin:1.3em 0 .3em}
+h4{font-size:.94rem;margin:1.1em 0 .3em;color:var(--dim);font-weight:600}
+p{margin:.5em 0}
+.sub{color:var(--dim);margin:.1em 0 .8em}
+.note{color:var(--dim);font-size:.88rem}
+.dim{color:var(--dim)}
+.warn{background:#fdecea;border-left:3px solid var(--warn);padding:.5em .7em;border-radius:0 8px 8px 0;font-size:.9rem;margin:.5em 0}
+.ok{background:#e8f5ee;border-left:3px solid var(--ok);padding:.5em .7em;border-radius:0 8px 8px 0;font-size:.9rem;margin:.5em 0}
+b{font-weight:650}
+a{color:var(--acc)}
+
+/* ---------- zakładki ---------- */
+.tabs{display:flex;gap:6px;position:sticky;top:0;z-index:30;padding:10px 0;
+  background:linear-gradient(var(--bg) 70%,transparent)}
+.tabs button{
+  flex:1;padding:.55em .4em;border:1px solid var(--line);background:var(--panel);
+  color:var(--dim);border-radius:999px;font:inherit;font-size:.9rem;cursor:pointer}
+.tabs button[aria-selected=true]{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+
+/* ---------- widok 3D ---------- */
+.stage,.expwrap{
+  position:relative;width:100%;height:min(62vh,520px);background:var(--panel);
+  border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh)}
+.stage{border-radius:0 0 var(--r) var(--r);border-top:none;height:min(58vh,480px)}
+.pvcanvas{position:relative;width:100%;height:min(46vh,340px);background:var(--panel);
+  border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.stage canvas,.expwrap canvas,.pvcanvas canvas{display:block;width:100%;height:100%;touch-action:none}
+
+.stage.fs,.expwrap.fs,.pvcanvas.fs{
+  position:fixed;inset:0;width:100vw;height:100dvh;z-index:100;border-radius:0;border:none}
+
+.fsbtn{position:absolute;top:8px;right:8px;z-index:6;width:34px;height:34px;
+  border:1px solid var(--line);background:var(--panel);color:var(--ink);
+  border-radius:9px;cursor:pointer;font-size:15px;line-height:1;opacity:.92}
+.views{position:absolute;top:8px;left:8px;z-index:6;display:flex;gap:4px;flex-wrap:wrap;max-width:60%}
+.views button{border:1px solid var(--line);background:var(--panel);color:var(--dim);
+  border-radius:8px;padding:.25em .55em;font:inherit;font-size:.78rem;cursor:pointer}
+.chips{position:absolute;left:8px;bottom:8px;z-index:6;display:flex;gap:4px;flex-wrap:wrap;max-width:62%}
+.chips button{border:1px solid var(--line);background:var(--panel);border-radius:7px;
+  padding:.16em .42em;font:inherit;font-size:.72rem;font-family:var(--mono);cursor:pointer}
+
+.pad{position:absolute;right:8px;bottom:8px;z-index:6;
+  display:grid;grid-template-columns:repeat(3,30px);grid-template-rows:repeat(2,30px);gap:3px;
+  grid-template-areas:". u ." "l c r"}
+.pad button:nth-child(1){grid-area:u} .pad button:nth-child(2){grid-area:l}
+.pad button:nth-child(3){grid-area:c} .pad button:nth-child(4){grid-area:r}
+.pad button:nth-child(5){grid-area:.;position:absolute;left:33px;top:66px}
+.pad{grid-template-rows:repeat(3,30px);grid-template-areas:". u ." "l c r" ". d ."}
+.pad button:nth-child(5){grid-area:d;position:static;left:auto;top:auto}
+.pad button{border:1px solid var(--line);background:var(--panel);color:var(--dim);
+  border-radius:8px;font-size:13px;line-height:1;cursor:pointer;opacity:.92}
+
+.fsctl{position:absolute;left:8px;right:8px;bottom:46px;z-index:7;
+  background:var(--panel);border:1px solid var(--line);border-radius:10px;
+  padding:8px 10px;box-shadow:var(--sh);max-height:44vh;overflow:auto}
+.fsctl .chk{font-size:.84rem}
+
+/* ---------- formularze ---------- */
+.toggles{display:flex;flex-wrap:wrap;gap:.5em 1em;margin:.6em 0}
+.chk{display:inline-flex;align-items:center;gap:.4em;font-size:.9rem;cursor:pointer;color:var(--dim)}
+.chk input{accent-color:var(--acc);width:16px;height:16px}
+.sl{display:flex;flex-direction:column;gap:2px;min-width:190px;flex:1 1 190px;font-size:.84rem;color:var(--dim)}
+.sl input{width:100%;accent-color:var(--acc)}
+.row{display:grid;grid-template-columns:1fr auto;gap:.2em .6em;align-items:center;margin:.7em 0}
+.row label{font-size:.9rem}
+.row output{font-family:var(--mono);font-size:.86rem;color:var(--acc);font-weight:600}
+.row input[type=range]{grid-column:1/-1;width:100%;accent-color:var(--acc)}
+.row .cap{grid-column:1/-1;font-size:.78rem;color:var(--dim)}
+
+.bar{height:5px;background:var(--acc-soft);border-radius:99px;overflow:hidden;margin:.5em 0 .3em}
+.bar div{height:100%;background:var(--acc);transition:width .25s}
+.prog{display:flex;justify-content:space-between;font-size:.78rem;color:var(--dim)}
+
+.seg{display:flex;gap:6px;margin:.8em 0 .3em}
+.seg button{flex:1;padding:.6em .5em;border:1px solid var(--line);background:var(--panel);
+  color:var(--dim);border-radius:10px;font:inherit;font-size:.88rem;cursor:pointer;text-align:center}
+.seg button[aria-pressed=true]{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+
+button{font:inherit}
+.btns{display:flex;gap:6px;flex-wrap:wrap;margin:.5em 0}
+.btns button{padding:.45em .9em;border:1px solid var(--line);background:var(--panel);
+  color:var(--ink);border-radius:9px;cursor:pointer;font-size:.88rem}
+.btns button:hover{border-color:var(--acc);color:var(--acc)}
+
+textarea,input[type=number]{width:100%;font-family:var(--mono);font-size:.82rem;
+  background:var(--panel);color:var(--ink);border:1px solid var(--line);
+  border-radius:9px;padding:.5em .6em;resize:vertical}
+input[type=number]{font-size:1.5rem;text-align:center;padding:.35em}
+
+/* ---------- details ---------- */
+details{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+  padding:.2em .9em;margin:.7em 0;box-shadow:var(--sh)}
+summary{cursor:pointer;font-weight:600;padding:.6em 0;font-size:.95rem;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:'▸';display:inline-block;width:1.1em;color:var(--acc);transition:transform .15s}
+details[open]>summary::before{transform:rotate(90deg)}
+details>*:last-child{margin-bottom:.8em}
+
+/* ---------- tabele ---------- */
+table{width:100%;border-collapse:collapse;font-size:.86rem;margin:.4em 0}
+th,td{text-align:left;padding:.36em .45em;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--dim);font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.03em}
+td.n{font-family:var(--mono);font-size:.8rem;text-align:right;white-space:nowrap}
+td.a{text-align:left}
+.ptbl td.n:first-of-type{text-align:right}
+.ptbl td:first-child{font-family:var(--mono);font-size:.78rem;color:var(--acc);font-weight:600;white-space:nowrap}
+.pbtn{border:1px solid var(--line);background:var(--panel);color:var(--dim);
+  border-radius:7px;padding:.1em .45em;font:inherit;font-size:.74rem;cursor:pointer}
+.pbtn:hover{border-color:var(--acc);color:var(--acc)}
+
+.sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:.6em 0}
+.sum div{background:var(--acc-soft);border-radius:10px;padding:.55em .7em}
+.sum span{display:block;font-size:.72rem;color:var(--dim);text-transform:uppercase;letter-spacing:.03em}
+.sum b{font-size:1.02rem}
+
+.bul{margin:.4em 0;padding-left:1.15em}
+.bul li{margin:.28em 0;font-size:.92rem}
+.kw{display:inline-block;background:var(--acc-soft);color:var(--acc);border-radius:6px;
+  padding:.06em .4em;font-size:.76rem;font-family:var(--mono);margin:1px 0}
+.leg{display:flex;flex-wrap:wrap;gap:.4em .9em;font-size:.78rem;color:var(--dim);margin:.5em 0}
+.leg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:.35em;vertical-align:-1px}
+
+.step{display:flex;gap:.7em;margin:.7em 0}
+.sn{flex:0 0 26px;height:26px;border-radius:50%;background:var(--acc);color:#fff;
+  display:grid;place-items:center;font-size:.8rem;font-weight:700}
+.sc h4{margin:.1em 0 .1em;color:var(--ink);font-size:.95rem}
+.sc p{margin:0;font-size:.9rem;color:var(--dim)}
+
+/* ---------- lista pomiarów ---------- */
+.grp{display:flex;align-items:center;gap:.4em;font-size:.78rem;color:var(--dim);
+  text-transform:uppercase;letter-spacing:.03em;margin:.9em 0 .25em}
+.grp i{width:10px;height:10px;border-radius:2px}
+button.m{display:grid;grid-template-columns:52px 1fr auto;gap:.5em;align-items:center;width:100%;
+  padding:.42em .5em;border:1px solid var(--line);background:var(--panel);
+  border-radius:9px;margin:2px 0;cursor:pointer;text-align:left;color:var(--ink)}
+button.m[data-done="0"]{border-style:dashed;opacity:.75}
+button.m .id{font-family:var(--mono);font-size:.8rem;font-weight:700}
+button.m .d{font-size:.84rem;color:var(--dim);line-height:1.3}
+button.m .v{font-family:var(--mono);font-size:.84rem;font-weight:600}
+
+/* ---------- dialog ---------- */
+dialog{border:none;background:transparent;padding:0;max-width:min(94vw,420px);width:100%}
+dialog.wide{max-width:min(94vw,640px)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+.dlg{background:var(--panel);color:var(--ink);border-radius:16px;padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.28)}
+.dlg h2{margin:0 0 .2em;font-size:1.1rem}
+.dlg .unit{text-align:center;font-size:.75rem;color:var(--dim);margin-top:.25em}
+.dlgbar{display:flex;gap:6px;margin-top:.9em}
+.dlgbar button{flex:1;padding:.55em;border:1px solid var(--line);background:transparent;
+  color:var(--ink);border-radius:9px;cursor:pointer;font-size:.88rem}
+.dlgbar button.pri{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+.dlgbar button:disabled{opacity:.4;cursor:default}
+.nav{display:flex;gap:6px;margin-top:6px}
+.nav button{flex:1;padding:.4em;border:none;background:transparent;color:var(--dim);
+  cursor:pointer;font-size:.8rem}
+.nav button:disabled{opacity:.3;cursor:default}
+
+@media (max-width:560px){
+  main{padding:0 12px 70px}
+  h1{font-size:1.3rem}
+  .views{max-width:52%}
+  .chips{max-width:58%}
+  button.m{grid-template-columns:46px 1fr auto}
+  button.m .d{font-size:.78rem}
+}
+
+/* ---------- ciemny motyw: na końcu, żeby nadpisał ---------- */
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#16181a; --panel:#1f2225; --ink:#e9e6e1; --dim:#a3a8ad; --line:#33383d;
+    --acc:#d9a066; --acc-soft:#2e2921; --ok:#5fbf8d; --warn:#e8836f; --todo:#70767c;
+    --sh:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+    color-scheme:dark;
+  }
+  .warn{background:#3a2420}
+  .ok{background:#1e3129}
+  .tabs button[aria-selected=true],.seg button[aria-pressed=true]{color:#16181a}
+  .sn{color:#16181a}
+  dialog::backdrop{background:rgba(0,0,0,.65)}
+}
+
+/* ---------- meble, lista zamówienia ---------- */
+.seg.alc{margin:.2em 0 .6em;flex-wrap:wrap}
+.seg.alc button{min-width:9em}
+.btnlink{display:inline-block;padding:.55em 1em;border-radius:10px;background:var(--acc);color:#fff;text-decoration:none;font-weight:600;font-size:.92rem;border:1px solid var(--acc)}
+.btnlink.alt{background:transparent;color:var(--acc)}
+.btnlink:focus-visible,.seg button:focus-visible,.pbtn:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+@media (prefers-color-scheme:dark){ .btnlink{color:#16181a} .btnlink.alt{color:var(--acc)} }
+.tscroll{overflow-x:auto;margin:.3em 0 .8em}
+.otbl{min-width:640px;table-layout:fixed}
+.otbl th,.otbl td{vertical-align:top}
+.otbl th:nth-child(1){width:6%} .otbl th:nth-child(2),.otbl th:nth-child(5){width:5%}
+.otbl th:nth-child(3){width:9%} .otbl th:nth-child(4){width:8%} .otbl th:nth-child(6){width:5%} .otbl th:nth-child(7){width:10%}
+.otbl th:nth-child(3),.otbl th:nth-child(4),.otbl th:nth-child(6){text-align:right}
+.otbl th:nth-child(2),.otbl th:nth-child(5),.otbl th:nth-child(7),.otbl td:nth-child(7){text-align:center}
+.otbl td.mk{font-size:1.05rem;font-weight:700;text-align:center;color:var(--acc)}
+.otbl .it{margin:1px 0 3px;font-size:.84rem;line-height:1.35}
+.otbl .it .pbtn{margin-right:4px}
+.sum small{display:block;font-size:.72rem;color:var(--dim)}
+.leg i.chip{background:#b99c70 radial-gradient(#6e5636 1px,transparent 1.6px) 0 0/4px 4px}
+.sh-pt.sh-s{fill:#e2eedd}
+section h3{font-size:.98rem}
+
+/* ---------- arkusze rozkroju ---------- */
+.sheets{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin:.6em 0}
+.sheet{margin:0}
+.sheet svg{width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+.sh-bg{fill:#efe7da}
+.sh-pt{fill:#fffefb;stroke:var(--acc);stroke-width:4}
+.sh-tx{fill:var(--dim);text-anchor:middle;dominant-baseline:middle;font-family:var(--mono)}
+.sheet figcaption{font-size:.76rem;color:var(--dim);margin-top:3px}
+h4.shop{color:var(--ink)}
+
+</style>
 <script type="importmap">
 { "imports": {
-  "preact":        "./vendor/preact.module.js",
-  "preact/hooks":  "./vendor/hooks.module.js",
-  "htm":           "./vendor/htm.module.js",
-  "three":         "./vendor/three.module.js"
+  "preact":        "https://cdn.jsdelivr.net/npm/preact@10.24.3/dist/preact.module.js",
+  "preact/hooks":  "https://cdn.jsdelivr.net/npm/preact@10.24.3/hooks/dist/hooks.module.js",
+  "htm":           "https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.module.js",
+  "three":         "https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.module.js"
 } }
 </script>
 </head>
@@ -19,10 +256,2854 @@
 <div id="app"></div>
 <noscript><p style="padding:2em">Ta strona liczy model szafy w przeglądarce i potrzebuje JavaScriptu.</p></noscript>
 <script type="module">
-  import { render } from 'preact';
-  import { html } from './widgets.js';
-  import { App } from './ui.js';
-  render(html`<${App} />`, document.getElementById('app'));
+var __defProp = Object.defineProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+
+// entry.js
+import { render } from "preact";
+
+// widgets.js
+import { h } from "preact";
+import { useState, useRef, useEffect } from "preact/hooks";
+import htm from "htm";
+var html = htm.bind(h);
+var cell = (c, i) => {
+  const isStr = typeof c === "string";
+  const num2 = isStr && c !== "" && c.length < 16 && !isNaN(parseFloat(c));
+  const cls = i === 0 ? "a" : num2 ? "n" : "";
+  return isStr ? html`<td class=${cls} dangerouslySetInnerHTML=${{ __html: c }} />` : html`<td class=${cls}>${c}</td>`;
+};
+var Table = ({ head, rows, cls }) => html`
+  <table class=${cls}>
+    ${head && html`<tr>${head.map((x) => html`<th>${x}</th>`)}</tr>`}
+    ${rows.map((r) => html`<tr>${r.map(cell)}</tr>`)}
+  </table>`;
+var Check = ({ label, checked, onInput }) => html`
+  <label class="chk"><input type="checkbox" checked=${checked}
+    onInput=${(e) => onInput(e.target.checked)} /> ${label}</label>`;
+var Pad = ({ on }) => html`
+  <div class="pad">
+    <button onClick=${() => on(0, 1)} aria-label="w górę">↑</button>
+    <button onClick=${() => on(-1, 0)} aria-label="w lewo">←</button>
+    <button onClick=${() => on("c")} aria-label="wyśrodkuj">⊙</button>
+    <button onClick=${() => on(1, 0)} aria-label="w prawo">→</button>
+    <button onClick=${() => on(0, -1)} aria-label="w dół">↓</button>
+  </div>`;
+function Dialog({ open, onClose, children, wide }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const d = ref.current;
+    if (!d) return;
+    if (open && !d.open) d.showModal();
+    if (!open && d.open) d.close();
+  }, [open]);
+  return html`<dialog ref=${ref} class=${wide ? "wide" : ""} onClose=${onClose}
+    onClick=${(e) => {
+    if (e.target === ref.current) onClose();
+  }}>
+    <div class="dlg">${children}</div></dialog>`;
+}
+function CopyBox({ text, label = "Skopiuj", rows = 10, onLoad }) {
+  const [msg, setMsg] = useState("");
+  const [val, setVal] = useState(text);
+  useEffect(() => {
+    setVal(text);
+    setMsg("");
+  }, [text]);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(val);
+      setMsg("Skopiowane do schowka.");
+    } catch {
+      setMsg("Schowek niedost\u0119pny \u2013 zaznacz tekst i skopiuj r\u0119cznie.");
+    }
+  };
+  return html`<div>
+    <textarea style=${{ height: rows * 22 + "px" }} spellcheck="false" value=${val}
+      onInput=${(e) => setVal(e.target.value)} />
+    <div class="btns"><button onClick=${copy}>${label}</button>
+      ${onLoad && html`<button onClick=${() => setMsg(onLoad(val))}>Wczytaj z pola</button>`}</div>
+    ${msg && html`<p class="note">${msg}</p>`}
+  </div>`;
+}
+
+// ui.js
+import { useState as useState3, useRef as useRef2, useEffect as useEffect2, useLayoutEffect, useMemo } from "preact/hooks";
+
+// nest.json – rozkrój policzony offline optymalizatorem gilotynowym (tools/nest.py)
+var NEST_DATA = {"klon":{"n":4,"area":17.7614,"util":0.7661059351276741,"sheets":[{"parts":[{"code":"BM-P","x":10.0,"y":10.0,"l":2492,"w":641},{"code":"N-BM","x":10.0,"y":655.4,"l":2484,"w":436},{"code":"L-BOKL","x":10.0,"y":1095.8,"l":2300,"w":580},{"code":"N-BOKL","x":10.0,"y":1680.2,"l":2300,"w":375},{"code":"R-WD","x":2314.4,"y":1095.8,"l":464,"w":580},{"code":"N-WD","x":2314.4,"y":1680.2,"l":464,"w":375},{"code":"S-SZB","x":2506.4,"y":10.0,"l":250,"w":100},{"code":"S-SZB","x":2506.4,"y":114.4,"l":250,"w":100},{"code":"S-SZB","x":2506.4,"y":218.8,"l":250,"w":100},{"code":"S-SZB","x":2506.4,"y":323.2,"l":250,"w":100},{"code":"S-SZB","x":2506.4,"y":427.6,"l":250,"w":100},{"code":"S-SZB","x":2506.4,"y":532.0,"l":250,"w":100},{"code":"S-COKB","x":2498.4,"y":655.4,"l":180,"w":60},{"code":"S-COKB","x":2498.4,"y":719.8,"l":180,"w":60}]},{"parts":[{"code":"L-BOKP","x":10.0,"y":10.0,"l":2300,"w":580},{"code":"R-BOKL","x":10.0,"y":594.4,"l":2300,"w":580},{"code":"R-BOKP","x":10.0,"y":1178.8,"l":2300,"w":580},{"code":"BL-LIST","x":10.0,"y":1763.2,"l":2200,"w":60},{"code":"NIS-PLE","x":10.0,"y":1827.6,"l":2068,"w":191},{"code":"R-WG","x":2314.4,"y":10.0,"l":464,"w":580},{"code":"R-STA","x":2314.4,"y":594.4,"l":464,"w":565},{"code":"R-POL","x":2314.4,"y":1163.8,"l":463,"w":540},{"code":"N-POL","x":2314.4,"y":1708.2,"l":463,"w":350}]},{"parts":[{"code":"N-BOKP","x":10.0,"y":10.0,"l":2300,"w":375},{"code":"BL-BOK","x":10.0,"y":389.4,"l":2463,"w":72},{"code":"BL-GORA","x":10.0,"y":465.8,"l":1575,"w":85},{"code":"COK","x":10.0,"y":555.2,"l":1575,"w":80},{"code":"NIS-LIS","x":10.0,"y":639.6,"l":1400,"w":172},{"code":"L-WD","x":1414.4,"y":639.6,"l":854,"w":580},{"code":"L-WG","x":1414.4,"y":1224.0,"l":854,"w":580},{"code":"L-STA","x":10.0,"y":816.0,"l":854,"w":565},{"code":"L-POL","x":10.0,"y":1385.4,"l":853,"w":540},{"code":"R-POL","x":868.4,"y":816.0,"l":463,"w":540},{"code":"R-POL","x":2272.8,"y":639.6,"l":463,"w":540},{"code":"R-POL","x":2272.8,"y":1184.0,"l":463,"w":540},{"code":"S-COKP","x":10.0,"y":1929.8,"l":790,"w":60},{"code":"S-COKT","x":10.0,"y":1994.2,"l":790,"w":60},{"code":"N-WG","x":2314.4,"y":10.0,"l":464,"w":375},{"code":"N-STA","x":867.4,"y":1385.4,"l":464,"w":375},{"code":"S-BOKL","x":867.4,"y":1764.8,"l":404,"w":255},{"code":"S-BOKP","x":2272.8,"y":1728.4,"l":404,"w":255},{"code":"S-POL","x":1414.4,"y":1808.4,"l":413,"w":235},{"code":"N-COK","x":1589.4,"y":465.8,"l":500,"w":80},{"code":"N-LIS","x":1589.4,"y":550.2,"l":500,"w":76},{"code":"N-SZC","x":2093.8,"y":465.8,"l":366,"w":160},{"code":"N-SZC","x":1831.8,"y":1808.4,"l":366,"w":160},{"code":"N-SZB","x":2464.2,"y":465.8,"l":300,"w":160},{"code":"N-LDS","x":2477.4,"y":389.4,"l":300,"w":60},{"code":"N-LDS","x":2272.8,"y":1987.8,"l":300,"w":60},{"code":"N-LDS","x":1831.8,"y":1972.8,"l":300,"w":60}]},{"parts":[{"code":"S-BLAT","x":10.0,"y":10.0,"l":850,"w":276},{"code":"S-DNO","x":10.0,"y":290.4,"l":850,"w":276},{"code":"N-POL","x":10.0,"y":570.8,"l":463,"w":350},{"code":"N-POL","x":10.0,"y":925.2,"l":463,"w":350},{"code":"N-POL","x":10.0,"y":1279.6,"l":463,"w":350},{"code":"S-PRZ","x":10.0,"y":1634.0,"l":404,"w":255},{"code":"N-SZC","x":10.0,"y":1893.4,"l":366,"w":160},{"code":"N-SZC","x":477.4,"y":570.8,"l":366,"w":160},{"code":"N-SZB","x":477.4,"y":735.2,"l":300,"w":160},{"code":"N-SZB","x":477.4,"y":899.6,"l":300,"w":160},{"code":"N-SZB","x":477.4,"y":1064.0,"l":300,"w":160},{"code":"S-SZC","x":477.4,"y":1228.4,"l":321,"w":100},{"code":"S-SZC","x":477.4,"y":1332.8,"l":321,"w":100},{"code":"S-SZC","x":477.4,"y":1437.2,"l":321,"w":100},{"code":"S-SZC","x":418.4,"y":1634.0,"l":321,"w":100},{"code":"S-SZC","x":418.4,"y":1738.4,"l":321,"w":100},{"code":"S-SZC","x":418.4,"y":1842.8,"l":321,"w":100},{"code":"N-LDS","x":418.4,"y":1947.2,"l":300,"w":60}]}],"S":{"L":2800,"W":2070,"trim":10,"kerf":4.4}},"bial":{"n":1,"area":4.641836,"util":0.8008688750862663,"sheets":[{"parts":[{"code":"FR-R-496P","x":10.0,"y":10.0,"l":2297,"w":496},{"code":"N-FR-496P","x":10.0,"y":510.4,"l":2297,"w":496},{"code":"FR-L-442L","x":10.0,"y":1010.8,"l":2297,"w":442},{"code":"FR-L-442P","x":10.0,"y":1457.2,"l":2297,"w":442},{"code":"S-FRD","x":2311.4,"y":10.0,"l":398,"w":438},{"code":"S-FRS","x":2311.4,"y":452.4,"l":130,"w":406},{"code":"S-FRS","x":2445.8,"y":452.4,"l":130,"w":406},{"code":"S-FRS","x":2580.2,"y":452.4,"l":130,"w":406}]}],"S":{"L":2800,"W":2070,"trim":10,"kerf":4.4}},"hdf":{"n":1,"area":3.971018,"util":0.6851307798481711,"sheets":[{"parts":[{"code":"L-PLE","x":10.0,"y":10.0,"l":2282,"w":872},{"code":"R-PLE","x":10.0,"y":886.4,"l":2282,"w":482},{"code":"S-PLE","x":2296.4,"y":10.0,"l":440,"w":846},{"code":"N-SZD","x":2296.4,"y":860.4,"l":402,"w":300},{"code":"N-SZD","x":2296.4,"y":1164.8,"l":402,"w":300},{"code":"S-SZD","x":2296.4,"y":1469.2,"l":357,"w":250},{"code":"S-SZD","x":2296.4,"y":1723.6,"l":357,"w":250},{"code":"S-SZD","x":10.0,"y":1372.8,"l":250,"w":357}]}],"S":{"L":2800,"W":2070,"trim":10,"kerf":4.4}}};
+// core.js
+var core_exports = {};
+__export(core_exports, {
+  DEFAULT_OPTS: () => DEFAULT_OPTS,
+  FIXED: () => FIXED,
+  HOLE: () => HOLE,
+  BISCUIT: () => BISCUIT,
+  MODEL: () => MODEL,
+  MODEL_B: () => MODEL_B,
+  MODEL_C: () => MODEL_C,
+  P: () => P,
+  PB: () => PB,
+  PC: () => PC,
+  SETTINGS: () => SETTINGS,
+  SETTINGS_B: () => SETTINGS_B,
+  SETTINGS_C: () => SETTINGS_C,
+  SHEET: () => SHEET,
+  SHEET_B: () => SHEET_B,
+  SHEET_STD: () => SHEET_STD,
+  SHOP_FEATS: () => SHOP_FEATS,
+  BASKET: () => BASKET,
+  T: () => T,
+  WARNINGS: () => WARNINGS,
+  DECOR: () => DECOR,
+  decorOf: () => decorOf,
+  buildPanels: () => buildPanels,
+  buildPanelsB: () => buildPanelsB,
+  buildPanelsC: () => buildPanelsC,
+  derive: () => derive,
+  deriveB: () => deriveB,
+  drillText: () => drillText,
+  edgeText: () => edgeText,
+  featBadge: () => featBadge,
+  geometry: () => geometry,
+  geometryB: () => geometryB,
+  makeModel: () => makeModel,
+  makeModelB: () => makeModelB,
+  makeModelC: () => makeModelC,
+  makeAll: () => makeAll,
+  nest: () => nest,
+  nestAll: () => nestAll,
+  orderRows: () => orderRows,
+  orderDims: () => orderDims,
+  r0: () => r0,
+  totals: () => totals,
+  warnings: () => warnings,
+  warningsB: () => warningsB,
+  warningsC: () => warningsC
+});
+// gapTop 42 = 12 mm luzu pod sufitem + 30 mm obniżenia, żeby korpus dało się postawić z leżenia
+// tF = grubość frontów: W1000 ST38 bywa produkowany w 18,6 mm (głęboka struktura), H3840 ST9 w 18 mm
+var FIXED = { t: 18, tF: 18.6, plinth: 80, gapBack: 10, gapTop: 42, beamClear: 10, fg: 3 };
+var SHEET = {
+  A1: 932,
+  A2: 945,
+  A3: 941,
+  A4: 906,
+  A5: 914,
+  A6: 916,
+  B1: 536,
+  B2: 538,
+  B3: 532,
+  B4: 542,
+  B5: 535,
+  B6: 527,
+  C1: 411,
+  C2: 421,
+  C3: 418,
+  C4: 396,
+  C5: 385,
+  C6: 394,
+  C7: 392,
+  C8: 396,
+  C9: 400,
+  C10: 385,
+  C11: 390,
+  C12: 392,
+  G1d: 172,
+  G1s: 168,
+  G1g: 163,
+  EL1: 2422,
+  EL2: 2433,
+  EL3: 2432,
+  EL4: 2443,
+  ER1: 2438,
+  ER2: 2442,
+  ER3: 2435,
+  ER4: 2439,
+  F1: 2606,
+  F2: 2610,
+  // zwis (podciąg przed występem): sufit → spód, przy ścianie (w) i na czole (f)
+  G2Lw: 348,
+  G2Lf: 365,
+  G2Rw: 356,
+  G2Rf: 350
+};
+var SETTINGS = Object.freeze({
+  D_ward: 590,
+  // 10 mm od ściany + korpus 580 mm (głębokość ramy PAX 58)
+  wR: 500,
+  // prawy korpus jak rama PAX 50 – w środku 464 mm pod kosze KOMPLEMENT
+  H_LOW: 1900,
+  // wierzch stałej półki
+  maxDoorW: 560,
+  slackL: 8,
+  slackR: 5,
+  railZ: 1600,
+  // oś drążka w lewym korpusie – zasięg dla osoby 155 cm
+  railGap: 45,
+  // od wierzchu drążka do spodu półki nad nim (haczyk wieszaka)
+  nicheN: 5,
+  shelvesR: 4,
+  basketsR: 2,
+  basketPitch: 224,
+  beamProj: 300,
+  endPanel: true,
+  hingeR: "P"
+  // prawe drzwi: zawiasy po prawej, przy boku maskującym
+});
+// Wnęka 2 – przy liczniku gazu (pomiary z 21 października)
+var SHEET_B = { W: 625, D: 385, H1: 2433.5, H2: 2430.5, H3: 2432.5, H4: 2432, H5: 2428.5, DG: 2530 };
+var SETTINGS_B = Object.freeze({
+  frameGap: 50,
+  // pomiar 625 kończy się 50 mm przed ościeżnicą drzwi
+  wN: 500,
+  slack: 5,
+  shelves: 4,
+  // 2 szuflady na prowadnicach kulkowych 300 mm, zamontowanych na listwach dystansowych,
+  // żeby skrzynka minęła zawiasy przy otwartych drzwiach
+  drawers: 2,
+  slide: 300,
+  boxH: 160,
+  boxGap: 30,
+  spacerT: 18,
+  spacerH: 60,
+  H_LOW: 1900,
+  endPanel: true
+});
+// Szafka pod lustrem w przedpokoju – szerokość dobrana do resztek z rozkroju
+var SETTINGS_C = Object.freeze({
+  W: typeof __C_W !== "undefined" ? __C_W : 850,
+  H: 500,
+  Ds: 255,
+  // korpus: prowadnice kulkowe 250 mm + plecy HDF nabijane z tyłu
+  over: 21,
+  // blat i dno wysunięte przed boki o grubość frontu + szczelinę
+  plinthH: 60,
+  plinthIn: 40,
+  plinthSide: 30,
+  divFrac: 0.47,
+  drawers: 3,
+  slide: 250,
+  boxH: 100
+});
+var BASKET = {
+  58: { w: 461, d: 533, h: 160, name: "KOMPLEMENT kosz siatkowy z prowadnicą 50×58" },
+  35: { w: 461, d: 335, h: 160, name: "KOMPLEMENT kosz siatkowy z prowadnicą 50×35" }
+};
+var DECOR = {
+  klon: { kolor: "H3840", symbol: "ST9", nazwa: "Klon Mandal naturalny", grp: "Egger", gr: "18 mm" },
+  bial: { kolor: "W1000", symbol: "ST38", nazwa: "Biały premium", grp: "Egger", gr: "18,6 mm (do potwierdzenia)" },
+  hdf: { kolor: "HDF 3 mm", symbol: "biały", nazwa: "plecy i dna szuflad", grp: "", gr: "3 mm" }
+};
+var HOLE = {
+  hole5: { d: 5, depth: 10, color: "#3a3f45", label: "⌀5×10 – kołki półek (system 32)" },
+  conf7: { d: 7, depth: 0, color: "#b03a2e", label: "⌀7 przelotowy – konfirmat" },
+  conf45: { d: 4.5, depth: 40, color: "#b03a2e", label: "⌀4,5×40 w czole – konfirmat" },
+  cup35: { d: 35, depth: 13, color: "#1f5fd6", label: "⌀35×13 – puszka zawiasu (robi zakład)" },
+  plate: { d: 3, depth: 10, color: "#e07b00", label: "⌀3×10 – pilot pod wkręt prowadnika zawiasu" }
+};
+var BISCUIT = {
+  20: { L: 56, W: 23, label: "lamela nr 20" },
+  0: { L: 47, W: 15, label: "lamela nr 0" }
+};
+var num = (m, k) => typeof m[k] === "number" ? m[k] : null;
+var list = (m, ks) => ks.map((k) => num(m, k)).filter((v) => v !== null);
+var mn = (a) => a.length ? Math.min(...a) : null;
+var mx = (a) => a.length ? Math.max(...a) : null;
+var r0 = (n) => Math.round(n);
+function derive(meas2, set) {
+  const Af = list(meas2, ["A1", "A2", "A3"]), Aa = list(meas2, ["A1", "A2", "A3", "A4", "A5", "A6"]);
+  const Bf = list(meas2, ["B1", "B2", "B3"]), Ba = list(meas2, ["B1", "B2", "B3", "B4", "B5", "B6"]);
+  const Call = list(meas2, Array.from({ length: 12 }, (_, i) => "C" + (i + 1)));
+  const Cstub = list(meas2, ["C4", "C5", "C6", "C7", "C8", "C9"]);
+  const Cwall = list(meas2, ["C1", "C2", "C3"]);
+  const G1 = list(meas2, ["G1d", "G1s", "G1g"]);
+  const EL = list(meas2, ["EL1", "EL2", "EL3", "EL4"]);
+  const ER = list(meas2, ["ER1", "ER2", "ER3", "ER4"]);
+  const p2 = { ...FIXED, ...set };
+  p2.W_L = mn(Af) ?? 1e3;
+  p2.W_L_min = mn(Aa) ?? p2.W_L;
+  p2.W_L_max = mx(Af) ?? p2.W_L;
+  p2.W_R_tot = mn(Bf) ?? 800;
+  p2.W_R_min = mn(Ba) ?? p2.W_R_tot;
+  p2.D = mn(Call) ?? 600;
+  p2.D_max = mx(Call) ?? p2.D;
+  p2.D_stub = mx(Cstub) ?? p2.D;
+  p2.D_wall_L = mx(Cwall) ?? p2.D;
+  p2.T_S = mx(G1) ?? 300;
+  p2.T_S_min = mn(G1) ?? p2.T_S;
+  p2.H_C_L = mn(EL) ?? 2422;
+  p2.H_C_L_max = mx(EL) ?? p2.H_C_L;
+  p2.H_C_R = mn(ER) ?? 2435;
+  p2.H_C_R_max = mx(ER) ?? p2.H_C_R;
+  const cL = num(meas2, "EL4") ?? p2.H_C_L_max, cR = num(meas2, "ER3") ?? p2.H_C_R_max;
+  const dL = list(meas2, ["G2Lw", "G2Lf"]), dR = list(meas2, ["G2Rw", "G2Rf"]);
+  p2.BZ_pts = {
+    Lw: cL - (num(meas2, "G2Lw") ?? 360),
+    Lf: cL - (num(meas2, "G2Lf") ?? 360),
+    Rw: cR - (num(meas2, "G2Rw") ?? 360),
+    Rf: cR - (num(meas2, "G2Rf") ?? 360)
+  };
+  p2.BZ_L = num(meas2, "BZL") ?? cL - (mx(dL) ?? 360);
+  p2.BZ_R = num(meas2, "BZR") ?? cR - (mx(dR) ?? 360);
+  p2.BZ = Math.min(p2.BZ_L, p2.BZ_R);
+  return p2;
+}
+function geometry(p2) {
+  const t = p2.t;
+  const S0 = p2.W_L, S1 = S0 + p2.T_S, DRt = S1 + p2.W_R_tot;
+  const wL = p2.W_L_min - 2 * p2.slackL;
+  const wR = p2.wR;
+  const carc = { L: [S0 - p2.slackL - wL, S0 - p2.slackL], R: [S1 + p2.slackR, S1 + p2.slackR + wR] };
+  const dB = p2.gapBack, dF = p2.D_ward, depth = dF - dB;
+  const deep = dF > p2.D_stub + 60;
+  const zF = Math.min(p2.H_C_L, p2.H_C_R) - p2.gapTop;
+  const hc = { L: p2.H_C_L, R: p2.H_C_R };
+  const zTop = (k) => Math.min(hc[k] - p2.gapTop, zF);
+  const wallX = S0 - p2.W_L_max;
+  const sideGap = carc.L[0] - wallX;
+  const nx = [carc.L[1], carc.R[0]];
+  const nW = nx[1] - nx[0], nD0 = p2.D_stub, nD1 = dF, nDep = nD1 - nD0;
+  const nTop = Math.min(p2.BZ - p2.beamClear, zF);
+  const X_left = carc.L[0];
+  const X_right = carc.R[1];
+  // ile zostaje między bokiem maskującym a linią drzwi w najwęższym miejscu
+  const doorClear = S1 + p2.W_R_min - (X_right + (p2.endPanel ? t : 0));
+  const topStrip = Math.max(p2.H_C_L_max, p2.H_C_R_max) - zF;
+  return { S0, S1, DRt, carc, wL, wR, dB, dF, depth, deep, zF, hc, zTop, wallX, sideGap, nx, nW, nD0, nD1, nDep, nTop, X_left, X_right, doorClear, topStrip, t };
+}
+function deriveB(m, set, zF) {
+  const p2 = { ...FIXED, ...set };
+  p2.W = m.W;
+  p2.D = m.D;
+  const H = ["H1", "H2", "H3", "H4", "H5"].map((k) => m[k]).filter((v) => typeof v === "number");
+  p2.H_C = Math.min(...H);
+  p2.H_C_max = Math.max(...H);
+  p2.xWall = set.frameGap + m.W;
+  // ościeżnica (zewnętrzna krawędź opaski) w x = 0
+  p2.zF = zF;
+  return p2;
+}
+function geometryB(p2) {
+  const x1 = p2.xWall - p2.slack, x0 = x1 - p2.wN;
+  const dB = p2.gapBack, dF = p2.D, depth = dF - dB;
+  const zF = p2.zF, topStrip = p2.H_C_max - zF;
+  return { x0, x1, w: x1 - x0, dB, dF, depth, zF, topStrip, X_left: x0, X_right: x1, xWall: p2.xWall, t: p2.t, hc: p2.H_C };
+}
+var DEFAULT_OPTS = Object.freeze({
+  backs: "groove"
+});
+var GRID0 = 41;
+var STEP = 32;
+var PIN = 3;
+var snapHole = (x) => GRID0 + Math.round((x - GRID0) / STEP) * STEP;
+var hingeCount = (H) => H <= 1e3 ? 2 : H <= 1500 ? 3 : H <= 2e3 ? 4 : 5;
+var HCLR = 40;
+var PLATE_DY = 16;
+var PLATE_Y = 37;
+function placeHinges(H, zBot, keepOut, lim, strict = false) {
+  const n = hingeCount(H);
+  const make = (e, m) => ({
+    2: [e, H - e],
+    3: [e, H / 2, H - e],
+    4: [e, m, H - m, H - e],
+    5: [e, m, H / 2, H - m, H - e]
+  })[n];
+  const tryWith = (ko) => {
+    const ok = (a) => a - HCLR >= lim[0] && a + HCLR <= lim[1] && ko.every(([lo, hi]) => a <= lo - HCLR || a >= hi + HCLR);
+    let best = null;
+    for (let e = 80; e <= 140; e++) {
+      const ideal = n >= 4 ? e + (H - 2 * e) / (n - 1) : null;
+      const ms = n >= 4 ? Array.from({ length: 401 }, (_, i) => Math.round(ideal) - 200 + i) : [null];
+      for (const m of ms) {
+        const xs = make(e, m);
+        if (n >= 4 && (m - e < 150 || H - 2 * m < 150)) continue;
+        if (!xs.every((x) => ok(zBot + x))) continue;
+        const score = 2 * Math.abs(e - 100) + (n >= 4 ? Math.abs(m - ideal) : 0);
+        if (!best || score < best.score) best = { xs, score };
+      }
+    }
+    return best?.xs ?? null;
+  };
+  const full = tryWith(keepOut);
+  if (full || strict) return full;
+  return tryWith(keepOut.filter((k) => k[2] === "fixed")) ?? make(100, Math.round(100 + (H - 200) / (n - 1)));
+}
+// półki przestawne od wysokości `start` (spód pierwszej półki) do `in1`, w siatce 32 mm
+function shelfPlan(z0, in0, in1, n, start, t, forceS) {
+  const k0 = Math.ceil((start - z0 - PIN - GRID0) / STEP);
+  const a0 = z0 + GRID0 + STEP * k0 + PIN;
+  let S = 0;
+  if (n > 1) {
+    const ideal = (in1 - a0) / n;
+    const cands = forceS ? [forceS] : [Math.floor(ideal / STEP) * STEP, Math.ceil(ideal / STEP) * STEP];
+    let best = null;
+    for (const S2 of cands) {
+      const last = in1 - (a0 + (n - 1) * S2 + t);
+      if (last < 150) continue;
+      const sc = Math.abs(last - (S2 - t));
+      if (!best || sc < best.sc) best = { S: S2, sc };
+    }
+    S = best?.S ?? cands[0];
+  }
+  const shelfZ = Array.from({ length: n }, (_, i) => a0 + i * S);
+  const holeX = shelfZ.map((z) => z - z0 - PIN);
+  const gaps = [];
+  let prev = in0;
+  shelfZ.forEach((zb) => {
+    gaps.push(zb - prev);
+    prev = zb + t;
+  });
+  gaps.push(in1 - prev);
+  return { holeX, shelfZ, gaps, S };
+}
+// kosze KOMPLEMENT: prowadnica w otworze siatki 32 mm, kosz wisi ok. 150 mm pod nią
+function basketPlan(z0, t, n, pitch, kind) {
+  const k0 = Math.ceil((t + 15 + 150 - GRID0) / STEP);
+  const rails = Array.from({ length: n }, (_, i) => z0 + GRID0 + STEP * k0 + i * pitch);
+  const B = BASKET[kind];
+  const ranges = rails.map((r) => [r - 150, r + 10]);
+  return { rails, ranges, top: ranges.at(-1)[1], kind, ...B };
+}
+function addCarcass(ctx, s) {
+  const { add, joints, fittings, layout, sides, p2, biscuits } = ctx;
+  const t = p2.t, { tag, nm, x0, x1, z0, z1, dB, W, zS } = s;
+  const wIn = x1 - x0 - 2 * t, h2 = z1 - z0;
+  const groove = s.backs === "groove", bo = groove ? 15 : 0;
+  const lo = s.plan;
+  const staD = s.staDepth ?? W - bo, staY = s.staFront ? W - staD : bo;
+  const shD = s.shelfDepth ?? W - 25 - bo, shY = s.shelfFront ? W - 20 - shD : bo;
+  layout.bays[tag + "D"] = { n: lo.shelfZ.length, gaps: lo.gaps, inner: zS - t - (z0 + t), hang: !!s.rail, shelfZ: lo.shelfZ, in0: z0 + t, in1: zS - t, z0, baskets: s.baskets, strips: s.strips, drawers: s.drawers };
+  layout.bays[tag + "G"] = { n: 0, gaps: [z1 - t - zS], inner: z1 - t - zS, hang: false, shelfZ: [], in0: zS, in1: z1 - t, z0: zS };
+  layout.fixed[tag] = zS;
+  if (s.rail) layout.rail = s.rail;
+  const xS = zS - t / 2 - z0;
+  const ySta = [staY + 50, staY + staD / 2, staY + staD - 50];
+  const side = (which, xFace, dir) => {
+    const feats = [];
+    [9, h2 - 9].forEach((xc) => [50, W / 2, W - 50].forEach((y) => feats.push({ t: "conf7", x: xc, y, face: "B" })));
+    ySta.forEach((y) => feats.push({ t: "conf7", x: xS, y, face: "B" }));
+    [shY + 37, shY + shD - 37].forEach((y) => lo.holeX.forEach((x) => feats.push({ t: "hole5", x, y, face: "A" })));
+    if (groove) feats.push({ t: "groove", x0: 0, x1: h2, y0: 10, y1: 14, face: "A", depth: 10 });
+    return add({
+      grp: "korpus",
+      code: `${tag}-BOK${which}`,
+      name: `Bok ${which === "L" ? "lewy" : "prawy"} – ${nm}`,
+      Lg: h2,
+      Wd: W,
+      edges: { D1: 0, D2: 2, S1: 0, S2: 0 },
+      feats,
+      faceNote: groove ? "lico A (z nawiertami ⌀5 i felcem) do środka skrzyni; felc przy nieoklejonej, tylnej krawędzi" : "lico A (z nawiertami ⌀5) do środka skrzyni",
+      origin: [xFace, dB, z0],
+      ex: [0, 0, 1],
+      ey: [0, 1, 0],
+      ez: [dir, 0, 0]
+    });
+  };
+  const bL = side("L", x0, 1), bP = side("P", x1, -1);
+  sides[tag] = { L: bL, P: bP };
+  const top = (which, zFace, dir) => {
+    const feats = [];
+    [0, wIn].forEach((xe) => [50, W / 2, W - 50].forEach((y) => feats.push({ t: "conf45", x: xe, y, face: "edge" })));
+    if (groove) feats.push({ t: "groove", x0: 0, x1: wIn, y0: 10, y1: 14, face: "A", depth: 10 });
+    return add({
+      grp: "korpus",
+      code: `${tag}-W${which[0].toUpperCase()}`,
+      name: `Wieniec ${which} – ${nm}`,
+      Lg: wIn,
+      Wd: W,
+      edges: { D1: 0, D2: 2, S1: 0, S2: 0 },
+      feats,
+      faceNote: "nawierty ⌀4,5 w obu czołach (krawędzie S1 i S2)" + (groove ? "; felc na licu wewnętrznym przy tylnej krawędzi" : "") + (s.notch ? "; " + s.notch : ""),
+      origin: [x0 + t, dB, zFace],
+      ex: [1, 0, 0],
+      ey: [0, 1, 0],
+      ez: [0, 0, dir]
+    });
+  };
+  const wD = top("dolny", z0, 1), wG = top("górny", z1, -1);
+  const sta = add({
+    grp: "korpus",
+    code: `${tag}-STA`,
+    name: `Półka stała (konfirmaty) – ${nm}`,
+    Lg: wIn,
+    Wd: staD,
+    edges: { D1: 0, D2: 2, S1: 0, S2: 0 },
+    feats: [0, wIn].flatMap((xe) => ySta.map((y) => ({ t: "conf45", x: xe, y: y - staY, face: "edge" }))),
+    faceNote: `wierzch na ${r0(zS)} mm od podłogi; usztywnia boki` + (groove ? "; kończy się przed plecami (felc)" : "") + (s.staFront ? "; cofnięta od ściany – za nią przechodzi rura" : "") + (s.pipe ? "; " + s.pipe : ""),
+    origin: [x0 + t, dB + staY, zS - t],
+    ex: [1, 0, 0],
+    ey: [0, 1, 0],
+    ez: [0, 0, 1]
+  });
+  const world = (pn, x, y, z) => [0, 1, 2].map((i) => pn.origin[i] + pn.ex[i] * x + pn.ey[i] * y + pn.ez[i] * z);
+  [bL, bP].forEach((sd) => {
+    [[wD, 9], [wG, h2 - 9]].forEach(([w, xc]) => [50, W / 2, W - 50].forEach((y) => joints.push({ a: world(sd, xc, y, 0), b: world(sd, xc, y, t + 42), pa: sd.id, pb: w.id })));
+    ySta.forEach((y) => joints.push({ a: world(sd, xS, y, 0), b: world(sd, xS, y, t + 42), pa: sd.id, pb: sta.id }));
+  });
+  if (s.rail) {
+    const zr = s.rail.z - 14, dm = dB + W / 2;
+    fittings.push({ kind: "rail", x0: x0 + t, x1: x1 - t, d0: dm - 14, d1: dm + 14, z0: zr, z1: zr + 28 });
+  }
+  if (s.baskets) {
+    const B = s.baskets, yF = dB + W - 15;
+    B.ranges.forEach(([a, b]) => {
+      fittings.push({ kind: "basket", x0: x0 + t + 1.5, x1: x1 - t - 1.5, d0: yF - B.d, d1: yF, z0: a, z1: b - 10 });
+      [x0 + t, x1 - t - 8].forEach((xr) => fittings.push({ kind: "rail2", x0: xr, x1: xr + 8, d0: yF - B.d - 10, d1: yF, z0: b - 20, z1: b }));
+    });
+  }
+  if (lo.shelfZ.length) {
+    const inst = lo.shelfZ.map((z) => [x0 + t, dB + shY, z]);
+    add({
+      grp: "korpus",
+      code: `${tag}-POL`,
+      name: `Półka ${s.rail ? "nad drążkiem" : "przestawna"} – ${nm}`,
+      Lg: wIn - 1,
+      Wd: shD,
+      edges: { D1: 0, D2: 2, S1: 0, S2: 0 },
+      qty: lo.shelfZ.length,
+      inst,
+      origin: inst[0],
+      faceNote: "bez nawiertów – leży na kołkach" + (s.shelfFront ? "; cofnięta od ściany – za nią biegnie rura" : "") + (s.pipe ? "; " + s.pipe : ""),
+      ex: [1, 0, 0],
+      ey: [0, 1, 0],
+      ez: [0, 0, 1]
+    });
+  }
+  if (groove)
+    add({
+      grp: "plecy",
+      code: `${tag}-PLE`,
+      name: `Plecy – ${nm}`,
+      Lg: h2 - 2 * (t - 10) - 2,
+      Wd: x1 - x0 - 2 * (t - 10) - 2,
+      t: 3,
+      mat: "HDF 3 mm biała",
+      edges: { D1: 0, D2: 0, S1: 0, S2: 0 },
+      faceNote: "wsuwane w felc 4×10 mm w bokach i wieńcach, zanim założysz wieniec górny; 1 mm luzu z każdej strony",
+      origin: [x0 + t - 9, dB + 10, z0 + t - 9],
+      ex: [0, 0, 1],
+      ey: [1, 0, 0],
+      ez: [0, 1, 0]
+    });
+  fittings.push({ kind: "plinth", x0, x1, d0: dB + W - 45 - t, d1: dB + W - 45, z0: 0, z1: p2.plinth });
+  return { sides: sides[tag], lo, wIn };
+}
+var keepOutOf = (bays, t) => bays.flatMap((b) => [
+  ...b.shelfZ.map((zb) => [zb - PIN - HOLE.hole5.d / 2, zb + t, "shelf"]),
+  ...b.fixedAt != null ? [[b.fixedAt - t, b.fixedAt, "fixed"]] : [],
+  ...(b.baskets?.rails ?? []).map((r) => [r - 10, r + 10, "fixed"]),
+  ...(b.strips ?? []).map(([lo, hi]) => [lo, hi, "fixed"])
+]);
+function hingeBays(layout, tags) {
+  return tags.flatMap((k) => [
+    { ...layout.bays[k + "D"], fixedAt: layout.fixed[k] },
+    layout.bays[k + "G"]
+  ]).filter(Boolean);
+}
+function mkCtx(alc, p2) {
+  const panels = [], joints = [], fittings = [], sides = {}, biscuits = [], layout = { rail: null, bays: {}, fixed: {}, hinges: {} };
+  let uid = 0;
+  const add = (o) => {
+    o.id = "abc"[alc - 1] + ++uid;
+    o.t ??= p2.t;
+    o.mat ??= "Płyta laminowana 18 mm";
+    o.feats ??= [];
+    o.qty ??= 1;
+    o.inst ??= [o.origin];
+    o.alc ??= alc;
+    o.stage ??= o.grp === "korpus" || o.grp === "plecy" ? 1 : 2;
+    panels.push(o);
+    return o;
+  };
+  return { add, panels, joints, fittings, sides, layout, p2, biscuits };
+}
+function addFront(ctx, o) {
+  const { add } = ctx, { a, b, z0, z1, hinge, xs, fd0, code, nameSfx, qty, inst, kind } = o;
+  const W = b - a, H = z1 - z0;
+  const feats = hinge ? xs.map((x) => ({ t: "cup35", x, y: hinge === "L" ? 22.5 : W - 22.5, face: "B" })) : [];
+  return add({
+    grp: "front",
+    code,
+    name: kind === "szuflada" ? `Front szuflady ${r0(W)} × ${r0(H)}${nameSfx ?? ""}` : `Front ${r0(W)} szer. × ${r0(H)} wys. (zawiasy z ${hinge === "L" ? "lewej" : "prawej"})${nameSfx ?? ""}`,
+    Lg: H,
+    Wd: W,
+    t: ctx.p2.tF,
+    edges: { D1: 2, D2: 2, S1: 2, S2: 2 },
+    qty: qty ?? 1,
+    feats,
+    hinge,
+    faceNote: hinge ? `słoje pionowo; ${xs.length} puszek ⌀35 przy jednej dłuższej krawędzi (robi zakład), rozstaw symetryczny – front pasuje na lewo i na prawo po obróceniu do góry nogami` : "słoje pionowo; bez nawiertów – uchwyt lub gałkę mocujesz sam",
+    origin: [a, fd0, z0],
+    inst: inst ?? [[a, fd0, z0]],
+    ex: [0, 0, 1],
+    ey: [1, 0, 0],
+    ez: [0, 1, 0]
+  });
+}
+function platesFor(side, xsAbs) {
+  if (!side) return;
+  xsAbs.forEach((z) => [-PLATE_DY, PLATE_DY].forEach((dy) => side.feats.push({ t: "plate", x: z - side.origin[2] + dy, y: side.Wd - PLATE_Y, face: "A" })));
+}
+var NICHE_STRIP = { code: "NIS-LIS", name: "Listwa na 6 półek i daszek niszy – cięta na miejscu", L: 1400 };
+function buildPanels(p2, opts = DEFAULT_OPTS) {
+  opts = { ...DEFAULT_OPTS, ...opts };
+  const ctx = mkCtx(1, p2), { add, panels, joints, fittings, sides, layout, biscuits } = ctx;
+  const g2 = geometry(p2), t = p2.t, { carc, dB, dF, depth } = g2;
+  const fd0 = dF + 2, fz0 = p2.plinth + p2.fg, fz1 = g2.zF, H = fz1 - fz0;
+  for (const k of ["L", "R"]) {
+    const [x0, x1] = carc[k];
+    const z0 = p2.plinth, in0 = z0 + t, in1 = p2.H_LOW - t;
+    let plan, baskets = null, rail = null;
+    if (k === "L") {
+      rail = { z: p2.railZ, clearBelow: p2.railZ - 14 - in0 };
+      plan = shelfPlan(z0, in0, in1, 1, p2.railZ + 14 + p2.railGap, t);
+      rail.gapAbove = plan.shelfZ[0] - (p2.railZ + 14);
+    } else {
+      baskets = basketPlan(z0, t, p2.basketsR, p2.basketPitch, 58);
+      const start = baskets.top + 40;
+      plan = shelfPlan(z0, in0, in1, p2.shelvesR, start, t);
+      for (const S2 of [plan.S, plan.S - STEP, plan.S + STEP]) {
+        const pl = shelfPlan(z0, in0, in1, p2.shelvesR, start, t, S2);
+        if (pl.gaps.at(-1) < 150) continue;
+        const ko = keepOutOf([{ shelfZ: pl.shelfZ, fixedAt: p2.H_LOW, baskets }], t);
+        if (placeHinges(H, fz0, ko, [in0, fz1 - t], true)) {
+          plan = pl;
+          break;
+        }
+      }
+    }
+    addCarcass(ctx, {
+      tag: k,
+      nm: `skrzynia ${k === "L" ? "lewa" : "prawa"}`,
+      x0,
+      x1,
+      z0,
+      z1: g2.zTop(k),
+      dB,
+      W: depth,
+      zS: p2.H_LOW,
+      plan,
+      rail,
+      baskets,
+      backs: opts.backs
+    });
+  }
+  if (g2.deep && g2.nW > 60 && g2.nDep > 60) {
+    add({
+      grp: "nisza",
+      code: "NIS-PLE",
+      name: "Plecy niszy",
+      Lg: g2.nTop,
+      Wd: g2.nW - 4,
+      edges: { D1: 0, D2: 2, S1: 0, S2: 2 },
+      order: { Wd: 10 },
+      faceNote: "zamówione +10 mm szerzej – dotnij krawędź D1 po ustawieniu skrzyń. Słoje pionowo",
+      origin: [g2.nx[0] + 2, g2.nD0, 0],
+      ex: [0, 0, 1],
+      ey: [1, 0, 0],
+      ez: [0, 1, 0]
+    });
+    const shD = dF - (g2.nD0 + t);
+    const inst = [[g2.nx[0], g2.nD0 + t, p2.plinth]];
+    for (let i = 1; i <= p2.nicheN; i++)
+      inst.push([g2.nx[0], g2.nD0 + t, p2.plinth + t + (g2.nTop - p2.plinth - t) * i / (p2.nicheN + 1)]);
+    const strip = { ...NICHE_STRIP, W: r0(shD) };
+    add({
+      grp: "nisza",
+      code: "NIS-POL",
+      name: "Półka niszy",
+      Lg: g2.nW,
+      Wd: shD,
+      edges: { D1: 0, D2: 2, S1: 0, S2: 0 },
+      order: { strip },
+      qty: p2.nicheN + 1,
+      inst,
+      origin: inst[0],
+      faceNote: `wycinana na miejscu z listwy ${strip.L} × ${strip.W} mm po zmierzeniu niszy między ustawionymi skrzyniami; przód równo z krawędziami korpusów (drzwi z zawiasem przy niszy mają wolną drogę)`,
+      ex: [1, 0, 0],
+      ey: [0, 1, 0],
+      ez: [0, 0, 1]
+    });
+    if (g2.nTop < g2.zF - 20)
+      add({
+        grp: "nisza",
+        code: "NIS-DAS",
+        name: "Daszek niszy pod podciągiem",
+        Lg: g2.nW,
+        Wd: shD,
+        edges: { D1: 0, D2: 2, S1: 0, S2: 0 },
+        order: { strip },
+        faceNote: "wycinany z tej samej listwy co półki niszy",
+        origin: [g2.nx[0], g2.nD0 + t, g2.nTop],
+        ex: [1, 0, 0],
+        ey: [0, 1, 0],
+        ez: [0, 0, 1]
+      });
+  }
+  for (const k of ["L", "R"]) {
+    const [x0, x1] = carc[k];
+    const bays = hingeBays(layout, [k]);
+    const ko = keepOutOf(bays, t);
+    const lim = [Math.max(...bays.map((b) => b.in0)), Math.min(...bays.map((b) => b.in1))];
+    const xs = placeHinges(H, fz0, ko, lim);
+    layout.hinges[k] = xs.map((x) => fz0 + x);
+    const n = Math.max(1, Math.ceil((x1 - x0) / p2.maxDoorW)), w = (x1 - x0) / n;
+    const rows = [];
+    for (let i = 0; i < n; i++) {
+      const lastR = k === "R" && p2.endPanel && i === n - 1;
+      const a = x0 + i * w + p2.fg / 2, b = x0 + (i + 1) * w - (lastR ? p2.fg : p2.fg / 2);
+      const hinge = n === 1 ? k === "R" ? p2.hingeR : "L" : i < n / 2 ? "L" : "P";
+      rows.push({ a, b, hinge });
+    }
+    rows.forEach((q) => {
+      platesFor(sides[k][q.hinge], layout.hinges[k]);
+      addFront(ctx, { a: q.a, b: q.b, z0: fz0, z1: fz1, hinge: q.hinge, xs, fd0, code: `FR-${k}-${r0(q.b - q.a)}${q.hinge}`, nameSfx: k === "L" ? " – skrzynia lewa" : " – skrzynia prawa" });
+    });
+  }
+  if (g2.deep && g2.sideGap > 6) {
+    add({
+      grp: "blenda",
+      scribe: true,
+      code: "BL-BOK",
+      name: "Bok zamykający szczelinę przy lewej ścianie",
+      Lg: p2.H_C_L_max + 20,
+      Wd: Math.max(60, g2.sideGap + 25),
+      edges: { D1: 2, D2: 0, S1: 0, S2: 0 },
+      faceNote: "od podłogi do sufitu; zapas na długość i +25 mm na szerokość – krawędź D2 docinasz do ściany, oklejona D1 dochodzi do boku skrzyni",
+      origin: [g2.wallX, p2.D_wall_L - t, 0],
+      ex: [0, 0, 1],
+      ey: [1, 0, 0],
+      ez: [0, 1, 0]
+    });
+    const lz0 = 100, lz1 = 2300, ly = p2.D_wall_L - t;
+    add({
+      grp: "blenda",
+      code: "BL-LIST",
+      name: "Listewka mocująca bok zamykający (kątownik na lamele)",
+      Lg: lz1 - lz0,
+      Wd: 60,
+      edges: { D1: 0, D2: 0, S1: 0, S2: 0 },
+      faceNote: "klejona na lamele nr 20 do tylnej strony boku zamykającego, przykręcana od środka lewej skrzyni wkrętami 4×30",
+      origin: [carc.L[0] - t, ly - 60, lz0],
+      ex: [0, 0, 1],
+      ey: [0, 1, 0],
+      ez: [1, 0, 0]
+    });
+    for (let z = lz0 + 150; z <= lz1 - 100; z += 300) biscuits.push({ pos: [carc.L[0] - t / 2, ly, z], a: [0, 0, 1], n: [1, 0, 0], size: 20, joint: "BL-BOK ↔ BL-LIST", parts: ["BL-BOK", "BL-LIST"] });
+  }
+  if (g2.topStrip > 6)
+    add({
+      grp: "blenda",
+      scribe: true,
+      code: "BL-GORA",
+      name: "Listwa górna (blenda pod sufitem)",
+      Lg: g2.X_right - g2.X_left,
+      Wd: Math.max(60, r0(g2.topStrip - p2.fg + 25)),
+      edges: { D1: 2, D2: 0, S1: 2, S2: p2.endPanel ? 0 : 2 },
+      faceNote: "+25 mm zapasu – krawędź D2 docinasz do sufitu; D1 (oklejona) nad drzwiami. Prawy koniec łączysz z bokiem maskującym lamelą nr 0, mocujesz małymi kątownikami do wieńców górnych",
+      origin: [g2.X_left, fd0, g2.zF + p2.fg],
+      ex: [1, 0, 0],
+      ey: [0, 0, 1],
+      ez: [0, 1, 0]
+    });
+  if (p2.endPanel && g2.topStrip > 6) biscuits.push({ pos: [g2.X_right, fd0 + t / 2, g2.zF + p2.fg + 28], a: [0, 0, 1], n: [0, 1, 0], size: 0, joint: "BL-GORA ↔ BM-P", parts: ["BL-GORA", "BM-P"] });
+  add({
+    grp: "blenda",
+    scribe: true,
+      code: "COK",
+    name: "Cokół",
+    Lg: g2.X_right - g2.X_left,
+    Wd: p2.plinth,
+    edges: { D1: 0, D2: 2, S1: 2, S2: p2.endPanel ? 0 : 2 },
+    faceNote: "D2 = krawędź górna; dolną docinasz do podłogi. Na klipsach – zdejmowany",
+    origin: [g2.X_left, fd0 - 1, 0],
+    ex: [1, 0, 0],
+    ey: [0, 0, 1],
+    ez: [0, 1, 0]
+  });
+  if (p2.endPanel)
+    add({
+      grp: "blenda",
+      code: "BM-P",
+      name: "Bok maskujący prawy (od podłogi do sufitu)",
+      Lg: p2.H_C_R_max,
+      Wd: fd0 + p2.tF,
+      order: { Lg: 50, Wd: 30 },
+      edges: { D1: 0, D2: 2, S1: 0, S2: 0 },
+      faceNote: "przykręcany od środka korpusu wkrętami 4×30; przednia krawędź (D2, oklejona) równo z licem frontów. Zamówiony +50 mm na wysokość i +30 mm na głębokość – docinasz do podłogi, sufitu i ściany tylnej",
+      origin: [g2.X_right, 0, 0],
+      ex: [0, 0, 1],
+      ey: [0, 1, 0],
+      ez: [1, 0, 0]
+    });
+  return { panels, joints, fittings, biscuits, g: g2, p: p2, layout, opts, alc: 1 };
+}
+function buildPanelsB(p2) {
+  const ctx = mkCtx(2, p2), { add, panels, joints, fittings, sides, layout, biscuits } = ctx;
+  const g2 = geometryB(p2), t = p2.t;
+  const fd0 = g2.dF + 2, fz0 = p2.plinth + p2.fg, fz1 = g2.zF, H = fz1 - fz0;
+  const z0 = p2.plinth, in0 = z0 + t, in1 = p2.H_LOW - t;
+  // szuflady: skrzynki od dna w górę; prowadnica na listwie dystansowej, wysokość listwy dobrana tak,
+  // żeby prowadnik zawiasu wypadł obok niej
+  const nD = p2.drawers, bh = p2.boxH, sH = p2.spacerH;
+  const zb = Array.from({ length: nD }, (_, i) => in0 + 8 + i * (bh + p2.boxGap));
+  const zoneTop = zb.at(-1) + bh;
+  const start = zoneTop + 40;
+  const stripsAt = (off) => zb.map((z) => [z + off - sH / 2, z + off + sH / 2]);
+  let plan = null, best = null;
+  for (let off = sH / 2 + 2; off <= bh - sH / 2 - 2; off += 2) {
+    const strips = stripsAt(off);
+    let pl0 = shelfPlan(z0, in0, in1, p2.shelves, start, t);
+    for (const S2 of [pl0.S, pl0.S - STEP, pl0.S + STEP]) {
+      const pl = shelfPlan(z0, in0, in1, p2.shelves, start, t, S2);
+      if (pl.gaps.at(-1) < 150) continue;
+      const xs = placeHinges(H, fz0, keepOutOf([{ shelfZ: pl.shelfZ, fixedAt: p2.H_LOW, strips }], t), [in0, fz1 - t], true);
+      if (!xs) continue;
+      const sc = Math.abs(xs[0] - 100) + Math.abs(off - bh / 2) * 0.2 + (S2 === pl0.S ? 0 : 5);
+      if (!best || sc < best.sc) best = { sc, off, pl };
+      break;
+    }
+  }
+  const off = best?.off ?? bh / 2;
+  plan = best?.pl ?? shelfPlan(z0, in0, in1, p2.shelves, start, t);
+  const strips = stripsAt(off);
+  const pipe = "rura: wcięcie od tylnej krawędzi wycinasz na miejscu (półkę wkładasz od frontu, więc zamknięty otwór nie nasunie się na pionową rurę)";
+  addCarcass(ctx, {
+    tag: "N",
+    nm: "szafka przy liczniku",
+    x0: g2.x0,
+    x1: g2.x1,
+    z0,
+    z1: g2.zF,
+    dB: g2.dB,
+    W: g2.depth,
+    zS: p2.H_LOW,
+    plan,
+    strips,
+    drawers: { zb, off, bh },
+    backs: "none",
+    pipe,
+    notch: "jeśli przechodzi przez niego rura – wcięcie od tylnej krawędzi wycinasz na miejscu"
+  });
+  const bays = hingeBays(layout, ["N"]);
+  const xs = placeHinges(H, fz0, keepOutOf(bays, t), [bays[0].in0, bays[1].in1]);
+  layout.hinges.N = xs.map((x) => fz0 + x);
+  const a = g2.x0 + (p2.endPanel ? p2.fg : p2.fg / 2), b = g2.x1 - p2.fg / 2;
+  platesFor(sides.N.P, layout.hinges.N);
+  addFront(ctx, { a, b, z0: fz0, z1: fz1, hinge: "P", xs, fd0, code: `N-FR-${r0(b - a)}P`, nameSfx: " – szafka przy liczniku" });
+  // szuflady za drzwiami: listwy dystansowe + skrzynki z płyty 18 mm, dno HDF
+  const L = p2.slide, sT = p2.spacerT, wIn = g2.w - 2 * t;
+  const bw = Math.floor(wIn - 2 * sT - 25.4);
+  const yF = g2.dF - 3, yBk = yF - L, xs0 = g2.x0 + t, xs1 = g2.x1 - t;
+  const instL = [], instS = [], instC = [], instD = [];
+  zb.forEach((z, i) => {
+    const [lo] = strips[i];
+    instL.push([xs0, yBk, lo], [xs1 - sT, yBk, lo]);
+    const xb = xs0 + sT + 12.7;
+    instS.push([xb, yBk, z], [xb + bw - t, yBk, z]);
+    instC.push([xb + t, yBk, z], [xb + t, yF - t, z]);
+    instD.push([xb, yBk, z - 3]);
+    [xs0 + sT, xs1 - sT - 12.7].forEach((x) => fittings.push({ kind: "rail2", x0: x, x1: x + 12.7, d0: yBk, d1: yF, z0: z + off - 22.5, z1: z + off + 22.5 }));
+  });
+  add({ grp: "szuflada", code: "N-LDS", name: "Listwa dystansowa pod prowadnicę – szafka przy liczniku", Lg: L, Wd: sH, qty: 2 * nD, edges: { D1: 0, D2: 0, S1: 0, S2: 0 }, inst: instL, origin: instL[0], faceNote: `przykręcana do boku korpusu 3 wkrętami 4×30 (z wnętrza listwy w bok); przód ${r0(g2.dF - yF)} mm za krawędzią korpusu; na niej prowadnica kulkowa ${L} mm. Odsuwa szufladę o ${sT} mm od boku, żeby minęła zawiasy`, ex: [0, 1, 0], ey: [0, 0, 1], ez: [1, 0, 0] });
+  add({ grp: "szuflada", code: "N-SZB", name: "Bok skrzynki szuflady – szafka przy liczniku", Lg: L, Wd: bh, qty: 2 * nD, edges: { D1: 0, D2: 2, S1: 0, S2: 2 }, inst: instS, origin: instS[0], faceNote: `D2 = krawędź górna, S2 = przód; prowadnica kulkowa ${L} mm przykręcana ${off} mm nad spodem skrzynki (oś). Gdyby rura wystawała więcej, skracasz bok od tyłu`, ex: [0, 1, 0], ey: [0, 0, 1], ez: [1, 0, 0] });
+  add({ grp: "szuflada", code: "N-SZC", name: "Czoło / tył skrzynki szuflady – szafka przy liczniku", Lg: bw - 2 * t, Wd: bh, qty: 2 * nD, edges: { D1: 0, D2: 2, S1: 0, S2: 0 }, inst: instC, origin: instC[0], faceNote: "między bokami skrzynki; 2 konfirmaty przez bok na każdym końcu", ex: [1, 0, 0], ey: [0, 0, 1], ez: [0, 1, 0] });
+  add({ grp: "plecy", code: "N-SZD", name: "Dno skrzynki szuflady – szafka przy liczniku", Lg: L, Wd: bw, qty: nD, t: 3, mat: "HDF 3 mm biała", edges: { D1: 0, D2: 0, S1: 0, S2: 0 }, inst: instD, origin: instD[0], faceNote: "nabijane i klejone od spodu skrzynki; trzyma ją w kącie prostym", ex: [0, 1, 0], ey: [1, 0, 0], ez: [0, 0, 1] });
+  layout.N = { bw, L, yF, yBk, off, zb, strips, bh, backGap: yBk };
+  const ts = Math.max(60, r0(g2.topStrip - p2.fg + 25));
+  add({
+    grp: "blenda",
+    scribe: true,
+      code: "N-COK",
+    name: "Cokół – szafka przy liczniku",
+    Lg: g2.x1 - g2.x0,
+    Wd: p2.plinth,
+    edges: { D1: 0, D2: 2, S1: 0, S2: 2 },
+    faceNote: "D2 = krawędź górna; dolną docinasz do podłogi. Lewy koniec dochodzi do boku maskującego",
+    origin: [g2.x0, fd0 - 1, 0],
+    ex: [1, 0, 0],
+    ey: [0, 0, 1],
+    ez: [0, 1, 0]
+  });
+  add({
+    grp: "blenda",
+    scribe: true,
+      code: "N-LIS",
+    name: "Listwa górna (blenda pod sufitem) – szafka przy liczniku",
+    Lg: g2.x1 - g2.x0,
+    Wd: ts,
+    edges: { D1: 2, D2: 0, S1: 0, S2: 2 },
+    faceNote: "+25 mm zapasu – krawędź D2 docinasz do sufitu; lewy koniec łączysz z bokiem maskującym lamelą nr 0",
+    origin: [g2.x0, fd0, g2.zF + p2.fg],
+    ex: [1, 0, 0],
+    ey: [0, 0, 1],
+    ez: [0, 1, 0]
+  });
+  biscuits.push({ pos: [g2.x0, fd0 + t / 2, g2.zF + p2.fg + 28], a: [0, 0, 1], n: [0, 1, 0], size: 0, joint: "N-LIS ↔ N-BM", parts: ["N-LIS", "N-BM"] });
+  add({
+    grp: "blenda",
+    code: "N-BM",
+    name: "Bok maskujący lewy (od podłogi do sufitu) – szafka przy liczniku",
+    Lg: p2.H_C_max,
+    Wd: fd0 + p2.tF,
+    order: { Lg: 50, Wd: 30 },
+    edges: { D1: 0, D2: 2, S1: 0, S2: 0 },
+    faceNote: "przykręcany od środka korpusu wkrętami 4×30; przednia krawędź (D2, oklejona) równo z licem drzwi. Zamówiony +50 mm na wysokość i +30 mm na głębokość – docinasz do podłogi, sufitu i ściany tylnej",
+    origin: [g2.x0 - t, 0, 0],
+    ex: [0, 0, 1],
+    ey: [0, 1, 0],
+    ez: [1, 0, 0]
+  });
+  return { panels, joints, fittings, biscuits, g: g2, p: p2, layout, opts: { backs: "none" }, alc: 2 };
+}
+// Szafka pod lustrem: blat i dno na całą szerokość (wysunięte przed fronty), boki i przegroda między nimi,
+// trzy szuflady po lewej, drzwi po prawej, cofnięty cokół. Plecy HDF nabijane.
+function buildPanelsC(pc) {
+  const p2 = { ...FIXED, ...pc };
+  const ctx = mkCtx(3, p2), { add, panels, joints, fittings, sides, layout, biscuits } = ctx;
+  const t = p2.t, W = p2.W, Ds = p2.Ds, Dt = Ds + p2.over, yB = 3;
+  const zD = p2.plinthH, zIn0 = zD + t, zIn1 = p2.H - t, hIn = zIn1 - zIn0;
+  const xd = r0(W * p2.divFrac), xdc = xd + t / 2;
+  const wl = xd - t, wr = W - t - (xd + t);
+  const world = (pn, x, y, z) => [0, 1, 2].map((i) => pn.origin[i] + pn.ex[i] * x + pn.ey[i] * y + pn.ez[i] * z);
+  const plate = (code, name, z, edges, note) => add({
+    grp: "korpus",
+    code,
+    name,
+    Lg: W,
+    Wd: Dt,
+    edges,
+    faceNote: note,
+    origin: [0, yB, z],
+    ex: [1, 0, 0],
+    ey: [0, 1, 0],
+    ez: [0, 0, 1]
+  });
+  const blat = plate("S-BLAT", "Blat szafki pod lustrem", zIn1, { D1: 0, D2: 2, S1: 2, S2: 2 }, `wysunięty ${p2.over} mm przed boki, równo z frontami; łączony z bokami i przegrodą na lamele nr 20 i klej – bez łbów konfirmatów na wierzchu`);
+  const dno = plate("S-DNO", "Dno szafki pod lustrem", zD, { D1: 0, D2: 2, S1: 2, S2: 2 }, "wysunięte jak blat; konfirmaty od spodu w boki i przegrodę");
+  const vert = (code, name, x, dir, extra) => add({
+    grp: "korpus",
+    code,
+    name,
+    Lg: hIn,
+    Wd: Ds,
+    edges: { D1: 0, D2: 2, S1: 0, S2: 0 },
+    feats: [50, Ds - 50].map((y) => ({ t: "conf45", x: 0, y, face: "edge" })).concat(extra ?? []),
+    faceNote: "dół: 2 konfirmaty od spodu dna; góra: 2 lamele nr 20 w blat",
+    origin: [x, yB, zIn0],
+    ex: [0, 0, 1],
+    ey: [0, 1, 0],
+    ez: [dir, 0, 0]
+  });
+  const shelfZc = zIn0 + snapHole(hIn / 2 - PIN) + PIN;
+  const shelfHoles = [37, Ds - 20 - 37].map((y) => ({ t: "hole5", x: shelfZc - zIn0 - PIN, y, face: "A" }));
+  const bL = vert("S-BOKL", "Bok lewy szafki pod lustrem", 0, 1);
+  const bP = vert("S-BOKP", "Bok prawy szafki pod lustrem", W, -1, shelfHoles);
+  const prz = vert("S-PRZ", "Przegroda szafki pod lustrem (szuflady | drzwi)", xd + t, -1, shelfHoles);
+  sides.S = { L: bL, P: bP };
+  [bL, bP, prz].forEach((sd) => {
+    [50, Ds - 50].forEach((y) => {
+      const xc = sd === bL ? t / 2 : sd === bP ? W - t / 2 : xd + t / 2;
+      joints.push({ a: [xc, yB + y, zD], b: [xc, yB + y, zD + t + 42], pa: dno.id, pb: sd.id });
+      biscuits.push({ pos: [xc, yB + y + (y < Ds / 2 ? 30 : -30), zIn1], a: [0, 1, 0], n: [1, 0, 0], size: 20, joint: "S-BLAT ↔ boki", parts: ["S-BLAT", sd.code] });
+    });
+  });
+  dno.feats = [t / 2, xd + t / 2, W - t / 2].flatMap((x) => [50, Ds - 50].map((y) => ({ t: "conf7", x, y, face: "B" })));
+  add({
+    grp: "korpus",
+    code: "S-POL",
+    name: "Półka za drzwiami szafki pod lustrem",
+    Lg: wr - 1,
+    Wd: Ds - 20,
+    edges: { D1: 0, D2: 2, S1: 0, S2: 0 },
+    faceNote: "na kołkach ⌀5",
+    origin: [xd + t + 0.5, yB, shelfZc],
+    ex: [1, 0, 0],
+    ey: [0, 1, 0],
+    ez: [0, 0, 1]
+  });
+  add({
+    grp: "plecy",
+    code: "S-PLE",
+    name: "Plecy szafki pod lustrem",
+    Lg: p2.H - zD,
+    Wd: W - 4,
+    t: 3,
+    mat: "HDF 3 mm biała",
+    edges: { D1: 0, D2: 0, S1: 0, S2: 0 },
+    faceNote: "nabijane na tylne krawędzie boków, przegrody, blatu i dna – gwoździki co 100–150 mm; usztywniają szafkę",
+    origin: [2, 0, zD],
+    ex: [0, 0, 1],
+    ey: [1, 0, 0],
+    ez: [0, 1, 0]
+  });
+  // cokół cofnięty: rama z czterech listew
+  const cx0 = p2.plinthSide, cx1 = W - p2.plinthSide, yCF = yB + Dt - p2.plinthIn - t, yCT = yB + 20;
+  [["S-COKP", "Cokół przedni szafki pod lustrem", yCF], ["S-COKT", "Cokół tylny szafki pod lustrem", yCT]].forEach(([code, name, y]) => add({
+    grp: "blenda",
+    code,
+    name,
+    Lg: cx1 - cx0,
+    Wd: p2.plinthH,
+    edges: { D1: 0, D2: 0, S1: 0, S2: 0 },
+    faceNote: `cofnięty ${p2.plinthIn} mm od przodu i ${p2.plinthSide} mm od boków; dno przykręcasz do niego od środka`,
+    origin: [cx0, y, 0],
+    ex: [1, 0, 0],
+    ey: [0, 0, 1],
+    ez: [0, 1, 0]
+  }));
+  add({
+    grp: "blenda",
+    code: "S-COKB",
+    name: "Cokół boczny szafki pod lustrem",
+    Lg: yCF - (yCT + t),
+    Wd: p2.plinthH,
+    qty: 2,
+    edges: { D1: 0, D2: 0, S1: 0, S2: 0 },
+    inst: [[cx0, yCT + t, 0], [cx1 - t, yCT + t, 0]],
+    origin: [cx0, yCT + t, 0],
+    faceNote: "między przednią i tylną listwą cokołu",
+    ex: [0, 1, 0],
+    ey: [0, 0, 1],
+    ez: [1, 0, 0]
+  });
+  // fronty
+  const fd0 = yB + Ds + 2, fz0 = zIn0 + p2.fg, fz1 = zIn1 - p2.fg, gapD = 4;
+  const fh = Math.floor((fz1 - fz0 - (p2.drawers - 1) * gapD) / p2.drawers);
+  const drawerZ = Array.from({ length: p2.drawers }, (_, i) => fz0 + i * (fh + gapD));
+  addFront(ctx, {
+    a: p2.fg / 2,
+    b: xdc - p2.fg / 2,
+    z0: drawerZ[0],
+    z1: drawerZ[0] + fh,
+    fd0,
+    code: `S-FRS`,
+    kind: "szuflada",
+    nameSfx: " – szafka pod lustrem",
+    qty: p2.drawers,
+    inst: drawerZ.map((z) => [p2.fg / 2, fd0, z])
+  });
+  const dz0 = fz0, dz1 = fz1;
+  const xs = placeHinges(dz1 - dz0, dz0, [], [zIn0, zIn1]);
+  layout.hinges.S = xs.map((x) => dz0 + x);
+  platesFor(bP, layout.hinges.S);
+  addFront(ctx, { a: xdc + p2.fg / 2, b: W - p2.fg / 2, z0: dz0, z1: dz1, hinge: "P", xs, fd0, code: `S-FRD`, nameSfx: " – drzwi szafki pod lustrem" });
+  // skrzynki szuflad na prowadnicach kulkowych 250 mm (12,7 mm luzu na stronę)
+  const bw = r0(wl - 25.4), L = p2.slide, bh = p2.boxH;
+  const boxY = yB + Ds - L, xb = t + 12.7;
+  const instS = [], instC = [], instD = [];
+  drawerZ.forEach((z) => {
+    const zb = z + 12;
+    instS.push([xb, boxY, zb], [xb + bw - t, boxY, zb]);
+    instC.push([xb + t, boxY, zb], [xb + t, boxY + L - t, zb]);
+    instD.push([xb, boxY, zb - 3]);
+    [t, xd].forEach((xs2) => fittings.push({ kind: "rail2", x0: xs2 === t ? t : xd - 12.7, x1: xs2 === t ? t + 12.7 : xd, d0: boxY, d1: boxY + L, z0: zb + 20, z1: zb + 55 }));
+    fittings.push({ kind: "knob", x0: xdc / 2 - 15, x1: xdc / 2 + 15, d0: fd0 + p2.tF, d1: fd0 + p2.tF + 25, z0: z + fh / 2 - 15, z1: z + fh / 2 + 15 });
+  });
+  fittings.push({ kind: "knob", x0: xdc + 40, x1: xdc + 70, d0: fd0 + p2.tF, d1: fd0 + p2.tF + 25, z0: (dz0 + dz1) / 2 - 15, z1: (dz0 + dz1) / 2 + 15 });
+  add({ grp: "szuflada", code: "S-SZB", name: "Bok skrzynki szuflady", Lg: L, Wd: bh, qty: 2 * p2.drawers, edges: { D1: 0, D2: 2, S1: 0, S2: 0 }, inst: instS, origin: instS[0], faceNote: "D2 = krawędź górna; prowadnica kulkowa przykręcana do boku", ex: [0, 1, 0], ey: [0, 0, 1], ez: [1, 0, 0] });
+  add({ grp: "szuflada", code: "S-SZC", name: "Czoło / tył skrzynki szuflady", Lg: bw - 2 * t, Wd: bh, qty: 2 * p2.drawers, edges: { D1: 0, D2: 2, S1: 0, S2: 0 }, inst: instC, origin: instC[0], faceNote: "między bokami skrzynki; 2 konfirmaty przez bok na każdym końcu", ex: [1, 0, 0], ey: [0, 0, 1], ez: [0, 1, 0] });
+  add({ grp: "plecy", code: "S-SZD", name: "Dno skrzynki szuflady", Lg: L, Wd: bw, qty: p2.drawers, t: 3, mat: "HDF 3 mm biała", edges: { D1: 0, D2: 0, S1: 0, S2: 0 }, inst: instD, origin: instD[0], faceNote: "nabijane od spodu skrzynki", ex: [0, 1, 0], ey: [1, 0, 0], ez: [0, 0, 1] });
+  layout.C = { W, xd, wl, wr, Dt, Ds, hIn, fh, drawerZ, bw, shelfZc, depthTotal: yB + Dt };
+  return { panels, joints, fittings, biscuits, g: { X_left: 0, X_right: W, zF: p2.H, depth: Dt, W }, p: p2, layout, opts: { backs: "nail" }, alc: 3 };
+}
+function totals(model) {
+  const { panels, joints } = model;
+  let m18 = 0, mHdf = 0, mb = 0, szt = 0, mBial = 0;
+  const holes = { hole5: 0, conf7: 0, conf45: 0, cup35: 0, plate: 0 };
+  for (const q of panels) {
+    const d = orderDims(q), A = d.L * d.W / 1e6 * (q.order?.strip ? 0 : q.qty);
+    q.mat.includes("HDF") ? mHdf += A : m18 += A;
+    if (decorOf(q) === "bial") mBial += A;
+    const e = q.edges || {};
+    mb += ((e.D1 ? q.Lg : 0) + (e.D2 ? q.Lg : 0) + (e.S1 ? q.Wd : 0) + (e.S2 ? q.Wd : 0)) / 1e3 * q.qty;
+    szt += q.qty;
+    for (const f of q.feats) if (holes[f.t] !== void 0) holes[f.t] += q.qty;
+  }
+  const strips = new Map();
+  panels.forEach((q) => q.order?.strip && strips.set(q.order.strip.code, q.order.strip));
+  strips.forEach((s) => m18 += s.L * s.W / 1e6);
+  const grooveMb = panels.reduce((a, q) => a + q.feats.filter((f) => f.t === "groove").reduce((s, f) => s + (f.x1 - f.x0), 0) / 1e3 * q.qty, 0);
+  const bisc = (model.biscuits ?? []).reduce((a, b) => (a[b.size] = (a[b.size] || 0) + 1, a), {});
+  return {
+    m18,
+    mHdf,
+    mBial,
+    mKlon: m18 - mBial,
+    mb,
+    szt,
+    holes,
+    grooveMb,
+    konfirmaty: joints.length,
+    lamele: bisc,
+    korpusow: panels.filter((q) => /-WD$/.test(q.code)).length,
+    zawiasy: panels.filter((q) => q.grp === "front").reduce((a, q) => a + q.feats.filter((f) => f.t === "cup35").length * q.qty, 0),
+    polekKorpus: panels.filter((q) => q.grp === "korpus" && /-POL$/.test(q.code)).reduce((a, q) => a + q.qty, 0),
+    frontow: panels.filter((q) => q.grp === "front").reduce((a, q) => a + q.qty, 0)
+  };
+}
+function warnings(model, meas2) {
+  const { p: p2, g: g2, layout: L } = model, w = [], r = r0;
+  if (g2.deep) {
+    if (g2.sideGap > 6) w.push(`Szafa wychodzi ${r(g2.depth + p2.gapBack - p2.D_wall_L)} mm przed lewą ścianę. Przy wylocie wnęki zostaje szczelina ${r(g2.sideGap)} mm – zamyka ją bok zamykający od podłogi do sufitu, przyklejony na lamele do listewki.`);
+    w.push(`Szafa wystaje ${r(g2.depth + p2.gapBack - p2.D_stub)} mm przed czoło występu; lico frontów ${r(g2.dF + 2 + p2.tF)} mm od ściany. Sprawdź przejście i czy drzwi do pokoju mają się jak otworzyć.`);
+  }
+  if (g2.doorClear < 10) w.push(`Prawy korpus 500 mm + bok maskujący kończą się ${r(g2.doorClear)} mm przed linią drzwi w najwęższym miejscu (pomiar B6 = ${p2.W_R_min} mm). Zmierz jeszcze raz przy opasce, zanim zamówisz.`);
+  let legsNote = null;
+  for (const k of ["L", "R"]) {
+    const nm = k === "L" ? "lewy" : "prawy";
+    const z0 = p2.plinth, z1 = g2.zTop(k), diag = Math.hypot(z1 - z0, g2.depth);
+    if (diag > g2.hc[k] - 40) w.push(`Korpus ${nm} (${r(z1 - z0)} mm) ma przekątną ${r(diag)} mm przy suficie ${r(g2.hc[k])} mm – zapas mniejszy niż 40 mm.`);
+    const dl = Math.hypot(z1, g2.depth);
+    if (dl > g2.hc[k] && !legsNote) legsNote = `Korpusy stawiasz z leżenia bez nóżek: przekątna ${r(diag)} mm przy najniższym suficie ${r(Math.min(g2.hc.L, g2.hc.R))} mm daje ${r(Math.min(g2.hc.L, g2.hc.R) - diag)} mm zapasu. Z nóżkami przekątna rośnie do ${r(dl)} mm i korpus zaczepi o sufit – nóżki wkręcasz po postawieniu: podnośnikiem unosisz na zmianę lewy i prawy bok i podkładasz klocki, a potem wsuwasz korpus do wnęki na płozach.`;
+    const h2 = (z1 - z0) / 1e3, ww = (g2.carc[k][1] - g2.carc[k][0]) / 1e3, dd = g2.depth / 1e3;
+    const kg = (2 * h2 * dd + 3 * ww * dd) * 12 + h2 * ww * 3.5;
+    if (kg > 32) w.push(`Korpus ${nm} w całości waży ok. ${r(kg)} kg – stawiaj go w dwie osoby.`);
+  }
+  if (legsNote) w.push(legsNote);
+  const dC = Math.abs(Math.max(p2.H_C_L_max, p2.H_C_R_max) - g2.zF);
+  if (dC > 8) w.push(`Korpusy i fronty kończą się na ${r(g2.zF)} mm, a sufit sięga ${r(Math.min(p2.H_C_L, p2.H_C_R))}–${r(Math.max(p2.H_C_L_max, p2.H_C_R_max))} mm. Resztę zakrywa listwa górna docinana do sufitu.`);
+  if (g2.deep && p2.beamProj > g2.depth + p2.gapBack - p2.D_stub + 30)
+    w.push(`Podciąg wystaje ${r(p2.beamProj)} mm przed występ, czyli ${r(p2.beamProj - (g2.depth + p2.gapBack - p2.D_stub))} mm przed lico korpusów. Nad niszą zostanie widoczna belka.`);
+  if (p2.BZ_pts) {
+    const v = Object.values(p2.BZ_pts), lo = Math.min(...v), hi = Math.max(...v);
+    if (hi - lo > 10) w.push(`Spód zwisu nie jest płaski: ${r(lo)}–${r(hi)} mm od podłogi. Nisza liczona od najniższego punktu, ${r(p2.BZ)} mm. Przed docięciem pleców niszy zmierz spód zwisu raz laserem od podłogi.`);
+  }
+  return w;
+}
+function warningsB(model, m) {
+  const { p: p2, g: g2, layout: L } = model, w = [], r = r0;
+  const diag = Math.hypot(g2.zF - p2.plinth, g2.depth);
+  w.push(`Korpus ${r(g2.w)} × ${r(g2.zF - p2.plinth)} mm, głębokość ${r(g2.depth)} mm: przekątna ${r(diag)} mm przy suficie min. ${String(p2.H_C).replace(".", ",")} mm – stawianie z leżenia bez kłopotu.`);
+  w.push(`Krawędź korpusu równo z licem ściany, front ${r(g2.dF + 2 + p2.tF - p2.D)} mm przed nim – drzwi z zawiasami od strony ściany otworzą się bez zahaczenia.`);
+  const N = L.N;
+  w.push(`Szuflady na prowadnicach ${N.L} mm kończą się ${r(N.backGap)} mm od ściany. Rura z obejmą może wystawać do ok. ${r(N.backGap - 10)} mm; jeśli wystaje więcej, skracasz boki i dno skrzynek od tyłu i bierzesz krótsze prowadnice.`);
+  w.push(`Skrzynki ${N.bw} mm szerokości = światło ${r(g2.w - 2 * p2.t)} mm minus 2 × ${p2.spacerT} mm listew dystansowych minus 2 × 12,7 mm na prowadnice (zaokrąglone w dół). Luz wyrównujesz podkładką pod prowadnicę (fornir, twarda tektura).`);
+  w.push(`Półki i stała półka sięgają do tylnej krawędzi korpusu (${r(p2.gapBack)} mm od ściany). Tam, gdzie wypada rura, wycinasz w nich wcięcie od tyłu – zamknięty otwór nie nasunie się na pionową rurę.`);
+  w.push(`Bez pleców skrzynia trzyma kąt prosty dopiero po przykręceniu prawego boku do ściany wnęki (przez podkładki ${p2.slack} mm) i wieńca górnego kątownikami do ściany tylnej. Na czas skręcania i stawiania przykręć z tyłu listewkę po skosie, a przed wsunięciem do wnęki ją zdejmij (za korpusem jest 10 mm i rura). Po wsunięciu sprawdź przekątne frontu i od razu przykręć bok i wieniec.`);
+  w.push(`Od ościeżnicy do boku maskującego zostaje ${r(g2.x0 - p2.t)} mm (pomiar 625 mm kończył się ${p2.frameGap} mm przed nią).`);
+  if (typeof m.DG === "number") {
+    const exp = Math.hypot(m.W, m.D, m.H4), hD = Math.sqrt(m.DG ** 2 - m.W ** 2 - m.D ** 2);
+    w.push(`Przekątna D→H ${m.DG} mm odpowiada sufitowi ${r(hD)} mm, a H4 = ${String(m.H4).replace(".", ",")} mm (powinno wyjść ok. ${r(exp)} mm). Projekt liczony z pomiarów H1–H5.`);
+  }
+  return w;
+}
+function warningsC(model) {
+  const { layout: L, p: p2 } = model, w = [], r = r0;
+  w.push(`Szerokość ${r(L.C.W)} mm dobrana tak, żeby szafka zmieściła się w resztkach arkuszy zamówionych na szafy.`);
+  w.push(`Głębokość całkowita ${r(L.C.depthTotal)} mm: korpus ${p2.Ds} mm pod prowadnice kulkowe ${p2.slide} mm, blat i dno wysunięte ${p2.over} mm, żeby zrównać się z frontami, plus plecy 3 mm.`);
+  w.push(`Skrzynki szuflad ${L.C.bw} mm szerokości = światło ${r(L.C.wl)} mm minus 2 × 12,7 mm na prowadnice. Prowadnice kulkowe nie wybaczają błędu: zmierz światło po skręceniu korpusu i jeśli wyjdzie inne, podłóż prowadnicę albo zeszlifuj bok skrzynki.`);
+  return w;
+}
+var SHOP_FEATS = ["cup35", "groove"];
+var SHEET_STD = { L: 2800, W: 2070, trim: 10, kerf: 4.4 };
+function nest(pieces, S2 = SHEET_STD) {
+  const Lu = S2.L - 2 * S2.trim, Wu = S2.W - 2 * S2.trim, k = S2.kerf;
+  const items = [];
+  pieces.forEach((q) => {
+    for (let i = 0; i < q.qty; i++) items.push({ code: q.code, l: q.L, w: q.W });
+  });
+  items.sort((a, b) => b.w - a.w || b.l - a.l);
+  const strips = [];
+  for (const it of items) {
+    let best = null;
+    for (const s of strips) {
+      if (s.w < it.w || s.used + k + it.l > Lu) continue;
+      if (s.w - it.w > Math.max(60, s.w * 0.35)) continue;
+      if (!best || s.w - it.w < best.w - it.w) best = s;
+    }
+    if (!best) {
+      best = { w: it.w, used: -k, parts: [] };
+      strips.push(best);
+    }
+    best.parts.push({ ...it, x: best.used + k });
+    best.used += k + it.l;
+  }
+  strips.sort((a, b) => b.w - a.w);
+  const sheets = [];
+  for (const s of strips) {
+    let sh = sheets.find((h2) => h2.used + k + s.w <= Wu);
+    if (!sh) {
+      sh = { used: -k, strips: [] };
+      sheets.push(sh);
+    }
+    sh.strips.push({ ...s, y: sh.used + k });
+    sh.used += k + s.w;
+  }
+  const area = items.reduce((a, i) => a + i.l * i.w, 0) / 1e6;
+  return { n: sheets.length, area, util: area / (sheets.length * S2.L * S2.W / 1e6 || 1), sheets: sheets.map((sh) => ({ parts: sh.strips.flatMap((st) => st.parts.map((p) => ({ code: p.code, x: S2.trim + p.x, y: S2.trim + st.y, l: p.l, w: p.w }))) })), S: S2 };
+}
+var decorOf = (q) => q.mat.includes("HDF") ? "hdf" : q.grp === "front" ? "bial" : "klon";
+// lista sztuk do rozkroju (wymiary zamówienia, listwy zamiast drobnicy)
+function cutPieces(panels) {
+  const out = [], seen = new Set();
+  panels.forEach((q) => {
+    const dec = decorOf(q);
+    if (q.order?.strip) {
+      const s = q.order.strip;
+      if (seen.has(s.code)) return;
+      seen.add(s.code);
+      out.push({ dec, code: s.code, L: s.L, W: s.W, qty: 1 });
+      return;
+    }
+    const d = orderDims(q);
+    out.push({ dec, code: q.code, L: d.L, W: d.W, qty: q.qty });
+  });
+  return out;
+}
+function nestAll(model) {
+  if (typeof NEST_DATA !== "undefined" && model.all) return NEST_DATA;
+  const out = {}, pcs = cutPieces(model.panels);
+  for (const d of ["klon", "bial", "hdf"]) {
+    const sel = pcs.filter((q) => q.dec === d);
+    out[d] = sel.length ? nest(sel) : { sheets: [], n: 0, area: 0, util: 0, S: SHEET_STD };
+  }
+  return out;
+}
+// wymiar do zamówienia: docelowy (z okleiną) plus ewentualny zapas na docięcie na miejscu
+var orderDims = (q) => q.order?.strip ? { L: q.order.strip.L, W: q.order.strip.W } : { L: r0(q.Lg + (q.order?.Lg ?? 0)), W: r0(q.Wd + (q.order?.Wd ?? 0)) };
+function orderRows(panels) {
+  const groups = { klon: [], bial: [], hdf: [] }, map = /* @__PURE__ */ new Map();
+  for (const q of panels) {
+    const dec = decorOf(q), e = q.edges || {}, d = orderDims(q), strip = q.order?.strip;
+    const eD = strip ? 1 : (e.D1 ? 1 : 0) + (e.D2 ? 1 : 0), eS = strip ? 0 : (e.S1 ? 1 : 0) + (e.S2 ? 1 : 0);
+    const felc = (q.feats || []).some((f) => f.t === "groove");
+    const cups = (q.feats || []).filter((f) => f.t === "cup35").length;
+    const zapas = !!q.order || !!q.scribe;
+    const key = strip ? "strip|" + strip.code : [dec, d.L, d.W, eD, eS, felc, cups].join("|");
+    let row = map.get(key);
+    if (!row) {
+      row = { dec, L: d.L, W: d.W, eD, eS, felc, cups, zapas: false, qty: 0, items: [], strip: strip ?? null };
+      map.set(key, row);
+      groups[dec].push(row);
+    }
+    row.qty = strip ? 1 : row.qty + q.qty;
+    row.zapas ||= zapas;
+    row.items.push({ code: q.code, name: q.name, qty: q.qty, alc: q.alc });
+  }
+  let lp = 1;
+  groups.klon.forEach((r) => r.lp = lp++);
+  groups.bial.forEach((r) => r.lp = lp++);
+  groups.hdf.forEach((r, i) => r.lp = "H" + (i + 1));
+  return groups;
+}
+var edgeText = (pn) => {
+  const on = Object.entries(pn.edges || {}).filter(([, v]) => v).map(([k]) => k);
+  return on.length ? on.join(" + ") : "—";
+};
+function drillText(pn) {
+  const f = pn.feats || [], out = [];
+  const uniq = (a) => [...new Set(a.map((v) => Math.round(v)))].sort((x, y) => x - y);
+  const grp = (t) => f.filter((q) => q.t === t);
+  const h5 = grp("hole5");
+  if (h5.length) {
+    const xs = uniq(h5.map((q) => q.x)), ys = uniq(h5.map((q) => q.y));
+    out.push(`${h5.length} × ⌀5×10 mm pod kołki półek: ${ys.length} rzędy w osi ${ys.map((v) => v < pn.Wd / 2 ? `${v} mm od D1` : `${pn.Wd - v} mm od D2`).join(" i ")}, na ${xs.join(" / ")} mm od S1 (siatka 32 mm)`);
+  }
+  const c7 = grp("conf7");
+  if (c7.length) out.push(`${c7.length} × ⌀7 przelotowy (konfirmat): na ${uniq(c7.map((q) => q.x)).join(" / ")} mm od S1, w osiach ${uniq(c7.map((q) => q.y)).join(" / ")} mm od D1`);
+  const c45 = grp("conf45");
+  if (c45.length) out.push(`${c45.length} × ⌀4,5×40 mm w czołach, w osiach ${uniq(c45.map((q) => q.y)).join(" / ")} mm od D1`);
+  const cu = grp("cup35");
+  if (cu.length) out.push(`${cu.length} × puszka ⌀35×13 mm na licu B, oś 22,5 mm od dłuższej krawędzi, na ${uniq(cu.map((q) => q.x)).join(" / ")} mm od S1 (robi zakład)`);
+  const pl = grp("plate");
+  if (pl.length) out.push(`${pl.length} × ⌀3×10 mm pilot pod prowadniki zawiasów (po 2 na prowadnik, co 32 mm): w osi 37 mm od D2, na ${uniq(pl.map((q) => q.x)).join(" / ")} mm od S1 – dopasuj do rozstawu puszek z zakładu`);
+  if (grp("groove").length) out.push("felc (rowek) 4×10 mm w licu A, 10 mm od tylnej krawędzi D1, na całej długości (robi zakład)");
+  return out;
+}
+function featBadge(pn) {
+  const c = {};
+  (pn.feats || []).forEach((q) => c[q.t] = (c[q.t] || 0) + 1);
+  const m = { hole5: "⌀5", conf7: "⌀7", conf45: "⌀4,5", cup35: "⌀35", plate: "⌀3", groove: "felc" };
+  return Object.entries(c).map(([k, v]) => k === "groove" ? "felc" : `${v}×${m[k] || k}`).join(" · ") || "—";
+}
+var P = derive(SHEET, SETTINGS);
+var PB = deriveB(SHEET_B, SETTINGS_B, geometry(P).zF);
+var PC = SETTINGS_C;
+var cache = /* @__PURE__ */ new Map();
+function makeModel(opts = {}) {
+  const o = { ...DEFAULT_OPTS, ...opts }, key = "A" + JSON.stringify(o);
+  if (!cache.has(key)) {
+    const model = buildPanels(P, o);
+    cache.set(key, { model, T: totals(model), warnings: warnings(model, SHEET) });
+  }
+  return cache.get(key);
+}
+function makeModelB() {
+  if (!cache.has("B")) {
+    const model = buildPanelsB(PB);
+    cache.set("B", { model, T: totals(model), warnings: warningsB(model, SHEET_B) });
+  }
+  return cache.get("B");
+}
+function makeModelC() {
+  if (!cache.has("C")) {
+    const model = buildPanelsC(PC);
+    cache.set("C", { model, T: totals(model), warnings: warningsC(model) });
+  }
+  return cache.get("C");
+}
+function makeAll() {
+  if (!cache.has("ALL")) {
+    const a = makeModel().model, b = makeModelB().model, c = makeModelC().model;
+    const model = { all: true, panels: [...a.panels, ...b.panels, ...c.panels], joints: [...a.joints, ...b.joints, ...c.joints], biscuits: [...a.biscuits, ...b.biscuits, ...c.biscuits], fittings: [], g: a.g, p: a.p, layout: a.layout, A: a, B: b, C: c };
+    cache.set("ALL", { model, T: totals(model), nest: nestAll(model), rows: orderRows(model.panels), pieces: cutPieces(model.panels) });
+  }
+  return cache.get("ALL");
+}
+var { model: MODEL, T, warnings: WARNINGS } = makeModel();
+var MODEL_B = makeModelB().model;
+var MODEL_C = makeModelC().model;
+
+// measures.js
+var GROUPS = {
+  A: { color: "#d62728", name: "A \u2013 szeroko\u015B\u0107 lewej wn\u0119ki" },
+  B: { color: "#d62728", name: "B \u2013 szeroko\u015B\u0107 prawej wn\u0119ki (do linii drzwi)" },
+  C: { color: "#1f5fd6", name: "C \u2013 g\u0142\u0119boko\u015B\u0107" },
+  E: { color: "#1a9e3a", name: "E \u2013 wysoko\u015B\u0107 pod\u0142oga \u2192 sufit" },
+  F: { color: "#ff8c00", name: "F \u2013 przek\u0105tne otworu" },
+  G: { color: "#00898c", name: "G \u2013 wyst\u0119p i zwis (podci\u0105g)" }
+};
+var AT = ["przy pod\u0142odze", "w \u015Brodku", "u g\xF3ry"];
+function measureDefs(p2) {
+  const S0 = p2.W_L, S1 = S0 + p2.T_S, DRt = S1 + p2.W_R_tot, D = p2.D;
+  const z = [100, 1200, Math.max(400, Math.min(p2.H_C_L, p2.H_C_R) - 140)];
+  const L = [];
+  const add = (id, g2, desc, a, b, opt = false) => L.push({ id, g: g2, desc, a, b, opt });
+  z.forEach((zz, i) => {
+    add("A" + (i + 1), "A", `Lewa: szeroko\u015B\u0107 przy froncie, ${AT[i]}`, [0, D - 40, zz], [S0, D - 40, zz]);
+    add("A" + (i + 4), "A", `Lewa: szeroko\u015B\u0107 przy \u015Bcianie tylnej, ${AT[i]}`, [0, 40, zz], [S0, 40, zz]);
+    add("B" + (i + 1), "B", `Prawa: szeroko\u015B\u0107 przy froncie, ${AT[i]}`, [S1, D - 40, zz], [DRt, D - 40, zz]);
+    add("B" + (i + 4), "B", `Prawa: szeroko\u015B\u0107 przy \u015Bcianie tylnej, ${AT[i]}`, [S1, 40, zz], [DRt, 40, zz]);
+    add("C" + (i + 1), "C", `G\u0142\u0119boko\u015B\u0107 przy lewej \u015Bcianie, ${AT[i]}`, [30, 0, zz], [30, D, zz]);
+    add("C" + (i + 4), "C", `G\u0142\u0119boko\u015B\u0107 przy wyst\u0119pie od lewej, ${AT[i]}`, [S0 - 30, 0, zz], [S0 - 30, D, zz]);
+    add("C" + (i + 7), "C", `G\u0142\u0119boko\u015B\u0107 przy wyst\u0119pie od prawej, ${AT[i]}`, [S1 + 30, 0, zz], [S1 + 30, D, zz]);
+    add("C" + (i + 10), "C", `G\u0142\u0119boko\u015B\u0107 przy linii drzwi, ${AT[i]}`, [DRt - 30, 0, zz], [DRt - 30, D, zz]);
+  });
+  ["d", "s", "g"].forEach((k, i) => add("G1" + k, "G", `Szeroko\u015B\u0107 czo\u0142a wyst\u0119pu, ${AT[i]}`, [S0, D + 10, z[i]], [S1, D + 10, z[i]]));
+  const EC = [
+    [40, 60, "ty\u0142, przy lewej \u015Bcianie"],
+    [S0 - 40, 60, "ty\u0142, przy wyst\u0119pie"],
+    [40, D - 60, "prz\xF3d, przy lewej \u015Bcianie"],
+    [S0 - 40, D - 60, "prz\xF3d, przy wyst\u0119pie"]
+  ];
+  EC.forEach(([x, d, n], i) => add("EL" + (i + 1), "E", `Lewa wn\u0119ka: pod\u0142oga \u2192 sufit, ${n}`, [x, d, 0], [x, d, p2.H_C_L]));
+  const RC = [
+    [S1 + 40, 60, "ty\u0142, przy wyst\u0119pie"],
+    [DRt - 40, 60, "ty\u0142, przy drzwiach"],
+    [S1 + 40, D - 60, "prz\xF3d, przy wyst\u0119pie"],
+    [DRt - 40, D - 60, "prz\xF3d, przy drzwiach"]
+  ];
+  RC.forEach(([x, d, n], i) => add("ER" + (i + 1), "E", `Prawa wn\u0119ka: pod\u0142oga \u2192 sufit, ${n}`, [x, d, 0], [x, d, p2.H_C_R]));
+  const bd = D + p2.beamProj * 0.5;
+  add("BZL", "G", "Lewa: pod\u0142oga \u2192 sp\xF3d podci\u0105gu (pomiar bezpo\u015Bredni)", [S0 - 40, bd, 0], [S0 - 40, bd, p2.BZ_L], true);
+  add("BZR", "G", "Prawa: pod\u0142oga \u2192 sp\xF3d podci\u0105gu (pomiar bezpo\u015Bredni)", [S1 + 40, bd, 0], [S1 + 40, bd, p2.BZ_R], true);
+  const yw = p2.D_stub + 30, yf = p2.D_stub + p2.beamProj - 15, bp = p2.BZ_pts ?? {};
+  add("G2Lw", "G", "Zwis, lewy bok: sufit \u2192 sp\xF3d, przy \u015Bcianie", [S0 - 15, yw, p2.H_C_L], [S0 - 15, yw, bp.Lw ?? p2.BZ_L]);
+  add("G2Lf", "G", "Zwis, lewy bok: sufit \u2192 sp\xF3d, w p\u0142aszczy\u017Anie czo\u0142a", [S0 - 15, yf, p2.H_C_L], [S0 - 15, yf, bp.Lf ?? p2.BZ_L]);
+  add("G2Rw", "G", "Zwis, prawy bok: sufit \u2192 sp\xF3d, przy \u015Bcianie", [S1 + 15, yw, p2.H_C_R], [S1 + 15, yw, bp.Rw ?? p2.BZ_R]);
+  add("G2Rf", "G", "Zwis, prawy bok: sufit \u2192 sp\xF3d, w p\u0142aszczy\u017Anie czo\u0142a", [S1 + 15, yf, p2.H_C_R], [S1 + 15, yf, bp.Rf ?? p2.BZ_R]);
+  add("G3L", "G", "Lewa: g\u0142\u0119boko\u015B\u0107 podci\u0105gu (prz\xF3d \u2192 ty\u0142)", [S0 / 2, p2.D_stub, p2.BZ_L - 10], [S0 / 2, p2.D_stub + p2.beamProj, p2.BZ_L - 10], true);
+  add("F1", "F", "Lewa, front: d\xF3\u0142 przy \u015Bcianie \u2192 g\xF3ra przy wyst\u0119pie", [0, D, 0], [S0, D, p2.H_C_L]);
+  add("F2", "F", "Lewa, front: d\xF3\u0142 przy wyst\u0119pie \u2192 g\xF3ra przy \u015Bcianie", [S0, D, 0], [0, D, p2.H_C_L]);
+  add("F3", "F", "Prawa: przek\u0105tna otworu (opcjonalna)", [S1, D, 0], [DRt, D, p2.H_C_R], true);
+  add("F4", "F", "Prawa: przek\u0105tna w drug\u0105 stron\u0119 (opcjonalna)", [DRt, D, 0], [S1, D, p2.H_C_R], true);
+  return L;
+}
+function spread(meas2, ids) {
+  const v = ids.map((i) => meas2[i]).filter((x) => typeof x === "number");
+  return v.length > 1 ? { min: Math.min(...v), max: Math.max(...v), n: v.length } : null;
+}
+var GROUPS_B = {
+  A: { color: "#d62728", name: "Szerokość wnęki" },
+  C: { color: "#1f5fd6", name: "Głębokość" },
+  E: { color: "#1a9e3a", name: "Podłoga → sufit, H1–H5" },
+  F: { color: "#ff8c00", name: "Przekątna D → H" }
+};
+function measureDefsB(p2, m) {
+  const xL = p2.frameGap, xR = p2.xWall, D = p2.D, L = [];
+  const add = (id, g2, desc, a, b) => L.push({ id, g: g2, desc, a, b, opt: false });
+  add("W", "A", "Szerokość: od ściany bocznej do punktu 50 mm przed ościeżnicą", [xL, D - 40, 1e3], [xR, D - 40, 1e3]);
+  add("D", "C", "Głębokość przy ścianie bocznej", [xR - 40, 0, 1e3], [xR - 40, D, 1e3]);
+  [
+    ["H1", xL + 90, 60, "tył, od strony drzwi"],
+    ["H5", xR - 90, 60, "tył, przy ścianie"],
+    ["H2", xL + 90, D - 60, "prz\xF3d, od strony drzwi"],
+    ["H3", (xL + xR) / 2, D - 60, "prz\xF3d, środek"],
+    ["H4", xR - 90, D - 60, "prz\xF3d, przy ścianie"]
+  ].forEach(([id, x, d, n]) => add(id, "E", `Podłoga → sufit, ${n}`, [x, d, 0], [x, d, m[id]]));
+  add("DG", "F", "Przekątna: dolny r\xF3g D (tył, od strony drzwi) → g\xF3rny r\xF3g H (prz\xF3d, przy ścianie)", [xL, 0, 0], [xR, D, m.H4]);
+  return L;
+}
+
+// scene.js
+import * as THREE from "three";
+var S = 1e-3;
+var SWAP = new THREE.Matrix4().set(S, 0, 0, 0, 0, 0, S, 0, 0, S, 0, 0, 0, 0, 0, 1);
+var P2 = ([x, d, z]) => new THREE.Vector3(x, d, z);
+var MAT = {
+  wall: new THREE.MeshLambertMaterial({ color: 13948624, transparent: true, opacity: 0.3, side: THREE.DoubleSide, depthWrite: false }),
+  struct: new THREE.MeshLambertMaterial({ color: 11119782, transparent: true, opacity: 0.5, depthWrite: false }),
+  floor: new THREE.MeshLambertMaterial({ color: 13617595 }),
+  klon: new THREE.MeshLambertMaterial({ color: 0xdcc39a }),
+  bial: new THREE.MeshLambertMaterial({ color: 0xf4f2ee }),
+  hdf: new THREE.MeshLambertMaterial({ color: 0xe9e7e1, side: THREE.DoubleSide }),
+  band: new THREE.MeshBasicMaterial({ color: 9076582, side: THREE.DoubleSide }),
+  rail: new THREE.MeshLambertMaterial({ color: 10134440 }),
+  plinth: new THREE.MeshLambertMaterial({ color: 5592405 }),
+  groove: new THREE.MeshLambertMaterial({ color: 7040884 }),
+  frame: new THREE.MeshLambertMaterial({ color: 15659742 }),
+  door: new THREE.MeshLambertMaterial({ color: 11841960, transparent: true, opacity: 0.55, depthWrite: false }),
+  basket: new THREE.MeshLambertMaterial({ color: 0xc9d0d6, transparent: true, opacity: 0.55, depthWrite: false }),
+  knob: new THREE.MeshLambertMaterial({ color: 0x6f6a62 }),
+  mirror: new THREE.MeshLambertMaterial({ color: 0xbcd0d8 }),
+  biscuit: new THREE.MeshLambertMaterial({ color: 0xc8955a })
+};
+// surowa krawędź płyty wiórowej: drobne wióry na beżowym tle
+var CHIP = (() => {
+  const c = document.createElement("canvas");
+  c.width = c.height = 64;
+  const x = c.getContext("2d");
+  x.fillStyle = "#b99c70";
+  x.fillRect(0, 0, 64, 64);
+  let s = 7;
+  const rnd = () => (s = s * 16807 % 2147483647) / 2147483647;
+  for (let i = 0; i < 260; i++) {
+    const v = rnd();
+    x.fillStyle = v < 0.45 ? "#8f7148" : v < 0.8 ? "#d9c39b" : "#6e5636";
+    x.fillRect(rnd() * 64, rnd() * 64, 1 + rnd() * 2.5, 1 + rnd() * 1.5);
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  return new THREE.MeshLambertMaterial({ map: t });
+})();
+var matFor = (pn) => MAT[decorOf(pn)] || MAT.klon;
+var EDGE = new THREE.LineBasicMaterial({ color: 4869973, transparent: true, opacity: 0.55 });
+function panelMesh(pn, showFeats = true) {
+  const g2 = new THREE.Group(), { Lg: L, Wd: W, t } = pn;
+  const lico = matFor(pn), hdf = pn.mat.includes("HDF");
+  const bg = new THREE.BoxGeometry(L, W, t);
+  // UV w milimetrach / 40, żeby wióry miały tę samą skalę na każdej krawędzi
+  const uv = bg.attributes.uv, dims = [[t, W], [t, W], [L, t], [L, t], [L, W], [L, W]];
+  for (let f = 0; f < 6; f++) for (let v = 0; v < 4; v++) {
+    const i = f * 4 + v;
+    uv.setXY(i, uv.getX(i) * dims[f][0] / 40, uv.getY(i) * dims[f][1] / 40);
+  }
+  const e = pn.edges || {}, ed = (k) => hdf ? lico : e[k] ? lico : CHIP;
+  const bm = new THREE.Mesh(bg, [ed("S2"), ed("S1"), ed("D2"), ed("D1"), lico, lico]);
+  bm.position.set(L / 2, W / 2, t / 2);
+  g2.add(bm);
+  bm.add(new THREE.LineSegments(new THREE.EdgesGeometry(bg), EDGE));
+  if (!showFeats) return g2;
+  for (const f of pn.feats || []) {
+    if (f.t === "groove") {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(f.x1 - f.x0, f.y1 - f.y0, f.depth), MAT.groove);
+      m.position.set((f.x0 + f.x1) / 2, (f.y0 + f.y1) / 2, t - f.depth / 2);
+      g2.add(m);
+      continue;
+    }
+    const h2 = HOLE[f.t];
+    if (!h2) continue;
+    const disc = new THREE.Mesh(new THREE.CircleGeometry(h2.d / 2, 20), new THREE.MeshBasicMaterial({ color: h2.color, side: THREE.DoubleSide }));
+    if (f.face === "A") disc.position.set(f.x, f.y, t + 0.5);
+    else if (f.face === "B") {
+      disc.position.set(f.x, f.y, -0.5);
+      disc.rotation.x = Math.PI;
+    } else {
+      const s = f.x < L / 2 ? -1 : 1;
+      disc.position.set(f.x + s * 0.5, f.y, t / 2);
+      disc.rotation.y = s * Math.PI / 2;
+    }
+    g2.add(disc);
+    if (f.t === "conf7") {
+      const c = new THREE.Mesh(new THREE.CylinderGeometry(h2.d / 2, h2.d / 2, t + 1, 12), new THREE.MeshBasicMaterial({ color: h2.color }));
+      c.rotation.x = Math.PI / 2;
+      c.position.set(f.x, f.y, t / 2);
+      g2.add(c);
+    }
+    if (f.t === "cup35") {
+      const c = new THREE.Mesh(new THREE.CylinderGeometry(h2.d / 2, h2.d / 2, h2.depth, 20), new THREE.MeshLambertMaterial({ color: 3494015 }));
+      c.rotation.x = Math.PI / 2;
+      c.position.set(f.x, f.y, h2.depth / 2);
+      g2.add(c);
+    }
+  }
+  return g2;
+}
+// lamela: spłaszczona elipsoida; a = oś długa, n = normalna (grubość 4 mm)
+function biscuitMatrix(b) {
+  const B = BISCUIT[b.size], ax = new THREE.Vector3(...b.a).normalize(), az = new THREE.Vector3(...b.n).normalize();
+  const ay = new THREE.Vector3().crossVectors(az, ax);
+  const m = new THREE.Matrix4().makeBasis(ax.multiplyScalar(B.L / 2), ay.multiplyScalar(B.W / 2), az.multiplyScalar(2));
+  m.setPosition(...b.pos);
+  return m;
+}
+var BISC_GEO = new THREE.SphereGeometry(1, 20, 10);
+function biscuitMesh(b) {
+  const m = new THREE.Mesh(BISC_GEO, MAT.biscuit);
+  m.matrixAutoUpdate = false;
+  m.matrix.copy(biscuitMatrix(b));
+  m.renderOrder = 6;
+  return m;
+}
+function wardrobeGroup(model, { fronts = true, open = 0 } = {}) {
+  const grp = new THREE.Group();
+  grp.name = "ward";
+  const ang = open * Math.PI / 2;
+  for (const pn of model.panels) {
+    for (const org of pn.inst) {
+      const holder = new THREE.Group();
+      holder.matrixAutoUpdate = false;
+      holder.matrix.copy(panelMatrix(pn, org));
+      holder.add(panelMesh(pn, false));
+      if (pn.grp === "front") {
+        holder.userData.isFront = true;
+        holder.visible = fronts;
+        if (ang && pn.hinge) {
+          const pivot = new THREE.Group();
+          pivot.userData.isFront = true;
+          pivot.visible = fronts;
+          const wX = Math.abs(pn.ex[0]) * pn.Lg + Math.abs(pn.ey[0]) * pn.Wd;
+          const hx = pn.hinge === "L" ? org[0] : org[0] + wX;
+          pivot.position.set(hx, org[1], 0);
+          holder.matrix.setPosition(org[0] - hx, 0, org[2]);
+          pivot.rotation.z = (pn.hinge === "L" ? 1 : -1) * ang;
+          pivot.add(holder);
+          grp.add(pivot);
+          continue;
+        }
+      }
+      grp.add(holder);
+    }
+  }
+  for (const f of model.fittings) {
+    const mat = { rail: MAT.rail, rail2: MAT.rail, basket: MAT.basket, knob: MAT.knob }[f.kind] || MAT.plinth;
+    const m = box(f.x0, f.x1, f.d0, f.d1, f.z0, f.z1, mat, f.kind !== "basket");
+    if (f.kind === "knob") {
+      m.userData.isFront = true;
+      m.visible = fronts && !open;
+    }
+    grp.add(m);
+  }
+  return grp;
+}
+function roomGroupC(model) {
+  const room = new THREE.Group();
+  room.name = "room";
+  const W = model.p.W, XL = -350, XR = W + 350, DE = 650, HC = 1800;
+  const put = (m) => room.add(m);
+  put(box(XL, XR, -10, DE, -30, 0, MAT.floor, false));
+  const wall = box(XL, XR, -120, 0, 0, HC, MAT.wall, false);
+  wall.userData.isWall = true;
+  put(wall);
+  put(box(W * 0.15, W * 0.85, -2, 4, 850, 1550, MAT.mirror));
+  return room;
+}
+function makeViewer(canvas) {
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(35, 1, 0.01, 200);
+  scene.add(new THREE.HemisphereLight(16777215, 12104356, 0.9));
+  const sun = new THREE.DirectionalLight(16777215, 0.5);
+  sun.position.set(-1.5, 3, 4);
+  scene.add(sun);
+  const st = { th: -0.5, ph: 1.3, dist: 6, tgt: new THREE.Vector3(), home: new THREE.Vector3() };
+  const place = () => {
+    camera.position.set(
+      st.tgt.x + st.dist * Math.sin(st.ph) * Math.sin(st.th),
+      st.tgt.y + st.dist * Math.cos(st.ph),
+      st.tgt.z + st.dist * Math.sin(st.ph) * Math.cos(st.th)
+    );
+    camera.lookAt(st.tgt);
+  };
+  const size = () => {
+    const r = canvas.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    renderer.setSize(r.width, r.height, false);
+    camera.aspect = r.width / r.height;
+    camera.updateProjectionMatrix();
+  };
+  const frame = (obj, pad = 1.2) => {
+    const box2 = new THREE.Box3().setFromObject(obj);
+    if (box2.isEmpty()) return;
+    box2.getCenter(st.tgt);
+    st.home.copy(st.tgt);
+    const s = box2.getSize(new THREE.Vector3()), tv = Math.tan(35 * Math.PI / 360);
+    st.dist = Math.max(s.y / 2 / tv, Math.max(s.x, s.z) / 2 / (tv * Math.max(camera.aspect, 0.5))) * pad + Math.max(s.x, s.y, s.z) * 0.25;
+    place();
+  };
+  const pan = (dx, dy) => {
+    const step = st.dist * 0.09;
+    const r = new THREE.Vector3().setFromMatrixColumn(camera.matrix, 0);
+    r.y = 0;
+    if (r.lengthSq() < 1e-6) r.set(1, 0, 0);
+    r.normalize();
+    st.tgt.addScaledVector(r, dx * step);
+    st.tgt.y += dy * step;
+    place();
+  };
+  const recenter = () => {
+    st.tgt.copy(st.home);
+    place();
+  };
+  const setView = (v) => {
+    const b = new THREE.Box3().setFromObject(scene);
+    if (v === "front") {
+      st.th = 0;
+      st.ph = Math.PI / 2;
+    }
+    if (v === "side") {
+      st.th = Math.PI / 2;
+      st.ph = Math.PI / 2;
+    }
+    if (v === "top") {
+      st.th = 0;
+      st.ph = 0.16;
+    }
+    if (v === "3d") {
+      st.th = -0.5;
+      st.ph = 1.3;
+    }
+    if (!b.isEmpty()) frame(scene, v === "3d" ? camera.aspect > 1.3 ? 1.06 : 1.3 : 1.05);
+    place();
+  };
+  const dolly = (f) => {
+    st.dist = Math.min(Math.max(st.dist * f, 0.15), 40);
+    place();
+  };
+  const ptrs = /* @__PURE__ */ new Map();
+  let pinch = 0, d0 = 0, moved = 0, tap = null;
+  const onTap = { fn: null };
+  canvas.addEventListener("pointerdown", (e) => {
+    canvas.setPointerCapture(e.pointerId);
+    ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (ptrs.size === 1) {
+      moved = 0;
+      tap = { x: e.clientX, y: e.clientY };
+    }
+    if (ptrs.size === 2) {
+      const [a, b] = [...ptrs.values()];
+      pinch = Math.hypot(a.x - b.x, a.y - b.y);
+      d0 = st.dist;
+      tap = null;
+    }
+  });
+  canvas.addEventListener("pointermove", (e) => {
+    if (!ptrs.has(e.pointerId)) return;
+    const pr = ptrs.get(e.pointerId), dx = e.clientX - pr.x, dy = e.clientY - pr.y;
+    ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    moved += Math.abs(dx) + Math.abs(dy);
+    if (ptrs.size === 1) {
+      st.th -= dx * 8e-3;
+      st.ph = Math.min(Math.max(st.ph - dy * 8e-3, 0.08), Math.PI - 0.08);
+    } else {
+      const [a, b] = [...ptrs.values()], d = Math.hypot(a.x - b.x, a.y - b.y);
+      if (pinch) st.dist = Math.min(Math.max(d0 * pinch / d, 0.15), 40);
+    }
+    place();
+  });
+  const up = (e) => {
+    if (ptrs.size === 1 && moved < 9 && tap && onTap.fn) onTap.fn(tap.x, tap.y);
+    ptrs.delete(e.pointerId);
+    pinch = 0;
+    tap = null;
+  };
+  canvas.addEventListener("pointerup", up);
+  canvas.addEventListener("pointercancel", (e) => {
+    ptrs.delete(e.pointerId);
+    pinch = 0;
+  });
+  canvas.addEventListener("wheel", (e) => {
+    e.preventDefault();
+    st.dist = Math.min(Math.max(st.dist * Math.exp(e.deltaY * 1e-3), 0.15), 40);
+    place();
+  }, { passive: false });
+  let alive = true;
+  (function loop() {
+    if (alive) renderer.render(scene, camera);
+    requestAnimationFrame(loop);
+  })();
+  return {
+    scene,
+    camera,
+    renderer,
+    state: st,
+    place,
+    size,
+    frame,
+    pan,
+    recenter,
+    setView,
+    dolly,
+    onTap,
+    clear() {
+      [...scene.children].forEach((o) => {
+        if (o.isLight) return;
+        scene.remove(o);
+        o.traverse?.((c) => c.geometry?.dispose());
+      });
+    },
+    dispose() {
+      alive = false;
+      renderer.dispose();
+    }
+  };
+}
+var panelMatrix = (pn, origin) => {
+  const [ox, od, oz] = origin ?? pn.origin;
+  return new THREE.Matrix4().set(
+    pn.ex[0],
+    pn.ey[0],
+    pn.ez[0],
+    ox,
+    pn.ex[1],
+    pn.ey[1],
+    pn.ez[1],
+    od,
+    pn.ex[2],
+    pn.ey[2],
+    pn.ez[2],
+    oz,
+    0,
+    0,
+    0,
+    1
+  );
+};
+var panelCenter = (pn, origin) => {
+  const o = origin ?? pn.origin;
+  return [0, 1, 2].map((i) => o[i] + pn.ex[i] * pn.Lg / 2 + pn.ey[i] * pn.Wd / 2 + pn.ez[i] * pn.t / 2);
+};
+var box = (x0, x1, d0, d1, z0, z1, mat, edges = true) => {
+  const g2 = new THREE.BoxGeometry(Math.max(1, x1 - x0), Math.max(1, d1 - d0), Math.max(1, z1 - z0));
+  const m = new THREE.Mesh(g2, mat);
+  m.position.set((x0 + x1) / 2, (d0 + d1) / 2, (z0 + z1) / 2);
+  if (edges) m.add(new THREE.LineSegments(new THREE.EdgesGeometry(g2), EDGE));
+  return m;
+};
+function roomGroup(p2, g2) {
+  const room = new THREE.Group();
+  room.name = "room";
+  const HC = Math.max(p2.H_C_L, p2.H_C_R) + 40;
+  const XE = g2.DRt + 1300, DE = g2.dF + 1200, W = 120, dx0 = g2.DRt + 70, dx1 = dx0 + 800;
+  const put = (m) => room.add(m);
+  put(box(-W, XE, -10, DE, -30, 0, MAT.floor, false));
+  [[-W, dx0, 0, HC], [dx1, XE, 0, HC], [dx0, dx1, 2050, HC]].forEach(([a, b, z0, z1]) => put(box(a, b, -W, 0, z0, z1, MAT.wall, false)));
+  put(box(-W, 0, 0, p2.D_wall_L, 0, HC, MAT.wall, false));
+  put(box(g2.S0, g2.S1, 0, p2.D_stub, 0, HC, MAT.struct));
+  put(box(g2.S0, g2.S1, p2.D_stub, p2.D_stub + p2.beamProj, p2.BZ, HC, MAT.struct));
+  room.children.forEach((m) => {
+    if (m.material === MAT.wall) m.userData.isWall = true;
+  });
+  return room;
+}
+function measureGroup(defs, meas2, groups, { showTodo = true, shown = {} } = {}) {
+  const g2 = new THREE.Group();
+  g2.name = "meas";
+  const hits = [];
+  const seg = (a, b, color, dashed) => {
+    const geo = new THREE.BufferGeometry().setFromPoints([P2(a), P2(b)]);
+    const m = dashed ? new THREE.LineDashedMaterial({ color, dashSize: 0.045, gapSize: 0.03, depthTest: false }) : new THREE.LineBasicMaterial({ color, depthTest: false });
+    const l = new THREE.Line(geo, m);
+    if (dashed) l.computeLineDistances();
+    l.renderOrder = 10;
+    return l;
+  };
+  const cache2 = {};
+  const tag = (txt, pos, color, dim) => {
+    const key = txt + color + dim;
+    if (!cache2[key]) {
+      const c = document.createElement("canvas");
+      c.width = 176;
+      c.height = 80;
+      const x = c.getContext("2d");
+      x.fillStyle = dim ? "#ffffffcc" : "#fff";
+      x.strokeStyle = color;
+      x.lineWidth = 5;
+      x.beginPath();
+      x.roundRect(6, 10, 164, 60, 10);
+      x.fill();
+      x.stroke();
+      x.fillStyle = color;
+      x.font = "bold 34px sans-serif";
+      x.textAlign = "center";
+      x.textBaseline = "middle";
+      x.fillText(txt, 88, 41);
+      cache2[key] = new THREE.CanvasTexture(c);
+    }
+    const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: cache2[key], depthTest: false, opacity: dim ? 0.7 : 1 }));
+    const w = Math.max(130, txt.length * 50);
+    s.scale.set(w, w * 0.42, 1);
+    s.position.copy(P2(pos));
+    s.renderOrder = 11;
+    return s;
+  };
+  for (const d of defs) {
+    const done = typeof meas2[d.id] === "number";
+    if (!done && !showTodo) continue;
+    if (shown[d.g] === false) continue;
+    const col = done ? groups[d.g].color : "#9aa1a7";
+    g2.add(seg(d.a, d.b, new THREE.Color(col).getHex(), !done));
+    const f = d.g === "F" ? 0.3 : 0.5;
+    g2.add(tag(done ? String(meas2[d.id]).replace(".", ",") : d.id, d.a.map((v, i) => v + (d.b[i] - v) * f), done ? col : "#7b838a", !done));
+    const A = P2(d.a), B = P2(d.b), len = A.distanceTo(B);
+    const hit = new THREE.Mesh(
+      new THREE.CylinderGeometry(35, 35, Math.max(len, 50), 6, 1, true),
+      new THREE.MeshBasicMaterial({ visible: false })
+    );
+    hit.position.copy(A.clone().add(B).multiplyScalar(0.5));
+    hit.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), B.clone().sub(A).normalize());
+    hit.userData.mid = d.id;
+    hits.push(hit);
+    g2.add(hit);
+  }
+  return { group: g2, hits };
+}
+function roomGroupB(p2, g2) {
+  const room = new THREE.Group();
+  room.name = "room";
+  const HC = p2.H_C_max + 40, W = 120, XL = -1150, XR = p2.xWall + 650, DE = p2.D + 1300;
+  const put = (m) => room.add(m);
+  put(box(XL, XR, -10, DE, -30, 0, MAT.floor, false));
+  // drzwi do pokoju w ścianie tylnej – położenie orientacyjne, opaska kończy się w x = 0
+  const op = 70, oz = 12, dR = -op, dL = dR - 800, dH = 2030;
+  [[XL, dL, 0, HC], [dR, p2.xWall, 0, HC], [dL, dR, dH, HC]].forEach(([a, b, z0, z1]) => put(box(a, b, -W, 0, z0, z1, MAT.wall, false)));
+  put(box(p2.xWall, XR, -W, p2.D, 0, HC, MAT.wall, false));
+  [[dL - op, dL, 0, dH + op], [dR, dR + op, 0, dH + op], [dL - op, dR + op, dH, dH + op]].forEach(([a, b, z0, z1]) => put(box(a, b, 0, oz, z0, z1, MAT.frame)));
+  put(box(dL + 2, dR - 2, -42, -2, 0, dH - 3, MAT.door));
+  room.children.forEach((m) => {
+    if (m.material === MAT.wall) m.userData.isWall = true;
+  });
+  return room;
+}
+
+// plan.js
+import { useState as useState2 } from "preact/hooks";
+
+// content.js
+var PLN = (n) => Math.round(n).toLocaleString("pl-PL");
+var TOOLS = [
+  ["Masz już", "Pilarka zagłębiarka + szyna", "boki maskujące, blendy, listwy górne, cokoły, listwa na półki niszy; tarcza 48–60 zębów"],
+  ["Masz już", "Lamelownica", "bok zamykający przy lewej ścianie, listwy górne przy bokach maskujących, blat szafki pod lustrem"],
+  ["Masz już", "Laser krzyżowy + statyw", "poziomowanie korpusów, wysokości koszy, listew dystansowych i drążka"],
+  ["Masz już", "Poziomica 120 cm, dalmierz, taśma 5 m", ""],
+  ["Masz już", "Odkurzacz warsztatowy", "podłącz do pilarki i lamelownicy"],
+  ["Dokupić", "Wiertarko-wkrętarka + bity T20/T25", "konfirmaty mają torx"],
+  ["Dokupić", "Wiertło stopniowe do konfirmatów 4,5/7 mm", "ok. 30–50 zł"],
+  ["Dokupić", "Wiertło ⌀5 mm z ogranicznikiem głębokości", "otwory pod kołki półek i prowadnice koszy w szafie"],
+  ["Dokupić", "Szablon do otworów systemowych 32 mm", "ok. 60–150 zł; te same otwory co w ramie PAX"],
+  ["Dokupić", "Przystawka kątowa do wkrętarki", "kątowniki listew górnych tuż pod sufitem"],
+  ["Dokupić", "Wyrzynarka + brzeszczoty do laminatu z odwróconym zębem (np. Bosch T101BR)", "wcięcia na rury, krzywe linie przy ścianie"],
+  ["Dokupić", "Otwornica ⌀60 mm", "kratki wentylacyjne w drzwiach przy liczniku"],
+  ["Dokupić", "Kątownik montażowy / ścisk kątowy (2 szt.)", "trzyma korpus pod 90° przy skręcaniu"],
+  ["Dokupić", "Ściski stolarskie 4 × 300 mm", "klejenie lamel: bok zamykający, blat szafki"],
+  ["Dokupić", "Klej do drewna D3 + pędzelek", "lamele"],
+  ["Dokupić", "Cyrkiel traserski (scribe)", "dopasowanie boków maskujących i blend do ścian"],
+  ["Dokupić", "Taśma malarska, nóż do tapet", "na taśmie widać ołówek; nacięcie laminatu przed cięciem"],
+  ["Dokupić", "Strug zdzierak / tarnik + papier na klocku", "ostatnie milimetry przy ścianie"],
+  ["Dokupić", "Wykrywacz przewodów", "zanim wywiercisz w ścianie"],
+  ["Dokupić", "Okulary, maska przeciwpyłowa, rękawice", ""],
+  ["Dokupić", "Podnośnik nożny do drzwi i płyt (dźwignia)", "ok. 30–60 zł; unosisz nim bok postawionego korpusu, żeby podłożyć klocki i wkręcić nóżki"],
+  ["Dokupić", "Klocki z odpadów płyty 18 mm (6–8 szt.)", "podkładasz pod uniesiony bok, po jednym naraz, aż korpus stoi ok. 100 mm nad podłogą"],
+  ["Przydatne", "Kliny montażowe plastikowe", "pewniejsze od drewnianych klinów przy podnoszeniu; awaryjnie pod nóżkę, gdy zabraknie regulacji"],
+  ["Przydatne", "Długi wkrętak / klucz do stopek nóżek", "regulacja tylnych nóżek spod korpusu po wsunięciu do wnęki"],
+  ["Dokupić", "Listewka sosnowa ok. 20×40 mm, 2,5 m", "tymczasowy skos z tyłu szafki przy liczniku (do stawiania); potem zdejmujesz"],
+  ["Przydatne", "Kozły lub stół roboczy + płyta ofiarna", ""]
+];
+var hardware = (T2, LC) => [
+  ["Konfirmat 7×50 mm", `${T2.konfirmaty + 40} szt. (kup ${Math.ceil((T2.konfirmaty + 40) * 1.15 / 50) * 50})`, `${T2.konfirmaty} z listy formatek + 40 w skrzynkach szuflad (5 skrzynek, po 2 na róg)`],
+  ["Lamele nr 20", `${T2.lamele[20] ?? 0} szt. (paczka)`, "bok zamykający + listewka (7), blat szafki pod lustrem (6)"],
+  ["Lamele nr 0", `${T2.lamele[0] ?? 0} szt. (z tej samej paczki mieszanej)`, "listwa górna ↔ bok maskujący, w obu szafach"],
+  ["KOMPLEMENT kosz siatkowy z prowadnicą 50×58, biały", "2 szt.", "IKEA; prawy korpus szafy, na dole za drzwiami"],
+  ["Prowadnice kulkowe pełny wysuw 300 mm (np. GTV H45)", "2 pary", "szuflady szafki przy liczniku, na listwach dystansowych; luz 12,7 mm na stronę"],
+  ["Prowadnice kulkowe pełny wysuw 250 mm (np. GTV H45)", `${LC ? 3 : 0} pary`, "szuflady szafki pod lustrem; luz 12,7 mm na stronę"],
+  ["Zawias puszkowy 110° z cichym domykiem + prowadnik", `${T2.zawiasy} kpl.`, "5 na każde wysokie drzwi, 2 na drzwi szafki pod lustrem; puszki wierci zakład"],
+  ["Gałki meblowe", "4 szt.", "szafka pod lustrem: 3 szuflady + drzwi"],
+  ["Uchwyty albo zatrzaski push-to-open", `${T2.frontow - 4} kpl.`, "wysokie drzwi; przy liczniku drzwi bez zamka"],
+  ["Nóżki regulowane + klipsy cokołu", `${T2.korpusow * 4} szt. + ${T2.korpusow * 3} klipsów`, "po 4 na korpus; cokół 80 mm = nóżka + płoza, więc nóżka musi dać się skręcić do ok. 70 mm – sprawdź zakres regulacji przed zakupem"],
+  ["Płozy pod nóżki: pasy sklejki 6–10 mm × 100 mm", `${T2.korpusow * 2} szt.`, "dwa na korpus (lewa i prawa para nóżek), długość = głębokość korpusu − 40 mm; po nich wsuwasz korpus do wnęki i zostają pod nim na wykładzinie"],
+  ["Filc samoprzylepny", "arkusz", "pod płozy, żeby łatwo jechały po wykładzinie; ślizgacze pod cokół szafki pod lustrem"],
+  ["Podpórki półek ⌀5 mm, metalowe", `${(T2.polekKorpus + 6) * 4} szt.`, `${T2.polekKorpus} półek w korpusach + 6 w niszy, po 4`],
+  ["Drążek owalny stalowy + 2 uchwyty", "1 kpl.", "lewa skrzynia, oś na 1600 mm"],
+  ["Kątowniki meblowe + kołki 6×40", `${T2.korpusow * 4} kpl.`, "kotwienie: przy wieńcu górnym i stałej półce; przy liczniku z dala od rur"],
+  ["Wkręty 6×60 z kołkami + podkładki dystansowe 5 mm", "4 kpl.", "prawy bok szafki przy liczniku do ściany wnęki"],
+  ["Małe kątowniki 25×25 + wkręty 3,5×16", "8 szt.", "listwy górne do wieńców górnych"],
+  ["Wkręty 4×30", "ok. 55 szt.", "boki maskujące (co ok. 40 cm), listewka boku zamykającego, cokół szafki pod lustrem, listwy dystansowe (po 3)"],
+  ["Gwoździki 1,4×25 albo zszywki", "paczka", "plecy szafki pod lustrem i dna szuflad"],
+  ["Kratki wentylacyjne meblowe ⌀60 mm", "4 szt.", "drzwi przy liczniku: dwie u góry, dwie u dołu"],
+  ["Zaślepki konfirmatów w kolorze klonu", "10 szt.", "lewy bok szafy wnękowej – wystaje 169 mm przed ścianę"],
+  ["Zderzaki silikonowe", "20 szt.", ""],
+  ["Obrzeże ABS 2 mm H3840 (klon) do żelazka", "zapas 3 m", "poprawki po docięciu blend, listew i półek niszy"]
+];
+var BUY_NOTE = "Zawiasy, prowadnice kulkowe i gałki to zwykłe okucia – zakład nie musi ich mieć, żeby ciąć i wiercić. Puszki ⌀35 są standardowe, więc pasuje do nich każdy zawias puszkowy, a prowadnice kulkowe przykręcasz sam do boków. Jeśli QUEST ma GTV albo Blum na stanie, wygodnie kupić zawiasy przy odbiorze płyt (zostaje jeden komplet). Prowadnice i gałki możesz kupić gdziekolwiek, a kosze KOMPLEMENT 50×58 (prawy korpus szafy) tylko w IKEA.";
+var WEEKEND = (T2) => [
+  ["piątek wieczór", "Rozpakowanie. Zmierz <b>każdą</b> formatkę i porównaj z listą, zanim cokolwiek skręcisz — reklamacja działa tylko przed montażem. Opisz ołówkiem na licu B kod z wydruku „dla mnie” i strzałkę „dół”.", "1 h"],
+  ["sobota rano", "Wiercenie: otwory ⌀5 pod półki i prowadnice koszy (szablon 32 mm), piloty pod prowadniki zawiasów – dopiero po sprawdzeniu, gdzie zakład wywiercił puszki. Skręcenie 5 skrzynek szuflad i dna HDF.", "2 h"],
+  ["sobota", `Skręcanie ${T2.korpusow} korpusów na leżąco, ${T2.konfirmaty} konfirmatów. Pierwsze złącze zajmie 20 minut, dziesiąte pięć. Plecy wsuwasz w felc, zanim założysz wieniec górny.`, "4–5 h"],
+  ["niedziela", "Stawianie z leżenia w dwie osoby, <b>bez nóżek</b>, przed wnęką. Podnośnikiem unosisz na zmianę lewy i prawy bok, podkładasz klocki aż do ok. 100 mm, wkręcasz nóżki, stawiasz korpus na płozach i wsuwasz do wnęki. Poziomowanie laserem po górnych krawędziach, kotwienie. Szafkę przy liczniku przykręcasz do ściany wnęki od razu.", "3–4 h"],
+  ["niedziela, koniec", "Pomiar niszy na trzech wysokościach i docięcie półek z listwy. Kosze i listwy dystansowe montujesz dopiero po zawiasach – wtedy widać, czy drzwi, zawias i szuflada się mijają.", "1 h"]
+];
+var BOX_STEPS = [
+  "Połóż <b>bok</b> licem A do góry. Przyłóż <b>wieniec dolny</b> czołem do jego krawędzi, felcami w jedną stronę, wyrównaj kątownikiem, ściśnij.",
+  "Wkręć 3 konfirmaty. Wierć <b>przez bok w czoło wieńca za jednym razem</b>, wiertłem stopniowym, przy ściśniętych elementach.",
+  "To samo ze <b>stałą półką</b> na 1900 mm (w dużej szafie kończy się 15 mm przed tylną krawędzią, żeby przepuścić plecy).",
+  "Nałóż drugi bok, ściśnij, wkręć konfirmaty. Masz literę „U” z poprzeczką.",
+  "<b>Wsuń plecy HDF</b> od góry w felce boków, aż wejdą w felc wieńca dolnego. Przy 2,3 m pomóż sobie drugą osobą.",
+  "Załóż <b>wieniec górny</b> (felc na plecy). <b>Zmierz obie przekątne.</b> Różnica ponad 2 mm — popchnij skrzynię za róg, aż się zrównają. W szafce przy liczniku pleców nie ma: na czas stawiania przykręć z tyłu, do surowych tylnych krawędzi boków, listewkę po skosie. Zdejmujesz ją przed wsunięciem do wnęki – za korpusem jest tylko 10 mm i rura."
+];
+var RISKS = (felcLp, cupLp) => [
+  ["Lista formatek", `Jedyna rzecz, której nie da się poprawić. Sprawdź ją dwa razy, zanim zostawisz w zakładzie: wymiary docelowe, kreski oklejania, felc tylko w poz. ${felcLp}, puszki tylko w poz. ${cupLp}.`],
+  ["4 mm do linii drzwi", "Prawy korpus 500 mm z bokiem maskującym kończy się 4 mm przed linią drzwi w najwęższym pomiarze (B6 = 527). Zmierz jeszcze raz przy opasce na trzech wysokościach. Jeśli wyjdzie mniej, zmniejsz luz przy występie z 5 do 3 mm."],
+  ["Stawianie korpusów", "Zapas pod sufitem to 50 mm i tylko bez nóżek. Korpus obraca się wokół dolnej krawędzi, którą jedna osoba blokuje stopą – nikt go nie podrywa do góry. Lewy korpus waży ok. 58 kg. Po postawieniu przechylasz go tylko na bok, nigdy do przodu ani do tyłu."],
+  ["Wsuwanie do wnęki", "Między ścianami nie ma jak chwycić korpusu z boku, więc się go nie wnosi, tylko wsuwa na płozach z filcem. Pchaj nisko, przy wieńcu dolnym, żeby nie łamać nóżek. Tylne nóżki ustaw wcześniej według pomiaru podłogi laserem – po wsunięciu sięgniesz do nich tylko długim narzędziem."],
+  ["Rura za szufladami", "Szuflady na prowadnicach 300 mm kończą się ok. 80 mm od ściany, więc rura z obejmą może wystawać do ok. 70 mm. Jeśli wystaje więcej, skracasz boki i dna skrzynek od tyłu i bierzesz prowadnice 250 mm. W półkach wcięcia od tyłu, nie otwory."],
+  ["Szafka bez pleców", "Listewka po skosie z tyłu trzyma kąt tylko przy skręcaniu i stawianiu – przed wsunięciem do wnęki ją zdejmujesz, bo za korpusem jest 10 mm i rura. Od tej chwili przekątne frontu sprawdzasz miarą i od razu przykręcasz prawy bok do ściany wnęki i wieniec górny do ściany tylnej. Drzwi i szuflady dopiero potem."],
+  ["Zawiasy, kosze i szuflady", "Szuflady KOMPLEMENT nie mieszczą się obok zawiasów, kosze siatkowe tak – dlatego kosze w szafie. Przy liczniku szuflady są własne i stoją na listwach dystansowych 18 mm. Listwy i prowadnice trzymaj z dala od osi zawiasów (wysokości w zakładce Model). Przed przykręceniem listew otwórz drzwi na 90° i zmierz, ile zawias wchodzi w światło – musi być mniej niż 18 mm."],
+  ["Prowadnice kulkowe", "Skrzynka szuflady musi być dokładnie 25,4 mm węższa od światła (przy liczniku: od odstępu między listwami dystansowymi). Skrzynki są zamówione z zaokrągleniem w dół, a luz do 1 mm wyrównasz podkładką pod prowadnicę."],
+  ["Grubość frontów", "W1000 ST38 bywa w 18,6 mm, H3840 ST9 w 18 mm. Projekt to znosi (białe są tylko fronty), ale zapytaj w QUEST, jaką grubość mają na stanie, i czy dobiorą do niej okleinę."],
+  ["Wymiary docelowe", "Na wydruku jest napisane, że wymiary są z okleiną. Upewnij się przy oddaniu, że zakład to przeczytał – inaczej każdy element wyjdzie 2–4 mm za szeroki."],
+  ["Jedna partia dekoru", "Fronty mieszczą się na jednym arkuszu bieli. Klon idzie z czterech arkuszy – poproś o jedną partię, bo boki maskujące i listwy stoją obok siebie."],
+  ["Kotwienie", "Przed każdym otworem w ścianie wykrywacz przewodów. Przy liczniku kotwy z dala od rur."],
+  ["Krzywe ściany", "Boki maskujące i blendy są zamówione z zapasem. Pierwsze cięcie po cyrklu przećwicz na odpadzie."]
+];
+var WEEKEND_YT = [
+  ["Konfirmat od zera", ["montaż na konfirmaty krok po kroku", "wiertło stopniowe do konfirmatów jak wiercić", "confirmat screw how to"]],
+  ["Lamele", ["lamelownica płyta meblowa łączenie", "biscuit joiner melamine panel", "lamelownica ustawienie na środek grubości"]],
+  ["Kwadratowanie korpusu", ["sprawdzanie przekątnych korpusu mebla", "squaring a cabinet carcass diagonals"]],
+  ["Plecy w felcu", ["plecy HDF w rowku montaż szafy", "cabinet back panel groove assembly"]],
+  ["Stawianie wysokiej szafy", ["jak postawić wysoką szafę pod sufit", "tilt up tall wardrobe ceiling clearance", "foot lifter cabinet install shims"]],
+  ["Kotwienie do ściany", ["mocowanie szafy do ściany kątowniki kołki", "anti tip anchoring tall cabinet"]]
+];
+var YT = [
+  ["Konstrukcja korpusu", ["montaż korpusu na konfirmaty", "plecy HDF w rowku czy na wierzch"]],
+  ["Otwory pod półki", ["otwory systemowe 32 mm szablon", "system 32 jig shelf pin holes"]],
+  ["KOMPLEMENT poza PAX", ["komplement basket custom cabinet", "ikea komplement pull out rail installation"]],
+  ["Szuflady za drzwiami", ["inner drawer behind door spacer block hinge", "szuflada wewnętrzna za drzwiami listwa dystansowa"]],
+  ["Szuflady na prowadnicach kulkowych", ["montaż prowadnic kulkowych szuflada", "ball bearing drawer slides install clearance"]],
+  ["Dopasowanie do krzywej ściany", ["scribing to a wall woodworking", "docinanie blendy do krzywej ściany", "scribe filler panel cabinet"]],
+  ["Zabudowa licznika gazu", ["zabudowa licznika gazu szafka wentylacja", "scribe shelf around pipe"]],
+  ["Pilarka zagłębiarka", ["pilarka zagłębiarka szyna prowadząca podstawy", "track saw bevel cut technique"]],
+  ["Zawiasy", ["montaż zawiasów Blum regulacja 3D", "ustawianie szczelin między frontami"]]
+];
+var STEPS = [
+  { t: "Potwierdź w QUEST grubość bieli i zostaw wydruk", d: "Lista formatek obejmuje trzy meble: klon H3840 ST9 na korpusy i wykończenie, biel W1000 ST38 na fronty, HDF na plecy i dna szuflad. Wymiary są docelowe, felc i puszki opisane na wydruku." },
+  { t: "Kup okucia i kosze", d: "Kosze KOMPLEMENT 50×58 w IKEA, zawiasy i prowadnice kulkowe 300 i 250 mm w sklepie z okuciami (albo w QUEST, jeśli mają). Przed zamówieniem zmierz, jak daleko od ściany wystaje rura przy liczniku – szuflady zakładają do ok. 70 mm." },
+  { t: "Rozpakuj i sprawdź dostawę", d: "Zmierz każdą formatkę zanim cokolwiek skręcisz. Opisz ołówkiem kod i stronę „dół”. Ustaw formatki pionowo, oparte, nie na płask na stosie." },
+  { t: "Wywierć to, czego zakład nie robi", d: "Konfirmaty, otwory ⌀5 pod półki i prowadnice koszy, piloty pod prowadniki zawiasów – te ostatnie dopiero po sprawdzeniu rozstawu puszek." },
+  { t: "Skręć korpusy na leżąco", d: "Boki, wieniec dolny, stała półka, plecy w felc, wieniec górny, przekątne. W szafce przy liczniku bez pleców – listewka po skosie z tyłu, tylko do stawiania." },
+  { t: "Postaw korpusy bez nóżek", d: "Z leżenia, w dwie osoby, przed wnęką. Podnośnikiem na zmianę lewy i prawy bok, klocki 18 mm aż do ok. 100 mm, nóżki 45 mm od frontu. Przechylasz tylko na bok: przy przechyle do przodu lub do tyłu góra korpusu przesuwa się ok. 4 cm na każdy centymetr uniesienia i trafia w ścianę." },
+  { t: "Wsuń korpusy do wnęki", d: "Nóżki na płozach ze sklejki podklejonych filcem, pchanie nisko, przy wieńcu dolnym. Tylne nóżki ustaw przed wsunięciem według pomiaru podłogi, przednie poprawiasz na miejscu. Poziomuj <b>górną krawędź korpusu</b>, a nie podłogę." },
+  { t: "Zakotw korpusy", d: "Kątowniki przy wieńcu górnym i stałej półce. Szafkę przy liczniku dodatkowo przykręć prawym bokiem do ściany wnęki przez podkładki 5 mm. Przed wierceniem wykrywacz przewodów." },
+  { t: "Boki maskujące i bok zamykający", d: "Najtrudniejszy krok. Cyrkiel, cięcie zagłębiarką z podcięciem 2–3°, poprawki strugiem. Bok zamykający przy lewej ścianie najpierw dopasuj, potem sklej na lamele z listewką i przykręć od środka." },
+  { t: "Nisza", d: "Zmierz odstęp między skrzyniami na trzech wysokościach, dotnij plecy niszy, potnij listwę na 6 półek i daszek. Otwory niszy wierć w innej odległości od przodu niż wewnętrzne." },
+  { t: "Powieś fronty", d: "Prowadniki, zawiasy, regulacja szczelin na 3 mm. W drzwiach przy liczniku 4 otwory ⌀60 pod kratki." },
+  { t: "Kosze i szuflady", d: "Kosze w szafie: prowadnice w otwory 32 mm na wysokościach z zakładki Model. Przy liczniku: listwy dystansowe po 3 wkręty 4×30, na nich prowadnice 300 mm, potem skrzynki. Sprawdź przy otwartych drzwiach, że wszystko mija zawiasy. W półkach wytnij wcięcia na rurę od tylnej krawędzi." },
+  { t: "Listwy górne", d: "Docinasz do sufitu, łączysz z bokiem maskującym na lamelę nr 0, przykręcasz małymi kątownikami do wieńców górnych." },
+  { t: "Szafka pod lustrem", d: "Dno z bokami i przegrodą na konfirmaty od spodu, blat na lamele i klej, plecy HDF nabijane, cokół przykręcony od środka. Skrzynki szuflad na konfirmatach, prowadnice, fronty, gałki." }
+];
+var SUPPLIERS = [
+  { n: "Quest – Płyty meblowe Egger", a: "Obywatelska 102/104", why: "Wybrany. Tnie, okleja, wierci puszki i frezuje felc. Konfirmatów i otworów systemowych nie robi." },
+];
+function optimizerCSV(pieces) {
+  const rows = [["Length", "Width", "Qty", "Label", "Material", "Grain"]];
+  pieces.forEach((q) => rows.push([q.L, q.W, q.qty, q.code, q.dec === "hdf" ? "HDF 3" : q.dec === "bial" ? "W1000 ST38" : "H3840 ST9", q.dec === "hdf" ? "none" : "length"]));
+  return rows.map((r) => r.join(",")).join("\n");
+}
+var PRICE = {
+  sheet: { klon: [325, 400], bial: [550, 610], hdf: [55, 125] },
+  // ceny arkuszy 2800×2070 ze sklepów internetowych, listopad 2026
+  // stawki za cięcie i oklejanie z wrześniowych wycen (orientacyjnie)
+  rate: { cut: [60, 69], edge2: [8, 8.5], cup: [6, 6], felc: [3, 6] }
+};
+function quote(T2, nest2) {
+  const R2 = PRICE.rate, f = (v) => String(v).replace(".", ",");
+  const rr = (k) => R2[k][0] === R2[k][1] ? f(R2[k][0]) : `${f(R2[k][0])}–${f(R2[k][1])}`;
+  const sK = nest2.klon.n, sB = nest2.bial.n, sH = nest2.hdf.n, sh = sK + sB + sH;
+  const lines = [
+    [`Klon H3840 ST9 · ${sK} ark.`, sK * PRICE.sheet.klon[0], sK * PRICE.sheet.klon[1]],
+    [`Biały W1000 ST38 · ${sB} ark.`, sB * PRICE.sheet.bial[0], sB * PRICE.sheet.bial[1]],
+    [`HDF 3 mm · ${sH} ark.`, sH * PRICE.sheet.hdf[0], sH * PRICE.sheet.hdf[1]],
+    [`Cięcie · ${sh} ark. × ${rr("cut")} zł`, sh * R2.cut[0], sh * R2.cut[1]],
+    [`Obrzeże 2 mm · ${Math.ceil(T2.mb)} mb × ${rr("edge2")} zł`, T2.mb * R2.edge2[0], T2.mb * R2.edge2[1]],
+    [`Puszki zawiasów · ${T2.holes.cup35} × ${rr("cup")} zł`, T2.holes.cup35 * R2.cup[0], T2.holes.cup35 * R2.cup[1]],
+    [`Felc · ok. ${Math.ceil(T2.grooveMb)} mb × ${rr("felc")} zł (założenie)`, T2.grooveMb * R2.felc[0], T2.grooveMb * R2.felc[1]]
+  ];
+  return { lines, lo: lines.reduce((a, l) => a + l[1], 0), hi: lines.reduce((a, l) => a + l[2], 0) };
+}
+
+// print.js – strony do druku: zamówienie w układzie formularza QUEST oraz wersja z opisami dla mnie
+var esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+var mark = (n) => n === 2 ? "=" : n === 1 ? "—" : "";
+var mm2 = (v) => String(v).replace(".", ",");
+var lpList = (rows) => {
+  const v = rows.map((r) => r.lp), out = [];
+  for (let i = 0; i < v.length; i++) {
+    let j = i;
+    while (j + 1 < v.length && v[j + 1] === v[j] + 1) j++;
+    out.push(j > i + 1 ? `${v[i]}–${v[j]}` : j === i + 1 ? `${v[i]}, ${v[j]}` : `${v[i]}`);
+    i = j;
+  }
+  return out.join(", ");
+};
+var ALC_TXT = { 1: "szafa wnękowa", 2: "szafka przy liczniku", 3: "szafka pod lustrem" };
+function hingeGroups(panels, R) {
+  const fr = panels.filter((q) => q.grp === "front" && q.hinge), g = /* @__PURE__ */ new Map();
+  fr.forEach((q) => {
+    const xs = [...new Set(q.feats.filter((f) => f.t === "cup35").map((f) => f.x))].sort((a, b) => a - b);
+    const key = xs.join("/");
+    const row = R.bial.find((r) => r.items.some((it) => it.code === q.code));
+    if (!g.has(key)) g.set(key, { xs, H: q.Lg, lps: /* @__PURE__ */ new Set() });
+    if (row) g.get(key).lps.add(row.lp);
+  });
+  return [...g.values()].map((v) => ({ ...v, lps: [...v.lps].sort((a, b) => a - b) }));
+}
+var PRINT_CSS = `
+:root{
+  --paper:#ffffff; --ink:#151515; --rule:#2a2a2a; --shade:#dcdcdc; --dim:#5c5a55; --desk:#e8e5df; --acc:#8a5a2b;
+  --sans:Arial,"Helvetica Neue",Helvetica,"Liberation Sans",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--desk);color:var(--ink);font:13px/1.35 var(--sans);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 48px}
+.bar{max-width:210mm;margin:0 auto 12px;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;color:var(--dim);font-size:14px}
+.bar button{font:inherit;padding:.4em .9em;border:1px solid #b9b4aa;background:var(--paper);color:var(--ink);border-radius:8px;cursor:pointer}
+.bar button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.sheet{background:var(--paper);max-width:210mm;margin:0 auto 18px;padding:10mm 10mm 11mm;box-shadow:0 1px 2px rgba(0,0,0,.12),0 8px 24px rgba(0,0,0,.08)}
+.scroll{overflow-x:auto}
+.cap{font-size:11px;color:var(--dim);margin:0 0 2px}
+table.f{width:100%;border-collapse:collapse;table-layout:fixed;font-variant-numeric:tabular-nums}
+table.f th,table.f td{border:1px solid var(--rule);padding:0 4px;height:6mm;text-align:center;vertical-align:middle}
+table.f th{font-size:10.5px;font-weight:700}
+table.f tr.val td{font-size:15px;font-weight:700;letter-spacing:.02em}
+table.f td.n{font-size:13.5px}
+table.f td.lp{font-weight:700;font-size:12px}
+table.f .sh{background:var(--shade)}
+table.f td.ok{font-size:17px;font-weight:700;line-height:1}
+@media print{
+  @page{size:A4;margin:8mm}
+  body{background:#fff;padding:0}
+  .bar{display:none}
+  .sheet{box-shadow:none;margin:0;max-width:none;padding:0;break-after:page}
+  .sheet:last-child{break-after:auto}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}`;
+var BACK_JS = `<script>
+document.getElementById("back").addEventListener("click", function () {
+  if (history.length > 1) history.back(); else location.href = "./";
+});
+<\/script>`;
+function formTable(rows, dec, blanks) {
+  const d = DECOR[dec];
+  const body = rows.map((r) => `<tr><td class="lp">${r.lp}</td><td class="sh ok">${mark(r.eD)}</td><td class="n">${r.L}</td><td class="n">${r.W}</td><td class="sh ok">${mark(r.eS)}</td><td class="n">${r.qty}</td></tr>`).join("");
+  const last = rows.length ? rows[rows.length - 1].lp : 0;
+  const empty = Array.from({ length: blanks }, (_, i) => `<tr><td class="lp">${typeof last === "number" ? last + 1 + i : ""}</td><td class="sh"></td><td></td><td></td><td class="sh"></td><td></td></tr>`).join("");
+  return `<table class="f">
+  <colgroup><col class="c-lp"><col class="c-ok"><col class="c-d"><col class="c-d"><col class="c-ok"><col class="c-q"></colgroup>
+  <thead>
+    ${d ? `<tr class="hd"><th colspan="2">kolor płyty</th><th>symbol</th><th>kolor pcv</th><th colspan="2">gr. pcv</th></tr>
+    <tr class="val"><td colspan="2">${d.kolor}</td><td>${d.symbol}</td><td></td><td colspan="2"></td></tr>` : ""}
+    <tr class="hd"><th>LP</th><th class="sh">OKLEJ</th><th>DŁUGOŚĆ</th><th>SZEROKOŚĆ</th><th class="sh">OKLEJ</th><th>SZT.</th></tr>
+  </thead>
+  <tbody>${body}${empty}</tbody>
+</table>`;
+}
+function orderNotes(R, panels) {
+  const felc = R.klon.filter((r) => r.felc), zap = [...R.klon, ...R.bial].filter((r) => r.zapas), cups = R.bial.filter((r) => r.cups);
+  const qty = (rows) => rows.reduce((a, r) => a + r.qty, 0);
+  const hg = hingeGroups(panels, R);
+  const hingeTxt = hg.map((h) => {
+    const xs = h.xs.map((x) => Math.abs(x - h.H / 2) < 1 ? "środek" : mm2(Math.round(x)));
+    return `poz. ${lpList(h.lps.map((lp) => ({ lp })))}: ${xs.join(" / ")} mm`;
+  }).join("; ");
+  const strip = R.klon.find((r) => r.strip);
+  return [
+    `<b>Wymiary są docelowe</b> – gotowy element razem z okleiną. Proszę odjąć grubość okleiny przy cięciu.`,
+    `<b>Oklejanie:</b> kreska w kolumnie OKLEJ przy DŁUGOŚCI oznacza krawędź długą, przy SZEROKOŚCI – krótką. „—” jedna krawędź, „=” obie. Okleina 2 mm w kolorze płyty.`,
+    felc.length ? `<b>Felc pod plecy HDF 3 mm – poz. ${lpList(felc)}</b> (${qty(felc)} szt.): rowek szer. 4 mm, gł. 10 mm, 10 mm od nieoklejonej dłuższej krawędzi, na jednym licu, przez całą długość. Elementy w każdej pozycji są jednakowe.` : "",
+    cups.length ? `<b>Puszki pod zawiasy – poz. ${lpList(cups)}</b>: ⌀35 mm, gł. 13 mm, przy jednej dłuższej krawędzi, oś 22,5 mm od krawędzi, rozstaw symetryczny wg standardu zakładu. Jeśli bez różnicy, osie od dolnej krawędzi: ${hingeTxt}.` : "",
+    zap.length ? `<b>Poz. ${lpList(zap)}</b> są zamówione z zapasem i docinane na miejscu – proszę ciąć jak w tabeli.${strip ? ` Poz. ${strip.lp} to listwa, z której sam wytnę półki.` : ""}` : "",
+    `<b>Fronty białe W1000 ST38:</b> słoje pionowo, wzdłuż długości. Proszę o informację, czy płyta ma 18 czy 18,6 mm, i okleinę w tej grubości.`,
+    `<b>Klon H3840 ST9:</b> wszystkie arkusze z jednej partii, jeśli to możliwe.`,
+    `W razie pytań o felc albo puszki – proszę o telefon przed cięciem.`
+  ].filter(Boolean);
+}
+function printPage(R, panels) {
+  const K = R.klon, W = R.bial, Hd = R.hdf;
+  return `<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Formatki dla QUEST</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<style>${PRINT_CSS}
+.top{display:grid;grid-template-columns:1fr auto;gap:4px 18px;align-items:end}
+.fld{display:flex;gap:6px;align-items:flex-end;font-size:12px}
+.fld span.ln{flex:1;border-bottom:1px solid var(--rule);min-width:90px;height:16px}
+h1{text-align:center;font-size:20px;letter-spacing:.04em;margin:6px 0 2px}
+.conv{text-align:center;font-weight:700;font-size:12px;margin:2px 0 1px}
+.conv2{display:flex;justify-content:space-between;flex-wrap:wrap;gap:2px 16px;font-weight:700;font-size:11.5px;margin:3px 0 6px}
+.cols{display:flex;gap:6mm;align-items:flex-start;flex-wrap:wrap}
+.cols>div{flex:1 1 280px;min-width:0}
+col.c-lp{width:9%} col.c-ok{width:12%} col.c-d{width:24%} col.c-q{width:10%}
+.hdf{margin-top:5mm}
+.uw{border:1.5px solid var(--rule);padding:2.5mm 3.5mm 2mm;margin-top:4mm;font-size:10.5px}
+.uw h2{font-size:12px;margin:0 0 1.5mm;letter-spacing:.04em}
+.uw ol{margin:0;padding-left:5mm;display:grid;gap:1.1mm}
+.sig{display:flex;justify-content:space-between;gap:12px;margin-top:7mm;font-size:11px;color:var(--dim)}
+.sig span{flex:1;border-top:1px solid var(--rule);padding-top:2px}
+@media (max-width:560px){ .sheet{padding:16px 12px} .top{grid-template-columns:1fr} }
+@media print{ .cols{flex-wrap:nowrap} .uw{margin-top:2.5mm;font-size:10px} table.f th,table.f td{height:4.6mm;padding:0 3px} table.f td.n{font-size:12.5px} }
+</style>
+</head>
+<body>
+<div class="bar">
+  <button type="button" id="back">← Wróć do projektu</button>
+  <span>A4: zamówienie dla zakładu. Drukuj z menu przeglądarki albo z PDF-a.</span>
+</div>
+<section class="sheet">
+  <div class="top">
+    <div class="fld">Zamawiający:<span class="ln"></span></div>
+    <div class="fld">nr tel.<span class="ln" style="min-width:140px"></span></div>
+    <div></div>
+    <div class="fld">DATA<span class="ln" style="min-width:140px"></span></div>
+  </div>
+  <h1>ZAMÓWIENIE</h1>
+  <p class="conv">Wymiary w mm · wymiary docelowe, razem z okleiną (szczegóły w uwagach)</p>
+  <div class="conv2"><span>Długość = wymiar w kierunku usłojenia</span><span>Szerokość = wymiar poprzeczny do usłojenia</span></div>
+  <div class="cols">
+    <div>
+      <p class="cap">Płyta 18 mm · Egger ${DECOR.klon.nazwa} – korpusy, półki, blendy, boki maskujące, cokoły</p>
+      <div class="scroll">${formTable(K, "klon", 0)}</div>
+    </div>
+    <div>
+      <p class="cap">Płyta Egger ${DECOR.bial.nazwa} – fronty</p>
+      <div class="scroll">${formTable(W, "bial", 2)}</div>
+      ${Hd.length ? `<div class="hdf">
+        <p class="cap">HDF 3 mm biały – plecy i dna szuflad, bez okleiny</p>
+        <div class="scroll">${formTable(Hd, null, 0)}</div>
+      </div>` : ""}
+    </div>
+  </div>
+  <div class="uw">
+    <h2>UWAGI DO ZAMÓWIENIA</h2>
+    <ol>${orderNotes(R, panels).map((t) => `<li>${t}</li>`).join("")}</ol>
+  </div>
+  <div class="sig"><span>Osoba przyjmująca</span><span>Data odbioru</span><span>Podpis klienta</span></div>
+</section>
+${BACK_JS}
+</body>
+</html>
+`;
+}
+function printMine(R, panels) {
+  const qty = (rows) => rows.reduce((a, r) => a + r.qty, 0);
+  const table = (rows, title) => `<h2>${title} · ${qty(rows)} szt.</h2>
+  <div class="scroll"><table class="m">
+    <colgroup><col style="width:6%"><col style="width:6%"><col style="width:9%"><col style="width:9%"><col style="width:6%"><col style="width:6%"><col style="width:9%"><col></colgroup>
+    <thead><tr><th>LP</th><th>Okl.</th><th>Dług.</th><th>Szer.</th><th>Okl.</th><th>Szt.</th><th>Obróbka</th><th class="l">Co to jest</th></tr></thead>
+    <tbody>${rows.map((r) => `<tr>
+      <td class="lp">${r.lp}</td><td class="ok">${mark(r.eD)}</td><td class="n">${r.L}</td><td class="n">${r.W}</td><td class="ok">${mark(r.eS)}</td><td class="n">${r.qty}</td>
+      <td>${r.felc ? "felc" : r.cups ? `${r.cups} puszki` : ""}${r.zapas ? `<div class="zap">zapas</div>` : ""}</td>
+      <td class="l">${r.strip ? `<div class="it"><b>${esc(r.strip.code)}</b> ${esc(r.strip.name)}</div>` : ""}${r.items.map((it) => `<div class="it"><b>${esc(it.code)}</b> ${esc(it.name)}${it.qty > 1 ? ` ×${it.qty}` : ""}${/lustr|licznik/.test(it.name) ? "" : `<i>${ALC_TXT[it.alc]}</i>`}</div>`).join("")}</td>
+    </tr>`).join("")}</tbody>
+  </table></div>`;
+  return `<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Formatki z opisami</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<style>${PRINT_CSS}
+h1{font-size:18px;margin:0 0 1mm}
+.sub{color:var(--dim);font-size:11.5px;margin:0 0 3mm}
+h2{font-size:13px;margin:5mm 0 1.5mm;letter-spacing:.02em}
+table.m{width:100%;border-collapse:collapse;table-layout:fixed;font-size:11px;font-variant-numeric:tabular-nums}
+table.m th,table.m td{border:1px solid #9a968d;padding:1mm 1.5mm;text-align:center;vertical-align:top}
+table.m th{font-size:9.5px;text-transform:uppercase;letter-spacing:.04em;background:#efede8}
+table.m th.l,table.m td.l{text-align:left}
+table.m td.lp{font-weight:700}
+table.m td.ok{font-size:14px;font-weight:700;line-height:1.1}
+table.m td.n{font-size:12px}
+table.m .it{display:block;margin:0 0 .6mm}
+table.m .it i{color:var(--dim);font-style:normal;font-size:9.5px;margin-left:5px}
+table.m .zap{font-size:9px;color:var(--acc)}
+.codes{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1mm 5mm;font-size:10.5px;margin:2mm 0 0;padding:0;list-style:none}
+.codes b{display:inline-block;min-width:34px}
+@media print{ table.m tr{break-inside:avoid} }
+</style>
+</head>
+<body>
+<div class="bar">
+  <button type="button" id="back">← Wróć do projektu</button>
+  <span>Wersja dla mnie: te same pozycje co na zamówieniu, z pełnymi nazwami.</span>
+</div>
+<section class="sheet">
+  <h1>Formatki – wersja z opisami</h1>
+  <p class="sub">Numery LP są takie same jak na zamówieniu dla QUEST. Po odbiorze opisz ołówkiem na każdej formatce jej kod i strzałkę „dół”.</p>
+  <ul class="codes">
+    <li><b>L-</b> lewa skrzynia szafy</li><li><b>R-</b> prawa skrzynia szafy</li><li><b>NIS-</b> nisza między skrzyniami</li>
+    <li><b>BL-</b> blendy i listwy szafy</li><li><b>BM-</b> bok maskujący szafy</li><li><b>COK</b> cokół szafy</li>
+    <li><b>FR-</b> fronty szafy</li><li><b>N-</b> szafka przy liczniku</li><li><b>S-</b> szafka pod lustrem</li>
+    <li><b>BOKL/BOKP</b> bok lewy/prawy</li><li><b>WD/WG</b> wieniec dolny/górny</li><li><b>STA</b> półka stała</li>
+  </ul>
+  ${table(R.klon, `Klon ${DECOR.klon.kolor} ${DECOR.klon.symbol}`)}
+  ${table(R.bial, `Biały ${DECOR.bial.kolor} ${DECOR.bial.symbol} – fronty`)}
+  ${table(R.hdf, "HDF 3 mm biały")}
+</section>
+${BACK_JS}
+</body>
+</html>
+`;
+}
+
+// plan.js
+var PLN2 = PLN;
+var DEC_TITLE = {
+  klon: `Klon ${DECOR.klon.kolor} ${DECOR.klon.symbol} · ${DECOR.klon.nazwa}`,
+  bial: `Biały ${DECOR.bial.kolor} ${DECOR.bial.symbol} · ${DECOR.bial.nazwa}`,
+  hdf: "HDF 3 mm biały · plecy i dna szuflad"
+};
+var polki = (n) => n === 1 ? "półka" : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? "półki" : "półek";
+var mk = (n) => n === 2 ? "=" : n === 1 ? "—" : "";
+var ALC_NAME = { 1: "szafa wnękowa", 2: "szafka przy liczniku", 3: "szafka pod lustrem" };
+function OrderTable({ rows, onPanel }) {
+  return html`<div class="tscroll"><table class="ptbl otbl">
+    <tr><th>LP</th><th title="krawędzie długie">Okl.</th><th>Długość</th><th>Szer.</th><th title="krawędzie krótkie">Okl.</th><th>Szt.</th><th>Felc / puszki</th><th>Co to jest</th></tr>
+    ${rows.map((r) => html`<tr>
+      <td>${r.lp}</td><td class="mk">${mk(r.eD)}</td>
+      <td class="n">${r.L}</td><td class="n">${r.W}</td><td class="mk">${mk(r.eS)}</td><td class="n">${r.qty}</td>
+      <td class="n">${r.felc ? "felc" : r.cups ? `${r.cups} puszki` : ""}</td>
+      <td class="a">${r.strip ? html`<div class="it"><b>${r.strip.code}</b> ${r.strip.name}</div>` : null}
+        ${r.items.map((it) => html`<div class="it"><button class="pbtn" title="Podgląd 3D" onClick=${() => onPanel(it.code)}>${it.code}</button> ${it.name}${it.qty > 1 ? ` ×${it.qty}` : ""}</div>`)}
+        ${r.zapas ? html`<span class="kw">zapas – docinasz na miejscu</span>` : null}</td>
+    </tr>`)}
+  </table></div>`;
+}
+function SheetSvg({ sh, S: S2, i, of, label }) {
+  return html`<figure class="sheet">
+    <svg viewBox="0 0 ${S2.L} ${S2.W}" role="img" aria-label=${`${label} ${i} z ${of}`}>
+      <rect x="0" y="0" width=${S2.L} height=${S2.W} class="sh-bg" />
+      ${sh.parts.map((pt) => {
+    const fs = Math.min(64, pt.w * 0.42, pt.l / (pt.code.length * 0.65));
+    const small = pt.code.startsWith("S-");
+    return html`<g>
+        <rect x=${pt.x} y=${pt.y} width=${pt.l} height=${pt.w} class=${small ? "sh-pt sh-s" : "sh-pt"} />
+        ${fs >= 22 && html`<text x=${pt.x + pt.l / 2} y=${pt.y + pt.w / 2} font-size=${fs} class="sh-tx">${pt.code}</text>`}
+      </g>`;
+  })}
+    </svg>
+    <figcaption>${label} ${i}/${of} · słoje wzdłuż 2800 mm</figcaption>
+  </figure>`;
+}
+function Nesting({ T: T2, nest: nest2 }) {
+  const zl = (a, b) => Math.round(a) === Math.round(b) ? `${PLN2(a)} zł` : `${PLN2(a)}–${PLN2(b)} zł`;
+  const L = { klon: "Klon H3840", bial: "Biały W1000", hdf: "HDF" };
+  const pct = (k) => Math.round(nest2[k].util * 100);
+  return html`
+    <div class="sum">
+      <div><span>Klon H3840 ST9</span><b>${nest2.klon.n} ark.</b><small>${pct("klon")}% wykorzystania</small></div>
+      <div><span>Biały W1000 ST38</span><b>${nest2.bial.n} ark.</b><small>${pct("bial")}%</small></div>
+      <div><span>HDF 3 mm</span><b>${nest2.hdf.n} ark.</b><small>${pct("hdf")}%</small></div>
+    </div>
+    <p class="note">Rozkrój policzony optymalizatorem gilotynowym (rectpack, 18 kombinacji algorytmów × 6 sposobów sortowania, wybrany najlepszy). Arkusz 2800 × 2070 mm, 10 mm obrzynku z każdej krawędzi, 4,4 mm na rzaz.
+      Formatek z klonu i bieli nie obraca, bo mają słoje; HDF tak. <b>Szafka pod lustrem (zielone pola, kody S-) mieści się w resztkach</b> – z nią i bez niej wychodzi tyle samo arkuszy. Odpady z czterech arkuszy klonu (ok. ${(nest2.klon.n * 5.796 - nest2.klon.area).toFixed(1).replace(".", ",")} m²) są Twoje – poproś zakład o większe kawałki.</p>
+    ${["klon", "bial", "hdf"].filter((k) => nest2[k].n).map((k) => html`
+      <h4>${DEC_TITLE[k]}</h4>
+      <div class="sheets">${nest2[k].sheets.map((sh, i) => html`<${SheetSvg} sh=${sh} S=${nest2[k].S} i=${i + 1} of=${nest2[k].n} label=${L[k]} />`)}</div>`)}
+    <h4>Szacunek kosztów formatek</h4>
+    <p class="note">Ceny arkuszy ze sklepów internetowych (listopad 2026): klon H3840 ST9 ok. ${PRICE.sheet.klon.join("–")} zł, biały W1000 ST38 ok. ${PRICE.sheet.bial.join("–")} zł, HDF ${PRICE.sheet.hdf.join("–")} zł. Stawki za cięcie i oklejanie to orientacyjne widełki rynkowe – QUEST poda swoje.</p>
+    ${(() => {
+    const q = quote(T2, nest2);
+    return html`<h4 class="shop">Formatki razem · <b>${zl(q.lo, q.hi)}</b></h4>
+        <${Table} head=${["Pozycja", "Koszt"]} rows=${q.lines.map((l) => [l[0], zl(l[1], l[2])])} />`;
+  })()}`;
+}
+function PlanTab({ all, A, B, C, onPanel }) {
+  const { model, T: T2, nest: nest2, rows: R, pieces } = all;
+  const a = A.model, ga = a.g, pa = a.p, la = a.layout, gb = B.model.g, pb = B.model.p, lb = B.model.layout, pc = C.model.p, lc = C.model.layout.C;
+  const zl = (x, y) => `${PLN2(x)}–${PLN2(y)} zł`;
+  const q0 = quote(T2, nest2);
+  const hw = [1100, 1900], tot = [q0.lo + hw[0], q0.hi + hw[1]];
+  const selfRows = model.panels.filter((q) => q.grp === "korpus" || q.grp === "szuflada").map((q) => [`${q.code}<br><span class="dim">${q.name}</span>`, drillText({ ...q, feats: q.feats.filter((f) => !SHOP_FEATS.includes(f.t)) }).join("<br>"), String(q.qty)]).filter((r) => r[1]);
+  const qty = (rows) => rows.reduce((x, r) => x + r.qty, 0);
+  const felcLp = lpList(R.klon.filter((r) => r.felc)), cupLp = lpList(R.bial.filter((r) => r.cups));
+  const RD = la.bays.RD;
+  return html`<section>
+    <h2>Plan wykonania</h2>
+    <p class="note">Trzy meble z jednego zamówienia: szafa wnękowa, szafka przy liczniku i szafka pod lustrem. Korpusy, blendy i boki maskujące w klonie, fronty białe.</p>
+
+    <details open><summary>1 · Układ</summary>
+      <h4>Szafa wnękowa</h4>
+      <ul class="bul">
+        <li><b>Dwie skrzynie na pełną wysokość</b>, ${r0(ga.depth)} mm głębokie jak rama PAX 58: lewa ${r0(ga.carc.L[1] - ga.carc.L[0])} mm, prawa ${r0(pa.wR)} mm (jak PAX 50, w środku 464 mm). Stała półka na konfirmatach na ${pa.H_LOW} mm usztywnia boki.</li>
+        <li><b>Lewa skrzynia:</b> drążek na ${r0(la.rail.z)} mm, nad nim półka; pod drążkiem ${r0(la.rail.clearBelow)} mm do dna – na płaszcze i buty na dnie.</li>
+        <li><b>Prawa skrzynia:</b> dwa kosze KOMPLEMENT 50×58 na dole, ${RD.n} ${polki(RD.n)} nad nimi, wszystko za drzwiami z zawiasami po prawej.</li>
+        <li><b>Nad stałymi półkami</b> ${la.bays.LG.inner} mm na walizki i pościel.</li>
+        <li><b>Fronty</b> ${r0(ga.zF - pa.plinth - pa.fg)} mm wysokie, po 5 zawiasów. Nad nimi listwa docinana do sufitu, pod nimi cokół, po prawej bok maskujący – wszystko w klonie.</li>
+        <li><b>Nisza</b> ${r0(ga.nW)} mm szeroka: półki ${r0(ga.dF - ga.nD0 - 18)} mm głębokie, przodem równo z krawędziami korpusów, wycinane na miejscu z jednej listwy ${NICHE_STRIP.L} mm.</li>
+      </ul>
+      <h4>Szafka przy liczniku</h4>
+      <ul class="bul">
+        <li><b>Jedna skrzynia</b> ${r0(gb.w)} × ${r0(gb.zF - pb.plinth)} mm, głębokość ${r0(gb.depth)} mm – krawędź równo z licem ściany, front ${r0(gb.dF + 2 + pb.tF - pb.D)} mm przed nim.</li>
+        <li><b>Dwie szuflady</b> na dole (skrzynki ${lb.N.bw} × ${lb.N.bh} × ${lb.N.L} mm z klonu, prowadnice kulkowe ${lb.N.L} mm na listwach dystansowych, żeby minęły zawiasy), ${lb.bays.ND.n} ${polki(lb.bays.ND.n)} na pełną głębokość nad nimi. Rura biegnie za szufladami i może wystawać ze ściany do ok. ${r0(lb.N.backGap - 10)} mm; w półkach wcięcia od tyłu.</li>
+        <li><b>Bez pleców</b> – sztywność daje przykręcenie do ściany wnęki i ściany tylnej. Bok maskujący po lewej, drzwi z zawiasami od strony ściany.</li>
+      </ul>
+      <h4>Szafka pod lustrem</h4>
+      <ul class="bul">
+        <li><b>${pc.W} × ${pc.H} × ${lc.depthTotal} mm</b> na cofniętym cokole. Szerokość dobrana tak, żeby zmieściła się w resztkach – największa z dozwolonych 85 cm.</li>
+        <li>Po lewej ${pc.drawers} szuflady na prowadnicach kulkowych ${pc.slide} mm, po prawej drzwi z półką. Blat i dno wysunięte przed boki, równo z frontami.</li>
+      </ul>
+    </details>
+
+    <details open><summary>2 · Lista formatek do zamówienia w QUEST</summary>
+      <div class="sum">
+        <div><span>Pozycji</span><b>${R.klon.length + R.bial.length + R.hdf.length}</b></div>
+        <div><span>Formatek</span><b>${qty(R.klon) + qty(R.bial) + qty(R.hdf)} szt.</b></div>
+        <div><span>Klon H3840</span><b>≈ ${T2.mKlon.toFixed(1)} m²</b></div>
+        <div><span>Biały W1000</span><b>≈ ${T2.mBial.toFixed(1)} m²</b></div>
+      </div>
+      <p class="btns"><a class="btnlink" href="formatki.html">Wydruk dla QUEST →</a> <a class="btnlink alt" href="formatki-moje.html">Wydruk dla mnie, z opisami →</a></p>
+      <p class="note">Wydruk dla QUEST ma układ ich formularza: lewa tabelka klon, prawa biel i HDF, pod spodem uwagi o wymiarach docelowych, felcu, puszkach i zapasach. Wydruk „dla mnie” ma tabelki jedna pod drugą i przy każdej pozycji kody z pełnymi nazwami. Obie strony otwierają się w tym samym oknie; wydrukujesz je z PDF-ów z czatu.</p>
+      <h4>Konwencje</h4>
+      <ul class="bul">
+        <li><b>Wymiary docelowe</b>, razem z okleiną – zakład sam odejmuje jej grubość.</li>
+        <li><b>Długość</b> wzdłuż usłojenia. Kreska w <b>Okl.</b> obok długości to krawędź długa, obok szerokości – krótka; „—” jedna, „=” obie.</li>
+        <li><b>Kody:</b> L- lewa skrzynia szafy, R- prawa skrzynia, NIS- nisza, BL- blendy szafy, BM- bok maskujący, FR- fronty szafy, N- szafka przy liczniku, S- szafka pod lustrem.</li>
+      </ul>
+      <h3>${DEC_TITLE.klon} · ${qty(R.klon)} szt.</h3>
+      <${OrderTable} rows=${R.klon} onPanel=${onPanel} />
+      <h3>${DEC_TITLE.bial} · ${qty(R.bial)} szt.</h3>
+      <${OrderTable} rows=${R.bial} onPanel=${onPanel} />
+      <p class="note">Puszki ⌀35 wierci zakład przy jednej dłuższej krawędzi. Rozstaw jest symetryczny, więc front pasuje na lewo i na prawo po obróceniu do góry nogami. Fronty W1000 ST38 bywają 18,6 mm – zapytaj o grubość przy zamówieniu.</p>
+      <h3>${DEC_TITLE.hdf} · ${qty(R.hdf)} szt.</h3>
+      <${OrderTable} rows=${R.hdf} onPanel=${onPanel} />
+      <h3>Do wywiercenia samemu</h3>
+      <p class="note">${T2.konfirmaty} par konfirmatowych i ${T2.holes.hole5} otworów pod kołki – tylko tam, gdzie stoi półka. Otwory pod prowadnice koszy odrysujesz z samych prowadnic, w tym samym rzędzie 37 mm od frontu. Listwy dystansowe i prowadnice szuflad przykręcasz bez otworów systemowych, wkrętami.
+        ${T2.holes.plate} pilotów ⌀3 pod prowadniki zawiasów – wysokości to propozycja, ostatecznie dopasuj je do puszek z zakładu.</p>
+      <${Table} head=${["Formatka", "Otwory", "Szt."]} rows=${selfRows} />
+    </details>
+
+    <details open><summary>2a · Rozkrój i koszt</summary>
+      <${Nesting} T=${T2} nest=${nest2} />
+      <h4>CSV do optymalizatora rozkroju</h4>
+      <p class="note">Wymiary do zamówienia, długość wzdłuż usłojenia; kolumna Grain mówi, czego nie obracać.</p>
+      <${CopyBox} text=${optimizerCSV(pieces)} label="Skopiuj CSV" rows=5 />
+    </details>
+
+    <details><summary>3 · Zakład</summary>
+      <${Table} head=${["Zakład", "Adres", "Uwagi"]} rows=${SUPPLIERS.map((s) => [s.n, s.a, s.why])} />
+    </details>
+
+    <details open><summary>4 · Okucia i drobnica</summary>
+      <${Table} head=${["Element", "Ilość", "Uwagi"]} rows=${hardware(T2, lc)} />
+      <p class="note"><b>Osobno czy w zakładzie?</b> ${BUY_NOTE}</p>
+      <p class="note"><b>Nóżki nie wymagają nawiertów w zakładzie.</b> Stopkę przykręcasz czterema wkrętami do spodu wieńca, min. 60 mm od czoła. Przy liczniku omiń miejsce, gdzie rura wychodzi z podłogi.</p>
+    </details>
+
+    <details><summary>5 · Narzędzia</summary>
+      <${Table} head=${["Status", "Narzędzie", "Uwagi"]} rows=${TOOLS} /></details>
+
+    <details><summary>6 · Budżet orientacyjny</summary>
+      <${Table} head=${["Pozycja", "Koszt"]} rows=${[
+    ["Formatki z zakładu (szacunek)", zl(q0.lo, q0.hi)],
+    ["Okucia, kosze KOMPLEMENT, prowadnice, drobnica", zl(...hw)],
+    ["<b>Razem</b>", `<b>${zl(...tot)}</b>`]
+  ]} />
+      <p class="note">Bez narzędzi do dokupienia (ok. 500–900 zł, w tym szablon 32 mm, wyrzynarka i otwornica). Ceny okuć i koszy to rząd wielkości, nie cennik.</p>
+    </details>
+
+    <details open><summary>7 · Ryzyka – na co szczególnie uważać</summary>
+      <${Table} head=${["Ryzyko", "Co zrobić"]} rows=${RISKS(felcLp, cupLp).map(([a2, b2]) => [`<b>${a2}</b>`, b2])} />
+    </details>
+
+    <details><summary>8 · Pierwszy weekend — korpusy</summary>
+      <${Table} head=${["Kiedy", "Co", "Ile"]} rows=${WEEKEND(T2)} />
+      <h4>Kolejność jednej skrzyni</h4>
+      <ol class="bul">${BOX_STEPS.map((s) => html`<li dangerouslySetInnerHTML=${{ __html: s }} />`)}</ol>
+      <h4>Do obejrzenia przed tym weekendem</h4>
+      <${Table} head=${["Technika", "Frazy"]} rows=${WEEKEND_YT.map(([t, q]) => [t, q.map((x) => `<span class="kw">${x}</span>`).join(" ")])} />
+    </details>
+
+    <details><summary>9 · Krok po kroku (cały projekt)</summary>
+      ${STEPS.map((s, i) => html`<div class="step">
+        <div class="sn">${i + 1}</div>
+        <div class="sc"><h4>${s.t}</h4><p dangerouslySetInnerHTML=${{ __html: s.d }} /></div>
+      </div>`)}
+    </details>
+
+    <details><summary>10 · Czego się nauczyć</summary>
+      <${Table} head=${["Technika", "Frazy"]} rows=${YT.map(([t, q]) => [t, q.map((x) => `<span class="kw">${x}</span>`).join(" ")])} /></details>
+  </section>`;
+}
+
+// ui.js
+var { P: p, SHEET: meas, r0: r02 } = core_exports;
+var g = MODEL.g;
+var pB = PB, gB = MODEL_B.g;
+var DEFS = measureDefs(p).filter((d) => typeof meas[d.id] === "number");
+var DEFS_B = measureDefsB(pB, SHEET_B);
+var ALCS = [["1", "Szafa wnękowa"], ["2", "Szafka przy liczniku"], ["3", "Szafka pod lustrem"]];
+var AlcSwitch = ({ alc, setAlc }) => html`<div class="seg alc" role="group" aria-label="Wybór mebla">
+  ${ALCS.map(([k, t]) => html`<button aria-pressed=${alc === k} onClick=${() => setAlc(k)}>${t}</button>`)}
+</div>`;
+function ViewerFrame({ cls, viewerRef, children, overlay, views }) {
+  const canvas = useRef2(null);
+  const [fs, setFs] = useState3(false);
+  useLayoutEffect(() => {
+    const v = makeViewer(canvas.current);
+    viewerRef.current = v;
+    const ro = new ResizeObserver(() => v.size());
+    ro.observe(canvas.current.parentElement);
+    return () => {
+      ro.disconnect();
+      v.dispose();
+      viewerRef.current = null;
+    };
+  }, []);
+  useEffect2(() => {
+    document.body.classList.toggle("fs-on", fs);
+    const t = requestAnimationFrame(() => {
+      viewerRef.current?.size();
+      viewerRef.current?.place();
+    });
+    return () => cancelAnimationFrame(t);
+  }, [fs]);
+  useEffect2(() => {
+    const k = (e) => {
+      if (document.querySelector("dialog[open]")) return;
+      if (/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName)) return;
+      const m = { ArrowUp: [0, 1], ArrowDown: [0, -1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] };
+      if (e.key === "Escape" && fs) {
+        setFs(false);
+        return;
+      }
+      if (!m[e.key] && e.key !== "Home") return;
+      e.preventDefault();
+      e.key === "Home" ? viewerRef.current?.recenter() : viewerRef.current?.pan(...m[e.key]);
+    };
+    addEventListener("keydown", k);
+    return () => removeEventListener("keydown", k);
+  }, [fs]);
+  const pan = (a, b) => a === "c" ? viewerRef.current?.recenter() : viewerRef.current?.pan(a, b);
+  return html`
+    <div class=${cls + (fs ? " fs" : "")}>
+      <canvas ref=${canvas} />
+      ${children}
+      ${views && html`<div class="views">${views.map((v) => html`
+        <button onClick=${() => viewerRef.current?.setView(v.k)}>${v.t}</button>`)}</div>`}
+      <${Pad} on=${pan} />
+      <button class="fsbtn" title=${fs ? "Zamknij" : "Pełny ekran"}
+              onClick=${() => setFs((f) => !f)}>${fs ? "✕" : "⛶"}</button>
+      ${fs && overlay && html`<div class="fsctl">${overlay}</div>`}
+    </div>`;
+}
+var VIEWS = [{ k: "3d", t: "3D" }, { k: "front", t: "Przód" }, { k: "side", t: "Bok" }, { k: "top", t: "Góra" }];
+var Sl = ({ label, value, min = 0, max = 100, onInput }) => html`
+  <div class="sl"><span>${label}</span>
+    <input type="range" min=${min} max=${max} value=${value}
+           onInput=${(e) => onInput(+e.target.value)} /></div>`;
+var ViewControls = ({ view, setView, compact, noMeas }) => {
+  const t = (k, v) => setView((s) => ({ ...s, [k]: v }));
+  return html`<div class=${compact ? "" : "toggles"}>
+    <${Check} label="ściany"  checked=${view.walls}  onInput=${(v) => t("walls", v)} />
+    <${Check} label="fronty"  checked=${view.fronts} onInput=${(v) => t("fronts", v)} />
+    ${!noMeas && html`<${Check} label="wymiary" checked=${view.measOn} onInput=${(v) => t("measOn", v)} />`}
+    <${Sl} label=${html`otwarcie drzwi <b>${Math.round(view.open * 90)}°</b>`}
+      value=${view.open * 100} onInput=${(v) => t("open", v / 100)} />
+  </div>`;
+};
+var ExplodeControls = ({ view, setView, compact }) => {
+  const t = (k, v) => setView((s) => ({ ...s, [k]: v }));
+  return html`<div class=${compact ? "" : "toggles"}>
+    <${Check} label="nawierty" checked=${view.feats} onInput=${(v) => t("feats", v)} />
+    <${Check} label="osie konfirmatów" checked=${view.joints} onInput=${(v) => t("joints", v)} />
+    <${Check} label="lamele" checked=${view.bisc} onInput=${(v) => t("bisc", v)} />
+    <${Sl} label=${html`rozsunięcie <b>${view.explode}%</b>`}
+      value=${view.explode} onInput=${(v) => t("explode", v)} />
+  </div>`;
+};
+function ModelTab({ view, setView, model, room, defs, measv, groups }) {
+  const viewer = useRef2(null);
+  useEffect2(() => {
+    const v = viewer.current;
+    if (!v) return;
+    v.clear();
+    const root = new THREE.Group();
+    root.matrix.copy(SWAP);
+    root.matrixAutoUpdate = false;
+    root.add(room());
+    root.add(wardrobeGroup(model, { fronts: view.fronts, open: view.open }));
+    if (defs.length) root.add(measureGroup(defs, measv, groups, { showTodo: false, shown: view.shown }).group);
+    v.scene.add(root);
+    v.frame(root, v.camera.aspect > 1.3 ? 1.1 : 1.32);
+  }, [view.fronts, view.open, view.shown, model]);
+  useEffect2(() => {
+    const v = viewer.current;
+    if (!v) return;
+    v.scene.traverse((o) => {
+      if (o.userData?.isWall) o.visible = view.walls;
+      if (o.name === "meas") o.visible = view.measOn;
+    });
+  }, [view.walls, view.measOn, view.fronts, view.open, view.shown, model]);
+  const chips = view.measOn && defs.length > 0 && html`<div class="chips">${Object.entries(groups).map(([k, gr]) => {
+    const on = view.shown[k] !== false;
+    return html`<button style=${{ color: on ? gr.color : "var(--todo)", opacity: on ? 1 : 0.55 }}
+      title=${gr.name} onClick=${() => setView((s) => ({ ...s, shown: { ...s.shown, [k]: !on } }))}>${k}</button>`;
+  })}</div>`;
+  return html`<${ViewerFrame} cls="stage" viewerRef=${viewer} views=${VIEWS}
+      overlay=${html`<${ViewControls} view=${view} setView=${setView} compact noMeas=${!defs.length} />`}>
+      ${chips}
+    <//>`;
+}
+var EXP_TITLE = { 1: "szafa wnękowa", 2: "szafka przy liczniku", 3: "szafka pod lustrem" };
+function ExplodeTab({ view, setView, model, top }) {
+  const viewer = useRef2(null);
+  const items = useRef2([]);
+  const bisRef = useRef2([]);
+  const jointRefs = useRef2([]);
+  const ctr = useRef2([0, 0, 0]);
+  const lastK = useRef2(0);
+  useEffect2(() => {
+    const v = viewer.current;
+    if (!v) return;
+    v.clear();
+    const root = new THREE.Group();
+    root.matrix.copy(SWAP);
+    root.matrixAutoUpdate = false;
+    let mn2 = [1e9, 1e9, 1e9], mx2 = [-1e9, -1e9, -1e9];
+    model.panels.forEach((pn) => pn.inst.forEach((o) => {
+      panelCenter(pn, o).forEach((c, i) => {
+        mn2[i] = Math.min(mn2[i], c);
+        mx2[i] = Math.max(mx2[i], c);
+      });
+    }));
+    ctr.current = [0, 1, 2].map((i) => (mn2[i] + mx2[i]) / 2);
+    items.current = [];
+    model.panels.forEach((pn) => pn.inst.forEach((o) => {
+      const gr = new THREE.Group();
+      gr.matrixAutoUpdate = false;
+      const base = panelMatrix(pn, o);
+      gr.matrix.copy(base);
+      gr.add(panelMesh(pn, view.feats));
+      root.add(gr);
+      items.current.push({ g: gr, base, c: panelCenter(pn, o) });
+    }));
+    bisRef.current = (model.biscuits ?? []).map((b) => {
+      const m = biscuitMesh(b);
+      root.add(m);
+      const cs = (b.parts ?? []).map((code) => model.panels.find((q) => q.code === code)).filter(Boolean).map((q) => panelCenter(q));
+      return { g: m, base: m.matrix.clone(), c: cs.length === 2 ? [0, 1, 2].map((i) => (cs[0][i] + cs[1][i]) / 2) : b.pos };
+    });
+    const jm = new THREE.LineBasicMaterial({ color: 11549230 });
+    jointRefs.current = model.joints.map((j) => {
+      const geo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]);
+      const ln = new THREE.Line(geo, jm);
+      ln.renderOrder = 5;
+      root.add(ln);
+      const pa = model.panels.find((q) => q.id === j.pa), pb = model.panels.find((q) => q.id === j.pb);
+      return { ln, a: j.a, b: j.b, ca: panelCenter(pa), cb: panelCenter(pb) };
+    });
+    v.scene.add(root);
+    v.frame(root, model.alc === 3 ? 1.35 : 1.12);
+    v.dolly(1 + view.explode / 100 * 1.4);
+    lastK.current = view.explode / 100 * 1.4;
+  }, [view.feats, model]);
+  useEffect2(() => {
+    const v = viewer.current;
+    const k = view.explode / 100 * 1.4, c = ctr.current;
+    if (v) {
+      v.dolly((1 + k) / (1 + lastK.current));
+      lastK.current = k;
+    }
+    const off = (q) => [0, 1, 2].map((i) => (q[i] - c[i]) * k);
+    [...items.current, ...bisRef.current].forEach((it) => {
+      const o = off(it.c);
+      it.g.matrix.copy(it.base);
+      it.g.matrix.setPosition(it.base.elements[12] + o[0], it.base.elements[13] + o[1], it.base.elements[14] + o[2]);
+    });
+    bisRef.current.forEach((b) => b.g.visible = view.bisc);
+    jointRefs.current.forEach((j) => {
+      j.ln.visible = view.joints;
+      if (!view.joints) return;
+      const oa = off(j.ca), ob = off(j.cb);
+      j.ln.geometry.setFromPoints([
+        new THREE.Vector3(j.a[0] + oa[0], j.a[1] + oa[1], j.a[2] + oa[2]),
+        new THREE.Vector3(j.b[0] + ob[0], j.b[1] + ob[1], j.b[2] + ob[2])
+      ]);
+      j.ln.geometry.attributes.position.needsUpdate = true;
+      j.ln.geometry.computeBoundingSphere();
+    });
+  }, [view.explode, view.joints, view.feats, view.bisc, model]);
+  const nb = model.biscuits?.length ?? 0;
+  return html`<section>
+    ${top}
+    <h2>Widok rozstrzelony · ${EXP_TITLE[model.alc]}</h2>
+    <p class="note">Elementy odsuwają się od środka bryły. Czerwone osie pokazują konfirmaty, brązowe owale – lamele (${nb} szt.).
+      Krawędź w kolorze płyty jest oklejona, krawędź w drobne wióry zostaje surowa.</p>
+    <${ViewerFrame} cls="expwrap" viewerRef=${viewer} views=${VIEWS}
+      overlay=${html`<${ExplodeControls} view=${view} setView=${setView} compact />`} />
+    <${ExplodeControls} view=${view} setView=${setView} />
+    <div class="leg">
+      <span><i style=${{ background: "#dcc39a" }}></i>klon H3840 – lico i krawędź oklejona</span>
+      <span><i style=${{ background: "#f4f2ee", outline: "1px solid var(--line)" }}></i>biały W1000 – fronty</span>
+      <span><i class="chip"></i>krawędź surowa (bez okleiny)</span>
+      <span><i style=${{ background: "#c8955a", borderRadius: "50%" }}></i>lamela</span>
+      ${Object.values(HOLE).map((hl) => html`<span><i style=${{ background: hl.color }}></i>${hl.label}</span>`)}
+    </div>
+  </section>`;
+}
+function PanelDialog({ code, onClose, model }) {
+  const pn = model.panels.find((q) => q.code === code);
+  const viewer = useRef2(null);
+  const [face, setFace] = useState3("A");
+  useEffect2(() => {
+    if (!pn) return;
+    const nB = pn.feats.filter((f) => f.face === "B").length;
+    const nA = pn.feats.filter((f) => f.face === "A").length;
+    setFace(nB > nA ? "B" : "A");
+  }, [code]);
+  useEffect2(() => {
+    const v = viewer.current;
+    if (!v || !pn) return;
+    v.clear();
+    const holder = new THREE.Group();
+    holder.scale.setScalar(1e-3);
+    const gm = panelMesh(pn, true);
+    gm.position.set(-pn.Lg / 2, -pn.Wd / 2, -pn.t / 2);
+    holder.add(gm);
+    v.scene.add(holder);
+    requestAnimationFrame(() => {
+      v.size();
+      v.frame(holder, 1.18);
+    });
+  }, [code]);
+  useEffect2(() => {
+    const v = viewer.current;
+    if (!v) return;
+    v.state.th = face === "B" ? Math.PI - 0.22 : -0.22;
+    v.state.ph = 1.28;
+    v.place();
+  }, [face, code]);
+  if (!pn) return null;
+  const d = drillText(pn), od = orderDims(pn);
+  const dec = DECOR[decorOf(pn)];
+  return html`<${Dialog} open=${!!code} onClose=${onClose} wide>
+    <h2>${pn.code} · ${pn.name}</h2>
+    <${ViewerFrame} cls="pvcanvas" viewerRef=${viewer} />
+    <p class="note"><b>${r02(pn.Lg)} × ${r02(pn.Wd)} × ${String(pn.t).replace(".", ",")} mm</b> · ${pn.qty} szt. · ${dec.kolor} ${dec.symbol} ${dec.nazwa}<br/>
+      ${pn.order ? html`Do zamówienia: <b>${od.L} × ${od.W} mm</b> (zapas na docięcie)<br/>` : null}
+      Obrzeże 2 mm: ${edgeText(pn)}
+      ${pn.faceNote && html`<br/><span class="dim">${pn.faceNote}</span>`}</p>
+    ${d.length ? html`<ul class="bul">${d.map((x) => html`<li>${x}</li>`)}</ul>` : html`<p class="note">Bez nawiertów.</p>`}
+    <div class="seg">
+      <button aria-pressed=${face === "A"} onClick=${() => setFace("A")}>Lico A (do wnętrza)</button>
+      <button aria-pressed=${face === "B"} onClick=${() => setFace("B")}>Lico B (na zewnątrz)</button>
+    </div>
+    <div class="dlgbar"><button class="pri" onClick=${onClose}>Zamknij</button></div>
+  <//>`;
+}
+var FINDINGS = [
+  ["Lewa wnęka", ["A1", "A2", "A3", "A4", "A5", "A6"]],
+  ["Prawa wnęka", ["B1", "B2", "B3", "B4", "B5", "B6"]],
+  ["Głębokość przy lewej ścianie", ["C1", "C2", "C3"]],
+  ["Głębokość przy drzwiach", ["C10", "C11", "C12"]],
+  ["Czoło występu", ["G1d", "G1s", "G1g"]],
+  ["Zwis: sufit → spód", ["G2Lw", "G2Lf", "G2Rw", "G2Rf"]],
+  ["Sufit nad lewą wnęką", ["EL1", "EL2", "EL3", "EL4"]],
+  ["Sufit nad prawą wnęką", ["ER1", "ER2", "ER3", "ER4"]]
+].map(([n, ids]) => {
+  const s = spread(meas, ids);
+  return s ? `${n}: ${s.min}–${s.max} mm, rozrzut ${s.max - s.min} mm` : null;
+}).filter(Boolean);
+["F1", "F2"].forEach((id) => {
+  if (typeof meas[id] === "number")
+    FINDINGS.push(`Wysokość z przekątnej ${id}: ${r02(Math.sqrt(Math.max(0, meas[id] ** 2 - p.W_L ** 2)))} mm (kontrola pomiaru E)`);
+});
+FINDINGS.push(`Korpusy ${r02(g.depth)} mm głębokie (jak rama PAX 58), ${p.gapBack} mm od ściany; wnętrze do pleców ${r02(g.depth - 13)} mm, lico frontów ${r02(g.dF + 2 + p.tF)} mm od ściany`);
+FINDINGS.push(`Spód zwisu (najniższy punkt): ${r02(p.BZ)} mm od podłogi`);
+FINDINGS.push(`Nisza: ${r02(g.nW)} × ${r02(g.nDep)} mm, do wysokości ${r02(g.nTop)} mm`);
+var partRows = (model) => {
+  const rows = [], { g: gg, p: pp } = model;
+  if (model.alc === 2) rows.push(["Korpus", r02(gg.w), r02(gg.zF - pp.plinth), r02(gg.depth)]);
+  else if (model.alc === 3) rows.push(["Szafka z blatem i cokołem", r02(pp.W), r02(pp.H), r02(model.layout.C.depthTotal)]);
+  else for (const [k, nm] of [["L", "lewy"], ["R", "prawy"]]) {
+    const w = gg.carc[k][1] - gg.carc[k][0];
+    rows.push([`Korpus ${nm}`, r02(w), r02(gg.zTop(k) - pp.plinth), r02(gg.depth)]);
+  }
+  const fr = {};
+  model.panels.filter((q) => q.grp === "front").forEach((q) => {
+    const key = `${r02(q.Wd)}|${r02(q.Lg)}`;
+    fr[key] = (fr[key] || 0) + q.qty;
+  });
+  Object.entries(fr).forEach(([k, n]) => {
+    const [a, b] = k.split("|");
+    rows.push([`Front ×${n}`, a, b, "18,6"]);
+  });
+  return rows;
+};
+var FINDINGS_B = (() => {
+  const H = ["H1", "H2", "H3", "H4", "H5"].map((k) => SHEET_B[k]), lo = Math.min(...H), hi = Math.max(...H);
+  const c = (v) => String(v).replace(".", ",");
+  const hD = Math.sqrt(SHEET_B.DG ** 2 - SHEET_B.W ** 2 - SHEET_B.D ** 2);
+  return [
+    `Sufit: ${c(lo)}–${c(hi)} mm w pięciu punktach, rozrzut ${c(hi - lo)} mm. Nad szafą wnękową było ${p.H_C_L}–${Math.max(p.H_C_L_max, p.H_C_R_max)} mm – pomiary są spójne.`,
+    `Przekątna D→H ${SHEET_B.DG} mm daje sufit ok. ${r02(hD)} mm, o ${r02(SHEET_B.H4 - hD)} mm mniej niż H4 – laser trafił najpewniej przed narożnik. Liczone z H1–H5.`,
+    `Szerokość ${SHEET_B.W} mm do punktu ${pB.frameGap} mm przed ościeżnicą; od ościeżnicy do boku maskującego zostaje ${r02(gB.x0 - pB.t)} mm.`,
+    `Głębokość ${SHEET_B.D} mm: korpus ${r02(gB.depth)} mm + ${pB.gapBack} mm od ściany, czyli krawędź korpusu równo z licem ściany; front ${r02(gB.dF + 2 + pB.tF - pB.D)} mm przed nim.`
+  ];
+})();
+var MEAS_ROWS_B = DEFS_B.map((d) => [d.id, d.desc, String(SHEET_B[d.id]).replace(".", ",") + " mm"]);
+var MEAS_ROWS = DEFS.map((d) => [d.id, d.desc, meas[d.id] + " mm"]);
+var TABS = [["model", "Model"], ["exp", "Rozstrzelony"], ["plan", "Plan i materiały"]];
+var polki2 = (n) => n === 1 ? "półka" : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? "półki" : "półek";
+var mmList = (a) => a.map((v) => String(r02(v * 2) / 2).replace(".", ",")).join(" · ") + " mm";
+function Interior({ model }) {
+  const { layout: L, g: g2, p: pp } = model;
+  const R = L.bays.RD, up = L.bays.LG, H = L.hinges, B = R.baskets;
+  return html`<details open><summary>Wnętrze</summary>
+    <${Table} head=${["Komora", "Układ", "Prześwit"]} rows=${[
+    ["Lewa, pod stałą półką", `drążek na ${r02(L.rail.z)} mm (oś), nad nim półka; pod drążkiem pusto aż do dna`, `${r02(L.rail.clearBelow)} mm pod drążkiem, ${r02(L.bays.LD.gaps[1])} mm nad półką`],
+    ["Prawa, pod stałą półką", `2 kosze ${BASKET[58].name.replace("KOMPLEMENT ", "")} na dole, ${R.n} ${polki2(R.n)} nad nimi`, `${R.gaps.slice(1).map((v) => r02(v)).join(" / ")} mm między półkami`],
+    ["Obie, nad stałą półką", "bez półek – walizki, pościel, sezonowe", `${up.inner} mm`]
+  ]} />
+    <p class="note">Drążek w lewej skrzyni wisi na ${r02(L.rail.z)} mm – osoba 155 cm zawiesza wieszak bez wspinania się, a pod nim mieści się długi płaszcz (${r02(L.rail.clearBelow)} mm do dna).
+      Półka nad drążkiem leży ${r02(L.rail.gapAbove)} mm nad nim (miejsce na haczyk wieszaka), spód na ${r02(L.bays.LD.shelfZ[0])} mm.</p>
+    <p class="note">Kosze w prawej skrzyni: prowadnice na ${mmList(B.rails)} od podłogi, w otworach siatki 32 mm i rzędzie 37 mm od frontu – jak w ramie PAX.
+      Kosz zajmuje ${B.ranges.map(([a, b]) => `${r02(a)}–${r02(b)}`).join(" i ")} mm. Spody półek nad nimi: ${mmList(R.shelfZ)}.</p>
+    <p class="note">Osie zawiasów od podłogi – lewa skrzynia: ${mmList(H.L)}; prawa: ${mmList(H.R)}. Każda oś jest co najmniej 40 mm od półki i 50 mm od prowadnicy kosza, więc prowadnik zawiasu nie trafi ani w półkę, ani w prowadnicę.</p>
+  </details>`;
+}
+function InteriorB({ model }) {
+  const { layout: L, g: g2, p: pp } = model, N = L.bays.ND, up = L.bays.NG, H = L.hinges, D = L.N;
+  return html`<details open><summary>Wnętrze</summary>
+    <${Table} head=${["Komora", "Układ", "Prześwit"]} rows=${[
+    ["Pod stałą półką", `${D.zb.length} szuflady na prowadnicach ${D.L} mm (listwy dystansowe ${pp.spacerT} mm), ${N.n} ${polki2(N.n)} na pełną głębokość nad nimi`, `${N.gaps.slice(1).map((v) => r02(v)).join(" / ")} mm między półkami`],
+    ["Nad stałą półką", "bez półek", `${up.inner} mm`]
+  ]} />
+    <p class="note">Skrzynki ${D.bw} × ${D.bh} × ${D.L} mm, spody na ${mmList(D.zb)}, prowadnice (oś) ${D.off} mm nad spodem skrzynki, czyli na ${mmList(D.zb.map((z) => z + D.off))}.
+      Listwy dystansowe 300 × ${pp.spacerH} mm przykręcone do obu boków odsuwają szuflady od zawiasów: przy otwartych drzwiach skrzynka mija prowadnik i ramię zawiasu.</p>
+    <p class="note">Szuflady kończą się ${r02(D.backGap)} mm od ściany, więc rura z obejmą może wystawać do ok. ${r02(D.backGap - 10)} mm. Półki i stała półka sięgają tylnej krawędzi korpusu; w miejscu rury wycinasz w nich wcięcie od tyłu.
+      Stała półka roboczo na ${pp.H_LOW} mm (wierzch); na miejscu ustawisz ją nad albo pod licznikiem i wtedy przesuniesz konfirmaty w bokach.</p>
+    <p class="note">Spody półek: ${mmList(N.shelfZ)}. Osie zawiasów: ${mmList(H.N)} – każda co najmniej 40 mm od listwy dystansowej i półki.</p>
+  </details>`;
+}
+function GasNotes() {
+  return html`<details open><summary>Licznik gazu</summary>
+    <ul class="bul">
+      <li><b>Rura za szufladami.</b> Szuflady kończą się ok. 80 mm od ściany, więc rura z obejmą może wystawać do ok. 70 mm. Jeśli więcej – skracasz skrzynki od tyłu i bierzesz prowadnice 250 mm.</li>
+      <li><b>Wcięcia, nie otwory.</b> Półki, stała półka i wieńce sięgają do tylnej krawędzi korpusu. Gdzie wypada rura, wcięcie robisz od tylnej krawędzi – korpus i półki wjeżdżają od frontu, a zamknięty otwór nie nasunie się na pionową rurę. Szablon z kartonu, 1–2 cm luzu dookoła.</li>
+      <li><b>Nic nie opiera się o rurę</b> i nic na niej nie wisi – instalacja gazowa nie jest nośna.</li>
+      <li><b>Wentylacja.</b> Szafka nie może być szczelna: 4 otwory ⌀60 z kratkami w drzwiach, dwa u góry, dwa u dołu.</li>
+      <li><b>Dostęp.</b> Kurek i licznik osiągalne od ręki, drzwi bez zamka, przed licznikiem nic nie składujesz.</li>
+      <li><b>Bez elektryki</b> w tej komorze. Kotwy w ścianie z daleka od rur.</li>
+      <li><b>Sztywność bez pleców.</b> Prawy bok przykręcasz do ściany wnęki przez podkładki 5 mm, wieniec górny kątownikami do ściany tylnej. Wtedy ściany robią to, co robiłyby plecy. Tymczasowy skos z tyłu trzyma kąt tylko do postawienia – przed wsunięciem go zdejmujesz.</li>
+    </ul>
+  </details>`;
+}
+function InteriorC({ model }) {
+  const { layout: L, p: pp } = model, C = L.C;
+  return html`<details open><summary>Wnętrze i konstrukcja</summary>
+    <${Table} head=${["Część", "Układ", "Wymiar"]} rows=${[
+    ["Lewa", `${pp.drawers} szuflady na prowadnicach kulkowych ${pp.slide} mm (pełny wysuw)`, `skrzynki ${C.bw} × ${pp.boxH} × ${pp.slide} mm`],
+    ["Prawa", "drzwi z gałką, za nimi 1 półka", `światło ${r02(C.wr)} × ${r02(C.hIn)} mm`],
+    ["Cokół", `cofnięty ${pp.plinthIn} mm od frontu i ${pp.plinthSide} mm od boków`, `${pp.plinthH} mm`]
+  ]} />
+    <p class="note">Blat i dno idą przez całą szerokość i są wysunięte ${pp.over} mm przed boki, więc białe fronty siedzą w klonowej ramie – tak jak w dużej szafie, gdzie fronty obramowują listwa, cokół i boki maskujące.
+      Blat łączysz z bokami i przegrodą na lamele i klej, żeby na wierzchu nie było łbów konfirmatów. Dno – konfirmatami od spodu.</p>
+  </details>`;
+}
+function App() {
+  const [tab, setTab] = useState3("model");
+  const [alc, setAlc] = useState3("1");
+  const [view, setView] = useState3({ walls: true, fronts: true, measOn: false, open: 0, explode: 30, feats: true, joints: true, bisc: true, shown: {} });
+  const [dlgPanel, setDlgPanel] = useState3(null);
+  const A = makeModel(), B = makeModelB(), C = makeModelC(), ALL = makeAll();
+  const cur = alc === "2" ? B : alc === "3" ? C : A;
+  useEffect2(() => {
+    scrollTo({ top: 0 });
+  }, [tab]);
+  const room = alc === "2" ? () => roomGroupB(pB, gB) : alc === "3" ? () => roomGroupC(C.model) : () => roomGroup(p, g);
+  const defs = alc === "2" ? DEFS_B : alc === "3" ? [] : DEFS;
+  const sw = html`<${AlcSwitch} alc=${alc} setAlc=${setAlc} />`;
+  const pc = C.model.p, LC = C.model.layout.C;
+  return html`
+    ${tab === "model" && html`<${ModelTab} view=${view} setView=${setView} model=${cur.model} room=${room}
+        defs=${defs} measv=${alc === "2" ? SHEET_B : meas} groups=${alc === "2" ? GROUPS_B : GROUPS} />`}
+    <main>
+      <div class="tabs" role="tablist">
+        ${TABS.map(([k, t]) => html`<button role="tab" aria-selected=${tab === k}
+          onClick=${() => setTab(k)}>${t}</button>`)}
+      </div>
+
+      ${tab === "model" && alc === "1" && html`<section>
+        ${sw}
+        <h1>Szafa wnękowa</h1>
+        <p class="sub">Front ${r02(g.X_right - g.X_left)} × ${r02(g.zF)} mm, korpusy ${r02(g.depth)} mm głębokie · klonowe korpusy, białe fronty · nisza ${r02(g.nW)} × ${r02(g.nDep)} mm</p>
+        <${ViewControls} view=${view} setView=${setView} />
+        <details open><summary>Wnioski z pomiarów</summary>
+          <ul class="bul dim">${FINDINGS.map((f) => html`<li>${f}</li>`)}</ul></details>
+        <details open><summary>Korpusy i fronty</summary>
+          ${A.warnings.map((w) => html`<p class="warn">${w}</p>`)}
+          <${Table} head=${["Element", "Szer.", "Wys.", "Głęb."]} rows=${partRows(A.model)} />
+        </details>
+        <${Interior} model=${A.model} />
+        <details><summary>Pomiary — protokół</summary>
+          <p class="note">Odczyty z lasera, ${MEAS_ROWS.length} pozycji. Projekt jest na nich zamrożony.</p>
+          <${Table} head=${["Kod", "Co mierzone", "Odczyt"]} rows=${MEAS_ROWS} />
+        </details>
+      </section>`}
+
+      ${tab === "model" && alc === "2" && html`<section>
+        ${sw}
+        <h1>Szafka przy liczniku</h1>
+        <p class="sub">Front ${r02(gB.w)} × ${r02(gB.zF)} mm, korpus ${r02(gB.depth)} mm, równo z licem ściany · jedne drzwi, bez pleców · ościeżnica drzwi do pokoju zaznaczona orientacyjnie</p>
+        <${ViewControls} view=${view} setView=${setView} />
+        <details open><summary>Wnioski z pomiarów</summary>
+          <ul class="bul dim">${FINDINGS_B.map((f) => html`<li>${f}</li>`)}</ul></details>
+        <details open><summary>Korpus i front</summary>
+          ${B.warnings.map((w) => html`<p class="warn">${w}</p>`)}
+          <${Table} head=${["Element", "Szer.", "Wys.", "Głęb."]} rows=${partRows(B.model)} />
+        </details>
+        <${GasNotes} />
+        <${InteriorB} model=${B.model} />
+        <details><summary>Pomiary — protokół</summary>
+          <p class="note">Odczyty z 21 października, ${MEAS_ROWS_B.length} pozycji. Szerokość i głębokość mierzone raz, wysokość w pięciu punktach.</p>
+          <${Table} head=${["Kod", "Co mierzone", "Odczyt"]} rows=${MEAS_ROWS_B} />
+        </details>
+      </section>`}
+
+      ${tab === "model" && alc === "3" && html`<section>
+        ${sw}
+        <h1>Szafka pod lustrem</h1>
+        <p class="sub">${pc.W} × ${pc.H} × ${LC.depthTotal} mm · stoi w przedpokoju na cofniętym cokole · 3 szuflady i drzwi, białe fronty w klonowej ramie</p>
+        <${ViewControls} view=${view} setView=${setView} noMeas />
+        <details open><summary>Wymiary</summary>
+          ${C.warnings.map((w) => html`<p class="warn">${w}</p>`)}
+          <${Table} head=${["Element", "Szer.", "Wys.", "Głęb."]} rows=${partRows(C.model)} />
+        </details>
+        <${InteriorC} model=${C.model} />
+      </section>`}
+
+      ${tab === "exp" && html`<${ExplodeTab} view=${view} setView=${setView} model=${cur.model} top=${sw} />`}
+      ${tab === "plan" && html`<${PlanTab} all=${ALL} A=${A} B=${B} C=${C} onPanel=${setDlgPanel} />`}
+    </main>
+
+    <${PanelDialog} code=${dlgPanel} model=${ALL.model} onClose=${() => setDlgPanel(null)} />`;
+}
+
+// entry.js
+render(html`<${App} />`, document.getElementById("app"));
+
 </script>
 </body>
 </html>
+

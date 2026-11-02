@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Formatki z opisami</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<style>
+:root{
+  --paper:#ffffff; --ink:#151515; --rule:#2a2a2a; --shade:#dcdcdc; --dim:#5c5a55; --desk:#e8e5df; --acc:#8a5a2b;
+  --sans:Arial,"Helvetica Neue",Helvetica,"Liberation Sans",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--desk);color:var(--ink);font:13px/1.35 var(--sans);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 48px}
+.bar{max-width:210mm;margin:0 auto 12px;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;color:var(--dim);font-size:14px}
+.bar button{font:inherit;padding:.4em .9em;border:1px solid #b9b4aa;background:var(--paper);color:var(--ink);border-radius:8px;cursor:pointer}
+.bar button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.sheet{background:var(--paper);max-width:210mm;margin:0 auto 18px;padding:10mm 10mm 11mm;box-shadow:0 1px 2px rgba(0,0,0,.12),0 8px 24px rgba(0,0,0,.08)}
+.scroll{overflow-x:auto}
+.cap{font-size:11px;color:var(--dim);margin:0 0 2px}
+table.f{width:100%;border-collapse:collapse;table-layout:fixed;font-variant-numeric:tabular-nums}
+table.f th,table.f td{border:1px solid var(--rule);padding:0 4px;height:6mm;text-align:center;vertical-align:middle}
+table.f th{font-size:10.5px;font-weight:700}
+table.f tr.val td{font-size:15px;font-weight:700;letter-spacing:.02em}
+table.f td.n{font-size:13.5px}
+table.f td.lp{font-weight:700;font-size:12px}
+table.f .sh{background:var(--shade)}
+table.f td.ok{font-size:17px;font-weight:700;line-height:1}
+@media print{
+  @page{size:A4;margin:8mm}
+  body{background:#fff;padding:0}
+  .bar{display:none}
+  .sheet{box-shadow:none;margin:0;max-width:none;padding:0;break-after:page}
+  .sheet:last-child{break-after:auto}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+h1{font-size:18px;margin:0 0 1mm}
+.sub{color:var(--dim);font-size:11.5px;margin:0 0 3mm}
+h2{font-size:13px;margin:5mm 0 1.5mm;letter-spacing:.02em}
+table.m{width:100%;border-collapse:collapse;table-layout:fixed;font-size:11px;font-variant-numeric:tabular-nums}
+table.m th,table.m td{border:1px solid #9a968d;padding:1mm 1.5mm;text-align:center;vertical-align:top}
+table.m th{font-size:9.5px;text-transform:uppercase;letter-spacing:.04em;background:#efede8}
+table.m th.l,table.m td.l{text-align:left}
+table.m td.lp{font-weight:700}
+table.m td.ok{font-size:14px;font-weight:700;line-height:1.1}
+table.m td.n{font-size:12px}
+table.m .it{display:block;margin:0 0 .6mm}
+table.m .it i{color:var(--dim);font-style:normal;font-size:9.5px;margin-left:5px}
+table.m .zap{font-size:9px;color:var(--acc)}
+.codes{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1mm 5mm;font-size:10.5px;margin:2mm 0 0;padding:0;list-style:none}
+.codes b{display:inline-block;min-width:34px}
+@media print{ table.m tr{break-inside:avoid} }
+</style>
+</head>
+<body>
+<div class="bar">
+  <button type="button" id="back">← Wróć do projektu</button>
+  <span>Wersja dla mnie: te same pozycje co na zamówieniu, z pełnymi nazwami.</span>
+</div>
+<section class="sheet">
+  <h1>Formatki – wersja z opisami</h1>
+  <p class="sub">Numery LP są takie same jak na zamówieniu dla QUEST. Po odbiorze opisz ołówkiem na każdej formatce jej kod i strzałkę „dół”.</p>
+  <ul class="codes">
+    <li><b>L-</b> lewa skrzynia szafy</li><li><b>R-</b> prawa skrzynia szafy</li><li><b>NIS-</b> nisza między skrzyniami</li>
+    <li><b>BL-</b> blendy i listwy szafy</li><li><b>BM-</b> bok maskujący szafy</li><li><b>COK</b> cokół szafy</li>
+    <li><b>FR-</b> fronty szafy</li><li><b>N-</b> szafka przy liczniku</li><li><b>S-</b> szafka pod lustrem</li>
+    <li><b>BOKL/BOKP</b> bok lewy/prawy</li><li><b>WD/WG</b> wieniec dolny/górny</li><li><b>STA</b> półka stała</li>
+  </ul>
+  <h2>Klon H3840 ST9 · 68 szt.</h2>
+  <div class="scroll"><table class="m">
+    <colgroup><col style="width:6%"><col style="width:6%"><col style="width:9%"><col style="width:9%"><col style="width:6%"><col style="width:6%"><col style="width:9%"><col></colgroup>
+    <thead><tr><th>LP</th><th>Okl.</th><th>Dług.</th><th>Szer.</th><th>Okl.</th><th>Szt.</th><th>Obróbka</th><th class="l">Co to jest</th></tr></thead>
+    <tbody><tr>
+      <td class="lp">1</td><td class="ok">—</td><td class="n">2300</td><td class="n">580</td><td class="ok"></td><td class="n">4</td>
+      <td>felc</td>
+      <td class="l"><div class="it"><b>L-BOKL</b> Bok lewy – skrzynia lewa<i>szafa wnękowa</i></div><div class="it"><b>L-BOKP</b> Bok prawy – skrzynia lewa<i>szafa wnękowa</i></div><div class="it"><b>R-BOKL</b> Bok lewy – skrzynia prawa<i>szafa wnękowa</i></div><div class="it"><b>R-BOKP</b> Bok prawy – skrzynia prawa<i>szafa wnękowa</i></div></td>
+    </tr><tr>
+      <td class="lp">2</td><td class="ok">—</td><td class="n">854</td><td class="n">580</td><td class="ok"></td><td class="n">2</td>
+      <td>felc</td>
+      <td class="l"><div class="it"><b>L-WD</b> Wieniec dolny – skrzynia lewa<i>szafa wnękowa</i></div><div class="it"><b>L-WG</b> Wieniec górny – skrzynia lewa<i>szafa wnękowa</i></div></td>
+    </tr><tr>
+      <td class="lp">3</td><td class="ok">—</td><td class="n">854</td><td class="n">565</td><td class="ok"></td><td class="n">1</td>
+      <td></td>
+      <td class="l"><div class="it"><b>L-STA</b> Półka stała (konfirmaty) – skrzynia lewa<i>szafa wnękowa</i></div></td>
+    </tr><tr>
+      <td class="lp">4</td><td class="ok">—</td><td class="n">853</td><td class="n">540</td><td class="ok"></td><td class="n">1</td>
+      <td></td>
+      <td class="l"><div class="it"><b>L-POL</b> Półka nad drążkiem – skrzynia lewa<i>szafa wnękowa</i></div></td>
+    </tr><tr>
+      <td class="lp">5</td><td class="ok">—</td><td class="n">464</td><td class="n">580</td><td class="ok"></td><td class="n">2</td>
+      <td>felc</td>
+      <td class="l"><div class="it"><b>R-WD</b> Wieniec dolny – skrzynia prawa<i>szafa wnękowa</i></div><div class="it"><b>R-WG</b> Wieniec górny – skrzynia prawa<i>szafa wnękowa</i></div></td>
+    </tr><tr>
+      <td class="lp">6</td><td class="ok">—</td><td class="n">464</td><td class="n">565</td><td class="ok"></td><td class="n">1</td>
+      <td></td>
+      <td class="l"><div class="it"><b>R-STA</b> Półka stała (konfirmaty) – skrzynia prawa<i>szafa wnękowa</i></div></td>
+    </tr><tr>
+      <td class="lp">7</td><td class="ok">—</td><td class="n">463</td><td class="n">540</td><td class="ok"></td><td class="n">4</td>
+      <td></td>
+      <td class="l"><div class="it"><b>R-POL</b> Półka przestawna – skrzynia prawa ×4<i>szafa wnękowa</i></div></td>
+    </tr><tr>
+      <td class="lp">8</td><td class="ok">—</td><td class="n">2068</td><td class="n">191</td><td class="ok">—</td><td class="n">1</td>
+      <td><div class="zap">zapas</div></td>
+      <td class="l"><div class="it"><b>NIS-PLE</b> Plecy niszy<i>szafa wnękowa</i></div></td>
+    </tr><tr>
+      <td class="lp">9</td><td class="ok">—</td><td class="n">1400</td><td class="n">172</td><td class="ok"></td><td class="n">1</td>
+      <td><div class="zap">zapas</div></td>
+      <td class="l"><div class="it"><b>NIS-LIS</b> Listwa na 6 półek i daszek niszy – cięta na miejscu</div><div class="it"><b>NIS-POL</b> Półka niszy ×6<i>szafa wnękowa</i></div><div class="it"><b>NIS-DAS</b> Daszek niszy pod podciągiem<i>szafa wnękowa</i></div></td>
+    </tr><tr>
+      <td class="lp">10</td><td class="ok">—</td><td class="n">2463</td><td class="n">72</td><td class="ok"></td><td class="n">1</td>
+      <td><div class="zap">zapas</div></td>
+      <td class="l"><div class="it"><b>BL-BOK</b> Bok zamykający szczelinę przy lewej ścianie<i>szafa wnękowa</i></div></td>
+    </tr><tr>
+      <td class="lp">11</td><td class="ok"></td><td class="n">2200</td><td class="n">60</td><td class="ok"></td><td class="n">1</td>
+      <td></td>
+      <td class="l"><div class="it"><b>BL-LIST</b> Listewka mocująca bok zamykający (kątownik na lamele)<i>szafa wnękowa</i></div></td>
+    </tr><tr>
+      <td class="lp">12</td><td class="ok">—</td><td class="n">1575</td><td class="n">85</td><td class="ok">—</td><td class="n">1</td>
+      <td><div class="zap">zapas</div></td>
+      <td class="l"><div class="it"><b>BL-GORA</b> Listwa górna (blenda pod sufitem)<i>szafa wnękowa</i></div></td>
+    </tr><tr>
+      <td class="lp">13</td><td class="ok">—</td><td class="n">1575</td><td class="n">80</td><td class="ok">—</td><td class="n">1</td>
+      <td><div class="zap">zapas</div></td>
+      <td class="l"><div class="it"><b>COK</b> Cokół<i>szafa wnękowa</i></div></td>
+    </tr><tr>
+      <td class="lp">14</td><td class="ok">—</td><td class="n">2492</td><td class="n">641</td><td class="ok"></td><td class="n">1</td>
+      <td><div class="zap">zapas</div></td>
+      <td class="l"><div class="it"><b>BM-P</b> Bok maskujący prawy (od podłogi do sufitu)<i>szafa wnękowa</i></div></td>
+    </tr><tr>
+      <td class="lp">15</td><td class="ok">—</td><td class="n">2300</td><td class="n">375</td><td class="ok"></td><td class="n">2</td>
+      <td></td>
+      <td class="l"><div class="it"><b>N-BOKL</b> Bok lewy – szafka przy liczniku</div><div class="it"><b>N-BOKP</b> Bok prawy – szafka przy liczniku</div></td>
+    </tr><tr>
+      <td class="lp">16</td><td class="ok">—</td><td class="n">464</td><td class="n">375</td><td class="ok"></td><td class="n">3</td>
+      <td></td>
+      <td class="l"><div class="it"><b>N-WD</b> Wieniec dolny – szafka przy liczniku</div><div class="it"><b>N-WG</b> Wieniec górny – szafka przy liczniku</div><div class="it"><b>N-STA</b> Półka stała (konfirmaty) – szafka przy liczniku</div></td>
+    </tr><tr>
+      <td class="lp">17</td><td class="ok">—</td><td class="n">463</td><td class="n">350</td><td class="ok"></td><td class="n">4</td>
+      <td></td>
+      <td class="l"><div class="it"><b>N-POL</b> Półka przestawna – szafka przy liczniku ×4</div></td>
+    </tr><tr>
+      <td class="lp">18</td><td class="ok"></td><td class="n">300</td><td class="n">60</td><td class="ok"></td><td class="n">4</td>
+      <td></td>
+      <td class="l"><div class="it"><b>N-LDS</b> Listwa dystansowa pod prowadnicę – szafka przy liczniku ×4</div></td>
+    </tr><tr>
+      <td class="lp">19</td><td class="ok">—</td><td class="n">300</td><td class="n">160</td><td class="ok">—</td><td class="n">4</td>
+      <td></td>
+      <td class="l"><div class="it"><b>N-SZB</b> Bok skrzynki szuflady – szafka przy liczniku ×4</div></td>
+    </tr><tr>
+      <td class="lp">20</td><td class="ok">—</td><td class="n">366</td><td class="n">160</td><td class="ok"></td><td class="n">4</td>
+      <td></td>
+      <td class="l"><div class="it"><b>N-SZC</b> Czoło / tył skrzynki szuflady – szafka przy liczniku ×4</div></td>
+    </tr><tr>
+      <td class="lp">21</td><td class="ok">—</td><td class="n">500</td><td class="n">80</td><td class="ok">—</td><td class="n">1</td>
+      <td><div class="zap">zapas</div></td>
+      <td class="l"><div class="it"><b>N-COK</b> Cokół – szafka przy liczniku</div></td>
+    </tr><tr>
+      <td class="lp">22</td><td class="ok">—</td><td class="n">500</td><td class="n">76</td><td class="ok">—</td><td class="n">1</td>
+      <td><div class="zap">zapas</div></td>
+      <td class="l"><div class="it"><b>N-LIS</b> Listwa górna (blenda pod sufitem) – szafka przy liczniku</div></td>
+    </tr><tr>
+      <td class="lp">23</td><td class="ok">—</td><td class="n">2484</td><td class="n">436</td><td class="ok"></td><td class="n">1</td>
+      <td><div class="zap">zapas</div></td>
+      <td class="l"><div class="it"><b>N-BM</b> Bok maskujący lewy (od podłogi do sufitu) – szafka przy liczniku</div></td>
+    </tr><tr>
+      <td class="lp">24</td><td class="ok">—</td><td class="n">850</td><td class="n">276</td><td class="ok">=</td><td class="n">2</td>
+      <td></td>
+      <td class="l"><div class="it"><b>S-BLAT</b> Blat szafki pod lustrem</div><div class="it"><b>S-DNO</b> Dno szafki pod lustrem</div></td>
+    </tr><tr>
+      <td class="lp">25</td><td class="ok">—</td><td class="n">404</td><td class="n">255</td><td class="ok"></td><td class="n">3</td>
+      <td></td>
+      <td class="l"><div class="it"><b>S-BOKL</b> Bok lewy szafki pod lustrem</div><div class="it"><b>S-BOKP</b> Bok prawy szafki pod lustrem</div><div class="it"><b>S-PRZ</b> Przegroda szafki pod lustrem (szuflady | drzwi)</div></td>
+    </tr><tr>
+      <td class="lp">26</td><td class="ok">—</td><td class="n">413</td><td class="n">235</td><td class="ok"></td><td class="n">1</td>
+      <td></td>
+      <td class="l"><div class="it"><b>S-POL</b> Półka za drzwiami szafki pod lustrem</div></td>
+    </tr><tr>
+      <td class="lp">27</td><td class="ok"></td><td class="n">790</td><td class="n">60</td><td class="ok"></td><td class="n">2</td>
+      <td></td>
+      <td class="l"><div class="it"><b>S-COKP</b> Cokół przedni szafki pod lustrem</div><div class="it"><b>S-COKT</b> Cokół tylny szafki pod lustrem</div></td>
+    </tr><tr>
+      <td class="lp">28</td><td class="ok"></td><td class="n">180</td><td class="n">60</td><td class="ok"></td><td class="n">2</td>
+      <td></td>
+      <td class="l"><div class="it"><b>S-COKB</b> Cokół boczny szafki pod lustrem ×2</div></td>
+    </tr><tr>
+      <td class="lp">29</td><td class="ok">—</td><td class="n">250</td><td class="n">100</td><td class="ok"></td><td class="n">6</td>
+      <td></td>
+      <td class="l"><div class="it"><b>S-SZB</b> Bok skrzynki szuflady ×6<i>szafka pod lustrem</i></div></td>
+    </tr><tr>
+      <td class="lp">30</td><td class="ok">—</td><td class="n">321</td><td class="n">100</td><td class="ok"></td><td class="n">6</td>
+      <td></td>
+      <td class="l"><div class="it"><b>S-SZC</b> Czoło / tył skrzynki szuflady ×6<i>szafka pod lustrem</i></div></td>
+    </tr></tbody>
+  </table></div>
+  <h2>Biały W1000 ST38 – fronty · 8 szt.</h2>
+  <div class="scroll"><table class="m">
+    <colgroup><col style="width:6%"><col style="width:6%"><col style="width:9%"><col style="width:9%"><col style="width:6%"><col style="width:6%"><col style="width:9%"><col></colgroup>
+    <thead><tr><th>LP</th><th>Okl.</th><th>Dług.</th><th>Szer.</th><th>Okl.</th><th>Szt.</th><th>Obróbka</th><th class="l">Co to jest</th></tr></thead>
+    <tbody><tr>
+      <td class="lp">31</td><td class="ok">=</td><td class="n">2297</td><td class="n">442</td><td class="ok">=</td><td class="n">2</td>
+      <td>5 puszki</td>
+      <td class="l"><div class="it"><b>FR-L-442L</b> Front 442 szer. × 2297 wys. (zawiasy z lewej) – skrzynia lewa<i>szafa wnękowa</i></div><div class="it"><b>FR-L-442P</b> Front 442 szer. × 2297 wys. (zawiasy z prawej) – skrzynia lewa<i>szafa wnękowa</i></div></td>
+    </tr><tr>
+      <td class="lp">32</td><td class="ok">=</td><td class="n">2297</td><td class="n">496</td><td class="ok">=</td><td class="n">2</td>
+      <td>5 puszki</td>
+      <td class="l"><div class="it"><b>FR-R-496P</b> Front 496 szer. × 2297 wys. (zawiasy z prawej) – skrzynia prawa<i>szafa wnękowa</i></div><div class="it"><b>N-FR-496P</b> Front 496 szer. × 2297 wys. (zawiasy z prawej) – szafka przy liczniku</div></td>
+    </tr><tr>
+      <td class="lp">33</td><td class="ok">=</td><td class="n">130</td><td class="n">406</td><td class="ok">=</td><td class="n">3</td>
+      <td></td>
+      <td class="l"><div class="it"><b>S-FRS</b> Front szuflady 406 × 130 – szafka pod lustrem ×3</div></td>
+    </tr><tr>
+      <td class="lp">34</td><td class="ok">=</td><td class="n">398</td><td class="n">438</td><td class="ok">=</td><td class="n">1</td>
+      <td>2 puszki</td>
+      <td class="l"><div class="it"><b>S-FRD</b> Front 438 szer. × 398 wys. (zawiasy z prawej) – drzwi szafki pod lustrem</div></td>
+    </tr></tbody>
+  </table></div>
+  <h2>HDF 3 mm biały · 8 szt.</h2>
+  <div class="scroll"><table class="m">
+    <colgroup><col style="width:6%"><col style="width:6%"><col style="width:9%"><col style="width:9%"><col style="width:6%"><col style="width:6%"><col style="width:9%"><col></colgroup>
+    <thead><tr><th>LP</th><th>Okl.</th><th>Dług.</th><th>Szer.</th><th>Okl.</th><th>Szt.</th><th>Obróbka</th><th class="l">Co to jest</th></tr></thead>
+    <tbody><tr>
+      <td class="lp">H1</td><td class="ok"></td><td class="n">2282</td><td class="n">872</td><td class="ok"></td><td class="n">1</td>
+      <td></td>
+      <td class="l"><div class="it"><b>L-PLE</b> Plecy – skrzynia lewa<i>szafa wnękowa</i></div></td>
+    </tr><tr>
+      <td class="lp">H2</td><td class="ok"></td><td class="n">2282</td><td class="n">482</td><td class="ok"></td><td class="n">1</td>
+      <td></td>
+      <td class="l"><div class="it"><b>R-PLE</b> Plecy – skrzynia prawa<i>szafa wnękowa</i></div></td>
+    </tr><tr>
+      <td class="lp">H3</td><td class="ok"></td><td class="n">300</td><td class="n">402</td><td class="ok"></td><td class="n">2</td>
+      <td></td>
+      <td class="l"><div class="it"><b>N-SZD</b> Dno skrzynki szuflady – szafka przy liczniku ×2</div></td>
+    </tr><tr>
+      <td class="lp">H4</td><td class="ok"></td><td class="n">440</td><td class="n">846</td><td class="ok"></td><td class="n">1</td>
+      <td></td>
+      <td class="l"><div class="it"><b>S-PLE</b> Plecy szafki pod lustrem</div></td>
+    </tr><tr>
+      <td class="lp">H5</td><td class="ok"></td><td class="n">250</td><td class="n">357</td><td class="ok"></td><td class="n">3</td>
+      <td></td>
+      <td class="l"><div class="it"><b>S-SZD</b> Dno skrzynki szuflady ×3<i>szafka pod lustrem</i></div></td>
+    </tr></tbody>
+  </table></div>
+</section>
+<script>
+document.getElementById("back").addEventListener("click", function () {
+  if (history.length > 1) history.back(); else location.href = "./";
+});
+</script>
+</body>
+</html>
