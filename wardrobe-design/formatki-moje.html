@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Cut list with descriptions</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<style>
+:root{
+  --paper:#ffffff; --ink:#151515; --rule:#2a2a2a; --shade:#dcdcdc; --dim:#5c5a55; --desk:#e8e5df; --acc:#8a5a2b;
+  --sans:Arial,"Helvetica Neue",Helvetica,"Liberation Sans",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--desk);color:var(--ink);font:13px/1.35 var(--sans);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 48px}
+.bar{max-width:210mm;margin:0 auto 12px;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;color:var(--dim);font-size:14px}
+.bar button{font:inherit;padding:.4em .9em;border:1px solid #b9b4aa;background:var(--paper);color:var(--ink);border-radius:8px;cursor:pointer}
+.bar button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.sheet{background:var(--paper);max-width:210mm;margin:0 auto 18px;padding:10mm 10mm 11mm;box-shadow:0 1px 2px rgba(0,0,0,.12),0 8px 24px rgba(0,0,0,.08)}
+.scroll{overflow-x:auto}
+.cap{font-size:11px;color:var(--dim);margin:0 0 2px}
+table.f{width:100%;border-collapse:collapse;table-layout:fixed;font-variant-numeric:tabular-nums}
+table.f th,table.f td{border:1px solid var(--rule);padding:0 4px;height:6mm;text-align:center;vertical-align:middle}
+table.f th{font-size:10.5px;font-weight:700}
+table.f tr.val td{font-size:15px;font-weight:700;letter-spacing:.02em}
+table.f td.n{font-size:13.5px}
+table.f td.lp{font-weight:700;font-size:12px}
+table.f .sh{background:var(--shade)}
+table.f td.ok{font-size:17px;font-weight:700;line-height:1}
+@media print{
+  @page{size:A4;margin:8mm}
+  body{background:#fff;padding:0}
+  .bar{display:none}
+  .sheet{box-shadow:none;margin:0;max-width:none;padding:0;break-after:page}
+  .sheet:last-child{break-after:auto}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+h1{font-size:18px;margin:0 0 1mm}
+.sub{color:var(--dim);font-size:11.5px;margin:0 0 3mm}
+h2{font-size:13px;margin:5mm 0 1.5mm;letter-spacing:.02em}
+table.m{width:100%;border-collapse:collapse;table-layout:fixed;font-size:11px;font-variant-numeric:tabular-nums}
+table.m th,table.m td{border:1px solid #9a968d;padding:1mm 1.5mm;text-align:center;vertical-align:top}
+table.m th{font-size:9.5px;text-transform:uppercase;letter-spacing:.04em;background:#efede8}
+table.m th.l,table.m td.l{text-align:left}
+table.m td.lp{font-weight:700}
+table.m td.ok{font-size:14px;font-weight:700;line-height:1.1}
+table.m td.n{font-size:12px}
+table.m .it{display:block;margin:0 0 .6mm}
+table.m .it i{color:var(--dim);font-style:normal;font-size:9.5px;margin-left:5px}
+table.m .zap{font-size:9px;color:var(--acc)}
+.codes{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1mm 5mm;font-size:10.5px;margin:2mm 0 0;padding:0;list-style:none}
+.codes b{display:inline-block;min-width:34px}
+@media print{ table.m tr{break-inside:avoid} }
+</style>
+</head>
+<body>
+<div class="bar">
+  <button type="button" id="back">← Back to the design</button>
+  <span>My version: the same items as on the order, with full names.</span>
+</div>
+<section class="sheet">
+  <h1>Cut list – described version</h1>
+  <p class="sub">Item numbers match the QUEST order. After collection, pencil each panel’s code and a “bottom” arrow on it.</p>
+  <ul class="codes">
+    <li><b>L-</b> left wardrobe carcass</li><li><b>R-</b> right wardrobe carcass</li><li><b>NIS-</b> niche between the carcasses</li>
+    <li><b>BL-</b> wardrobe filler and top strips</li><li><b>BM-</b> wardrobe end panel</li><li><b>COK</b> wardrobe plinth</li>
+    <li><b>FR-</b> wardrobe doors</li><li><b>N-</b> meter cabinet</li><li><b>S-</b> mirror cabinet</li>
+    <li><b>BOKL/BOKP</b> left/right side</li><li><b>WD/WG</b> bottom/top panel</li><li><b>STA</b> fixed shelf</li><li><b>POL</b> shelf</li><li><b>PLE</b> back panel</li><li><b>SZ-</b> drawer box parts</li>
+  </ul>
+  <h2>Maple H3840 ST9 · 68 pcs</h2>
+  <div class="scroll"><table class="m">
+    <colgroup><col style="width:6%"><col style="width:6%"><col style="width:9%"><col style="width:9%"><col style="width:6%"><col style="width:6%"><col style="width:9%"><col></colgroup>
+    <thead><tr><th>No.</th><th>Edge</th><th>Length</th><th>Width</th><th>Edge</th><th>Qty</th><th>Machining</th><th class="l">What it is</th></tr></thead>
+    <tbody><tr>
+      <td class="lp">1</td><td class="ok">—</td><td class="n">2300</td><td class="n">580</td><td class="ok"></td><td class="n">4</td>
+      <td>groove</td>
+      <td class="l"><div class="it"><b>L-BOKL</b> Left side – left carcass<i>alcove wardrobe</i></div><div class="it"><b>L-BOKP</b> Right side – left carcass<i>alcove wardrobe</i></div><div class="it"><b>R-BOKL</b> Left side – right carcass<i>alcove wardrobe</i></div><div class="it"><b>R-BOKP</b> Right side – right carcass<i>alcove wardrobe</i></div></td>
+    </tr><tr>
+      <td class="lp">2</td><td class="ok">—</td><td class="n">854</td><td class="n">580</td><td class="ok"></td><td class="n">2</td>
+      <td>groove</td>
+      <td class="l"><div class="it"><b>L-WD</b> Bottom panel – left carcass<i>alcove wardrobe</i></div><div class="it"><b>L-WG</b> Top panel – left carcass<i>alcove wardrobe</i></div></td>
+    </tr><tr>
+      <td class="lp">3</td><td class="ok">—</td><td class="n">854</td><td class="n">565</td><td class="ok"></td><td class="n">1</td>
+      <td></td>
+      <td class="l"><div class="it"><b>L-STA</b> Fixed shelf (confirmats) – left carcass<i>alcove wardrobe</i></div></td>
+    </tr><tr>
+      <td class="lp">4</td><td class="ok">—</td><td class="n">853</td><td class="n">540</td><td class="ok"></td><td class="n">1</td>
+      <td></td>
+      <td class="l"><div class="it"><b>L-POL</b> Shelf above the rail – left carcass<i>alcove wardrobe</i></div></td>
+    </tr><tr>
+      <td class="lp">5</td><td class="ok">—</td><td class="n">464</td><td class="n">580</td><td class="ok"></td><td class="n">2</td>
+      <td>groove</td>
+      <td class="l"><div class="it"><b>R-WD</b> Bottom panel – right carcass<i>alcove wardrobe</i></div><div class="it"><b>R-WG</b> Top panel – right carcass<i>alcove wardrobe</i></div></td>
+    </tr><tr>
+      <td class="lp">6</td><td class="ok">—</td><td class="n">464</td><td class="n">565</td><td class="ok"></td><td class="n">1</td>
+      <td></td>
+      <td class="l"><div class="it"><b>R-STA</b> Fixed shelf (confirmats) – right carcass<i>alcove wardrobe</i></div></td>
+    </tr><tr>
+      <td class="lp">7</td><td class="ok">—</td><td class="n">463</td><td class="n">540</td><td class="ok"></td><td class="n">4</td>
+      <td></td>
+      <td class="l"><div class="it"><b>R-POL</b> Adjustable shelf – right carcass ×4<i>alcove wardrobe</i></div></td>
+    </tr><tr>
+      <td class="lp">8</td><td class="ok">—</td><td class="n">2068</td><td class="n">191</td><td class="ok">—</td><td class="n">1</td>
+      <td><div class="zap">oversize</div></td>
+      <td class="l"><div class="it"><b>NIS-PLE</b> Niche back panel<i>alcove wardrobe</i></div></td>
+    </tr><tr>
+      <td class="lp">9</td><td class="ok">—</td><td class="n">1400</td><td class="n">172</td><td class="ok"></td><td class="n">1</td>
+      <td><div class="zap">oversize</div></td>
+      <td class="l"><div class="it"><b>NIS-LIS</b> Strip for 6 niche shelves and the niche canopy – cut on site</div><div class="it"><b>NIS-POL</b> Niche shelf ×6<i>alcove wardrobe</i></div><div class="it"><b>NIS-DAS</b> Niche canopy under the beam<i>alcove wardrobe</i></div></td>
+    </tr><tr>
+      <td class="lp">10</td><td class="ok">—</td><td class="n">2463</td><td class="n">72</td><td class="ok"></td><td class="n">1</td>
+      <td><div class="zap">oversize</div></td>
+      <td class="l"><div class="it"><b>BL-BOK</b> Filler panel closing the gap at the left wall<i>alcove wardrobe</i></div></td>
+    </tr><tr>
+      <td class="lp">11</td><td class="ok"></td><td class="n">2200</td><td class="n">60</td><td class="ok"></td><td class="n">1</td>
+      <td></td>
+      <td class="l"><div class="it"><b>BL-LIST</b> Cleat holding the filler panel (biscuit-joined angle)<i>alcove wardrobe</i></div></td>
+    </tr><tr>
+      <td class="lp">12</td><td class="ok">—</td><td class="n">1575</td><td class="n">85</td><td class="ok">—</td><td class="n">1</td>
+      <td><div class="zap">oversize</div></td>
+      <td class="l"><div class="it"><b>BL-GORA</b> Top strip (scribe rail under the ceiling)<i>alcove wardrobe</i></div></td>
+    </tr><tr>
+      <td class="lp">13</td><td class="ok">—</td><td class="n">1575</td><td class="n">80</td><td class="ok">—</td><td class="n">1</td>
+      <td><div class="zap">oversize</div></td>
+      <td class="l"><div class="it"><b>COK</b> Plinth<i>alcove wardrobe</i></div></td>
+    </tr><tr>
+      <td class="lp">14</td><td class="ok">—</td><td class="n">2492</td><td class="n">641</td><td class="ok"></td><td class="n">1</td>
+      <td><div class="zap">oversize</div></td>
+      <td class="l"><div class="it"><b>BM-P</b> Right end panel (floor to ceiling)<i>alcove wardrobe</i></div></td>
+    </tr><tr>
+      <td class="lp">15</td><td class="ok">—</td><td class="n">2300</td><td class="n">375</td><td class="ok"></td><td class="n">2</td>
+      <td></td>
+      <td class="l"><div class="it"><b>N-BOKL</b> Left side – meter cabinet</div><div class="it"><b>N-BOKP</b> Right side – meter cabinet</div></td>
+    </tr><tr>
+      <td class="lp">16</td><td class="ok">—</td><td class="n">464</td><td class="n">375</td><td class="ok"></td><td class="n">3</td>
+      <td></td>
+      <td class="l"><div class="it"><b>N-WD</b> Bottom panel – meter cabinet</div><div class="it"><b>N-WG</b> Top panel – meter cabinet</div><div class="it"><b>N-STA</b> Fixed shelf (confirmats) – meter cabinet</div></td>
+    </tr><tr>
+      <td class="lp">17</td><td class="ok">—</td><td class="n">463</td><td class="n">350</td><td class="ok"></td><td class="n">4</td>
+      <td></td>
+      <td class="l"><div class="it"><b>N-POL</b> Adjustable shelf – meter cabinet ×4</div></td>
+    </tr><tr>
+      <td class="lp">18</td><td class="ok"></td><td class="n">300</td><td class="n">60</td><td class="ok"></td><td class="n">4</td>
+      <td></td>
+      <td class="l"><div class="it"><b>N-LDS</b> Spacer strip for the drawer slide – meter cabinet ×4</div></td>
+    </tr><tr>
+      <td class="lp">19</td><td class="ok">—</td><td class="n">300</td><td class="n">160</td><td class="ok">—</td><td class="n">4</td>
+      <td></td>
+      <td class="l"><div class="it"><b>N-SZB</b> Drawer box side – meter cabinet ×4</div></td>
+    </tr><tr>
+      <td class="lp">20</td><td class="ok">—</td><td class="n">366</td><td class="n">160</td><td class="ok"></td><td class="n">4</td>
+      <td></td>
+      <td class="l"><div class="it"><b>N-SZC</b> Drawer box front / back – meter cabinet ×4</div></td>
+    </tr><tr>
+      <td class="lp">21</td><td class="ok">—</td><td class="n">500</td><td class="n">80</td><td class="ok">—</td><td class="n">1</td>
+      <td><div class="zap">oversize</div></td>
+      <td class="l"><div class="it"><b>N-COK</b> Plinth – meter cabinet</div></td>
+    </tr><tr>
+      <td class="lp">22</td><td class="ok">—</td><td class="n">500</td><td class="n">76</td><td class="ok">—</td><td class="n">1</td>
+      <td><div class="zap">oversize</div></td>
+      <td class="l"><div class="it"><b>N-LIS</b> Top strip (scribe rail under the ceiling) – meter cabinet</div></td>
+    </tr><tr>
+      <td class="lp">23</td><td class="ok">—</td><td class="n">2484</td><td class="n">436</td><td class="ok"></td><td class="n">1</td>
+      <td><div class="zap">oversize</div></td>
+      <td class="l"><div class="it"><b>N-BM</b> Left end panel (floor to ceiling) – meter cabinet</div></td>
+    </tr><tr>
+      <td class="lp">24</td><td class="ok">—</td><td class="n">850</td><td class="n">276</td><td class="ok">=</td><td class="n">2</td>
+      <td></td>
+      <td class="l"><div class="it"><b>S-BLAT</b> Mirror cabinet top<i>mirror cabinet</i></div><div class="it"><b>S-DNO</b> Mirror cabinet bottom<i>mirror cabinet</i></div></td>
+    </tr><tr>
+      <td class="lp">25</td><td class="ok">—</td><td class="n">404</td><td class="n">255</td><td class="ok"></td><td class="n">3</td>
+      <td></td>
+      <td class="l"><div class="it"><b>S-BOKL</b> Mirror cabinet left side<i>mirror cabinet</i></div><div class="it"><b>S-BOKP</b> Mirror cabinet right side<i>mirror cabinet</i></div><div class="it"><b>S-PRZ</b> Mirror cabinet divider (drawers | door)<i>mirror cabinet</i></div></td>
+    </tr><tr>
+      <td class="lp">26</td><td class="ok">—</td><td class="n">413</td><td class="n">235</td><td class="ok"></td><td class="n">1</td>
+      <td></td>
+      <td class="l"><div class="it"><b>S-POL</b> Shelf behind the mirror cabinet door</div></td>
+    </tr><tr>
+      <td class="lp">27</td><td class="ok"></td><td class="n">790</td><td class="n">60</td><td class="ok"></td><td class="n">2</td>
+      <td></td>
+      <td class="l"><div class="it"><b>S-COKP</b> Mirror cabinet front plinth<i>mirror cabinet</i></div><div class="it"><b>S-COKT</b> Mirror cabinet back plinth<i>mirror cabinet</i></div></td>
+    </tr><tr>
+      <td class="lp">28</td><td class="ok"></td><td class="n">180</td><td class="n">60</td><td class="ok"></td><td class="n">2</td>
+      <td></td>
+      <td class="l"><div class="it"><b>S-COKB</b> Mirror cabinet side plinth ×2<i>mirror cabinet</i></div></td>
+    </tr><tr>
+      <td class="lp">29</td><td class="ok">—</td><td class="n">250</td><td class="n">100</td><td class="ok"></td><td class="n">6</td>
+      <td></td>
+      <td class="l"><div class="it"><b>S-SZB</b> Drawer box side ×6<i>mirror cabinet</i></div></td>
+    </tr><tr>
+      <td class="lp">30</td><td class="ok">—</td><td class="n">321</td><td class="n">100</td><td class="ok"></td><td class="n">6</td>
+      <td></td>
+      <td class="l"><div class="it"><b>S-SZC</b> Drawer box front / back ×6<i>mirror cabinet</i></div></td>
+    </tr></tbody>
+  </table></div>
+  <h2>White W1000 ST38 – doors and fronts · 8 pcs</h2>
+  <div class="scroll"><table class="m">
+    <colgroup><col style="width:6%"><col style="width:6%"><col style="width:9%"><col style="width:9%"><col style="width:6%"><col style="width:6%"><col style="width:9%"><col></colgroup>
+    <thead><tr><th>No.</th><th>Edge</th><th>Length</th><th>Width</th><th>Edge</th><th>Qty</th><th>Machining</th><th class="l">What it is</th></tr></thead>
+    <tbody><tr>
+      <td class="lp">31</td><td class="ok">=</td><td class="n">2297</td><td class="n">442</td><td class="ok">=</td><td class="n">2</td>
+      <td>5 cups</td>
+      <td class="l"><div class="it"><b>FR-L-442L</b> Front 442 wide × 2297 high (hinges on the left) – left carcass<i>alcove wardrobe</i></div><div class="it"><b>FR-L-442P</b> Front 442 wide × 2297 high (hinges on the right) – left carcass<i>alcove wardrobe</i></div></td>
+    </tr><tr>
+      <td class="lp">32</td><td class="ok">=</td><td class="n">2297</td><td class="n">496</td><td class="ok">=</td><td class="n">2</td>
+      <td>5 cups</td>
+      <td class="l"><div class="it"><b>FR-R-496P</b> Front 496 wide × 2297 high (hinges on the right) – right carcass<i>alcove wardrobe</i></div><div class="it"><b>N-FR-496P</b> Front 496 wide × 2297 high (hinges on the right) – meter cabinet</div></td>
+    </tr><tr>
+      <td class="lp">33</td><td class="ok">=</td><td class="n">130</td><td class="n">406</td><td class="ok">=</td><td class="n">3</td>
+      <td></td>
+      <td class="l"><div class="it"><b>S-FRS</b> Drawer front 406 × 130 – mirror cabinet ×3</div></td>
+    </tr><tr>
+      <td class="lp">34</td><td class="ok">=</td><td class="n">398</td><td class="n">438</td><td class="ok">=</td><td class="n">1</td>
+      <td>2 cups</td>
+      <td class="l"><div class="it"><b>S-FRD</b> Front 438 wide × 398 high (hinges on the right) – mirror cabinet door</div></td>
+    </tr></tbody>
+  </table></div>
+  <h2>White HDF 3 mm · 8 pcs</h2>
+  <div class="scroll"><table class="m">
+    <colgroup><col style="width:6%"><col style="width:6%"><col style="width:9%"><col style="width:9%"><col style="width:6%"><col style="width:6%"><col style="width:9%"><col></colgroup>
+    <thead><tr><th>No.</th><th>Edge</th><th>Length</th><th>Width</th><th>Edge</th><th>Qty</th><th>Machining</th><th class="l">What it is</th></tr></thead>
+    <tbody><tr>
+      <td class="lp">H1</td><td class="ok"></td><td class="n">2282</td><td class="n">872</td><td class="ok"></td><td class="n">1</td>
+      <td></td>
+      <td class="l"><div class="it"><b>L-PLE</b> Back panel – left carcass<i>alcove wardrobe</i></div></td>
+    </tr><tr>
+      <td class="lp">H2</td><td class="ok"></td><td class="n">2282</td><td class="n">482</td><td class="ok"></td><td class="n">1</td>
+      <td></td>
+      <td class="l"><div class="it"><b>R-PLE</b> Back panel – right carcass<i>alcove wardrobe</i></div></td>
+    </tr><tr>
+      <td class="lp">H3</td><td class="ok"></td><td class="n">300</td><td class="n">402</td><td class="ok"></td><td class="n">2</td>
+      <td></td>
+      <td class="l"><div class="it"><b>N-SZD</b> Drawer box bottom – meter cabinet ×2</div></td>
+    </tr><tr>
+      <td class="lp">H4</td><td class="ok"></td><td class="n">440</td><td class="n">846</td><td class="ok"></td><td class="n">1</td>
+      <td></td>
+      <td class="l"><div class="it"><b>S-PLE</b> Mirror cabinet back panel<i>mirror cabinet</i></div></td>
+    </tr><tr>
+      <td class="lp">H5</td><td class="ok"></td><td class="n">250</td><td class="n">357</td><td class="ok"></td><td class="n">3</td>
+      <td></td>
+      <td class="l"><div class="it"><b>S-SZD</b> Drawer box bottom ×3<i>mirror cabinet</i></div></td>
+    </tr></tbody>
+  </table></div>
+</section>
+<script>
+document.getElementById("back").addEventListener("click", function () {
+  if (history.length > 1) history.back(); else location.href = "./";
+});
+</script>
+</body>
+</html>

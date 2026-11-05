@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Cut list for QUEST</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<style>
+:root{
+  --paper:#ffffff; --ink:#151515; --rule:#2a2a2a; --shade:#dcdcdc; --dim:#5c5a55; --desk:#e8e5df; --acc:#8a5a2b;
+  --sans:Arial,"Helvetica Neue",Helvetica,"Liberation Sans",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--desk);color:var(--ink);font:13px/1.35 var(--sans);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 48px}
+.bar{max-width:210mm;margin:0 auto 12px;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;color:var(--dim);font-size:14px}
+.bar button{font:inherit;padding:.4em .9em;border:1px solid #b9b4aa;background:var(--paper);color:var(--ink);border-radius:8px;cursor:pointer}
+.bar button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.sheet{background:var(--paper);max-width:210mm;margin:0 auto 18px;padding:10mm 10mm 11mm;box-shadow:0 1px 2px rgba(0,0,0,.12),0 8px 24px rgba(0,0,0,.08)}
+.scroll{overflow-x:auto}
+.cap{font-size:11px;color:var(--dim);margin:0 0 2px}
+table.f{width:100%;border-collapse:collapse;table-layout:fixed;font-variant-numeric:tabular-nums}
+table.f th,table.f td{border:1px solid var(--rule);padding:0 4px;height:6mm;text-align:center;vertical-align:middle}
+table.f th{font-size:10.5px;font-weight:700}
+table.f tr.val td{font-size:15px;font-weight:700;letter-spacing:.02em}
+table.f td.n{font-size:13.5px}
+table.f td.lp{font-weight:700;font-size:12px}
+table.f .sh{background:var(--shade)}
+table.f td.ok{font-size:17px;font-weight:700;line-height:1}
+@media print{
+  @page{size:A4;margin:8mm}
+  body{background:#fff;padding:0}
+  .bar{display:none}
+  .sheet{box-shadow:none;margin:0;max-width:none;padding:0;break-after:page}
+  .sheet:last-child{break-after:auto}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+.top{display:grid;grid-template-columns:1fr auto;gap:4px 18px;align-items:end}
+.fld{display:flex;gap:6px;align-items:flex-end;font-size:12px}
+.fld span.ln{flex:1;border-bottom:1px solid var(--rule);min-width:90px;height:16px}
+h1{text-align:center;font-size:20px;letter-spacing:.04em;margin:6px 0 2px}
+.conv{text-align:center;font-weight:700;font-size:12px;margin:2px 0 1px}
+.conv2{display:flex;justify-content:space-between;flex-wrap:wrap;gap:2px 16px;font-weight:700;font-size:11.5px;margin:3px 0 6px}
+.cols{display:flex;gap:6mm;align-items:flex-start;flex-wrap:wrap}
+.cols>div{flex:1 1 280px;min-width:0}
+col.c-lp{width:9%} col.c-ok{width:12%} col.c-d{width:24%} col.c-q{width:10%}
+.hdf{margin-top:5mm}
+.uw{border:1.5px solid var(--rule);padding:2.5mm 3.5mm 2mm;margin-top:4mm;font-size:10.5px}
+.uw h2{font-size:12px;margin:0 0 1.5mm;letter-spacing:.04em}
+.uw ol{margin:0;padding-left:5mm;display:grid;gap:1.1mm}
+.sig{display:flex;justify-content:space-between;gap:12px;margin-top:7mm;font-size:11px;color:var(--dim)}
+.sig span{flex:1;border-top:1px solid var(--rule);padding-top:2px}
+@media (max-width:560px){ .sheet{padding:16px 12px} .top{grid-template-columns:1fr} }
+@media print{ .cols{flex-wrap:nowrap} .uw{margin-top:2.5mm;font-size:10px} table.f th,table.f td{height:4.6mm;padding:0 3px} table.f td.n{font-size:12.5px} }
+</style>
+</head>
+<body>
+<div class="bar">
+  <button type="button" id="back">← Back to the design</button>
+  <span>A4: order for the board shop. Print from the browser menu.</span>
+</div>
+<section class="sheet">
+  <div class="top">
+    <div class="fld">Customer:<span class="ln"></span></div>
+    <div class="fld">phone<span class="ln" style="min-width:140px"></span></div>
+    <div></div>
+    <div class="fld">DATE<span class="ln" style="min-width:140px"></span></div>
+  </div>
+  <h1>ORDER</h1>
+  <p class="conv">Dimensions in mm · finished sizes, including edge banding (details in the notes)</p>
+  <div class="conv2"><span>Length = dimension along the grain</span><span>Width = dimension across the grain</span></div>
+  <div class="cols">
+    <div>
+      <p class="cap">18 mm board · Egger Natural Mandal Maple – carcasses, shelves, filler strips, end panels, plinths</p>
+      <div class="scroll"><table class="f">
+  <colgroup><col class="c-lp"><col class="c-ok"><col class="c-d"><col class="c-d"><col class="c-ok"><col class="c-q"></colgroup>
+  <thead>
+    <tr class="hd"><th colspan="2">board colour</th><th>texture</th><th>edging colour</th><th colspan="2">edging thk.</th></tr>
+    <tr class="val"><td colspan="2">H3840</td><td>ST9</td><td></td><td colspan="2"></td></tr>
+    <tr class="hd"><th>NO.</th><th class="sh">EDGE</th><th>LENGTH</th><th>WIDTH</th><th class="sh">EDGE</th><th>QTY</th></tr>
+  </thead>
+  <tbody><tr><td class="lp">1</td><td class="sh ok">—</td><td class="n">2300</td><td class="n">580</td><td class="sh ok"></td><td class="n">4</td></tr><tr><td class="lp">2</td><td class="sh ok">—</td><td class="n">854</td><td class="n">580</td><td class="sh ok"></td><td class="n">2</td></tr><tr><td class="lp">3</td><td class="sh ok">—</td><td class="n">854</td><td class="n">565</td><td class="sh ok"></td><td class="n">1</td></tr><tr><td class="lp">4</td><td class="sh ok">—</td><td class="n">853</td><td class="n">540</td><td class="sh ok"></td><td class="n">1</td></tr><tr><td class="lp">5</td><td class="sh ok">—</td><td class="n">464</td><td class="n">580</td><td class="sh ok"></td><td class="n">2</td></tr><tr><td class="lp">6</td><td class="sh ok">—</td><td class="n">464</td><td class="n">565</td><td class="sh ok"></td><td class="n">1</td></tr><tr><td class="lp">7</td><td class="sh ok">—</td><td class="n">463</td><td class="n">540</td><td class="sh ok"></td><td class="n">4</td></tr><tr><td class="lp">8</td><td class="sh ok">—</td><td class="n">2068</td><td class="n">191</td><td class="sh ok">—</td><td class="n">1</td></tr><tr><td class="lp">9</td><td class="sh ok">—</td><td class="n">1400</td><td class="n">172</td><td class="sh ok"></td><td class="n">1</td></tr><tr><td class="lp">10</td><td class="sh ok">—</td><td class="n">2463</td><td class="n">72</td><td class="sh ok"></td><td class="n">1</td></tr><tr><td class="lp">11</td><td class="sh ok"></td><td class="n">2200</td><td class="n">60</td><td class="sh ok"></td><td class="n">1</td></tr><tr><td class="lp">12</td><td class="sh ok">—</td><td class="n">1575</td><td class="n">85</td><td class="sh ok">—</td><td class="n">1</td></tr><tr><td class="lp">13</td><td class="sh ok">—</td><td class="n">1575</td><td class="n">80</td><td class="sh ok">—</td><td class="n">1</td></tr><tr><td class="lp">14</td><td class="sh ok">—</td><td class="n">2492</td><td class="n">641</td><td class="sh ok"></td><td class="n">1</td></tr><tr><td class="lp">15</td><td class="sh ok">—</td><td class="n">2300</td><td class="n">375</td><td class="sh ok"></td><td class="n">2</td></tr><tr><td class="lp">16</td><td class="sh ok">—</td><td class="n">464</td><td class="n">375</td><td class="sh ok"></td><td class="n">3</td></tr><tr><td class="lp">17</td><td class="sh ok">—</td><td class="n">463</td><td class="n">350</td><td class="sh ok"></td><td class="n">4</td></tr><tr><td class="lp">18</td><td class="sh ok"></td><td class="n">300</td><td class="n">60</td><td class="sh ok"></td><td class="n">4</td></tr><tr><td class="lp">19</td><td class="sh ok">—</td><td class="n">300</td><td class="n">160</td><td class="sh ok">—</td><td class="n">4</td></tr><tr><td class="lp">20</td><td class="sh ok">—</td><td class="n">366</td><td class="n">160</td><td class="sh ok"></td><td class="n">4</td></tr><tr><td class="lp">21</td><td class="sh ok">—</td><td class="n">500</td><td class="n">80</td><td class="sh ok">—</td><td class="n">1</td></tr><tr><td class="lp">22</td><td class="sh ok">—</td><td class="n">500</td><td class="n">76</td><td class="sh ok">—</td><td class="n">1</td></tr><tr><td class="lp">23</td><td class="sh ok">—</td><td class="n">2484</td><td class="n">436</td><td class="sh ok"></td><td class="n">1</td></tr><tr><td class="lp">24</td><td class="sh ok">—</td><td class="n">850</td><td class="n">276</td><td class="sh ok">=</td><td class="n">2</td></tr><tr><td class="lp">25</td><td class="sh ok">—</td><td class="n">404</td><td class="n">255</td><td class="sh ok"></td><td class="n">3</td></tr><tr><td class="lp">26</td><td class="sh ok">—</td><td class="n">413</td><td class="n">235</td><td class="sh ok"></td><td class="n">1</td></tr><tr><td class="lp">27</td><td class="sh ok"></td><td class="n">790</td><td class="n">60</td><td class="sh ok"></td><td class="n">2</td></tr><tr><td class="lp">28</td><td class="sh ok"></td><td class="n">180</td><td class="n">60</td><td class="sh ok"></td><td class="n">2</td></tr><tr><td class="lp">29</td><td class="sh ok">—</td><td class="n">250</td><td class="n">100</td><td class="sh ok"></td><td class="n">6</td></tr><tr><td class="lp">30</td><td class="sh ok">—</td><td class="n">321</td><td class="n">100</td><td class="sh ok"></td><td class="n">6</td></tr></tbody>
+</table></div>
+    </div>
+    <div>
+      <p class="cap">Egger board Premium White – doors and fronts</p>
+      <div class="scroll"><table class="f">
+  <colgroup><col class="c-lp"><col class="c-ok"><col class="c-d"><col class="c-d"><col class="c-ok"><col class="c-q"></colgroup>
+  <thead>
+    <tr class="hd"><th colspan="2">board colour</th><th>texture</th><th>edging colour</th><th colspan="2">edging thk.</th></tr>
+    <tr class="val"><td colspan="2">W1000</td><td>ST38</td><td></td><td colspan="2"></td></tr>
+    <tr class="hd"><th>NO.</th><th class="sh">EDGE</th><th>LENGTH</th><th>WIDTH</th><th class="sh">EDGE</th><th>QTY</th></tr>
+  </thead>
+  <tbody><tr><td class="lp">31</td><td class="sh ok">=</td><td class="n">2297</td><td class="n">442</td><td class="sh ok">=</td><td class="n">2</td></tr><tr><td class="lp">32</td><td class="sh ok">=</td><td class="n">2297</td><td class="n">496</td><td class="sh ok">=</td><td class="n">2</td></tr><tr><td class="lp">33</td><td class="sh ok">=</td><td class="n">130</td><td class="n">406</td><td class="sh ok">=</td><td class="n">3</td></tr><tr><td class="lp">34</td><td class="sh ok">=</td><td class="n">398</td><td class="n">438</td><td class="sh ok">=</td><td class="n">1</td></tr><tr><td class="lp">35</td><td class="sh"></td><td></td><td></td><td class="sh"></td><td></td></tr><tr><td class="lp">36</td><td class="sh"></td><td></td><td></td><td class="sh"></td><td></td></tr></tbody>
+</table></div>
+      <div class="hdf">
+        <p class="cap">White HDF 3 mm – backs and drawer bottoms, no edging</p>
+        <div class="scroll"><table class="f">
+  <colgroup><col class="c-lp"><col class="c-ok"><col class="c-d"><col class="c-d"><col class="c-ok"><col class="c-q"></colgroup>
+  <thead>
+    
+    <tr class="hd"><th>NO.</th><th class="sh">EDGE</th><th>LENGTH</th><th>WIDTH</th><th class="sh">EDGE</th><th>QTY</th></tr>
+  </thead>
+  <tbody><tr><td class="lp">H1</td><td class="sh ok"></td><td class="n">2282</td><td class="n">872</td><td class="sh ok"></td><td class="n">1</td></tr><tr><td class="lp">H2</td><td class="sh ok"></td><td class="n">2282</td><td class="n">482</td><td class="sh ok"></td><td class="n">1</td></tr><tr><td class="lp">H3</td><td class="sh ok"></td><td class="n">300</td><td class="n">402</td><td class="sh ok"></td><td class="n">2</td></tr><tr><td class="lp">H4</td><td class="sh ok"></td><td class="n">440</td><td class="n">846</td><td class="sh ok"></td><td class="n">1</td></tr><tr><td class="lp">H5</td><td class="sh ok"></td><td class="n">250</td><td class="n">357</td><td class="sh ok"></td><td class="n">3</td></tr></tbody>
+</table></div>
+      </div>
+    </div>
+  </div>
+  <div class="uw">
+    <h2>ORDER NOTES</h2>
+    <ol><li><b>Dimensions are finished sizes</b> – the completed part including edge banding. Please subtract the banding thickness when cutting.</li><li><b>Edge banding:</b> a mark in the EDGE column next to LENGTH means a long edge, next to WIDTH – a short edge. “—” one edge, “=” both. 2 mm banding matching the board colour.</li><li><b>Groove for the 3 mm HDF back – items 1, 2, 5</b> (8 pcs): 4 mm wide, 10 mm deep, 10 mm from the unbanded long edge, on one face, full length. All parts within each item are identical.</li><li><b>Hinge cups – items 31, 32, 34</b>: ⌀35 mm, 13 mm deep, along one long edge, centre 22.5 mm from the edge, symmetric spacing to the shop standard. If it makes no difference, centres from the bottom edge: items 31, 32: 100 / 624 / centre / 1673 / 2197 mm; items 32: 81 / 615 / centre / 1682 / 2216 mm; items 34: 100 / 298 mm.</li><li><b>Items 8–10, 12–14, 21–23</b> are ordered oversize and trimmed on site – please cut as listed. Item 9 is a strip I will cut the shelves from myself.</li><li><b>White W1000 ST38 doors:</b> grain vertical, along the length. Please let me know whether the board is 18 or 18.6 mm, and use edging of that thickness.</li><li><b>Maple H3840 ST9:</b> all sheets from one batch, if possible.</li><li>If anything about the groove or cups is unclear, please call before cutting.</li></ol>
+  </div>
+  <div class="sig"><span>Received by</span><span>Collection date</span><span>Customer signature</span></div>
+</section>
+<script>
+document.getElementById("back").addEventListener("click", function () {
+  if (history.length > 1) history.back(); else location.href = "./";
+});
+</script>
+</body>
+</html>
