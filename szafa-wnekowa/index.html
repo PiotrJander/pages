@@ -2097,7 +2097,9 @@ var TOOLS = [
   ["Dokupić", "Wiertło stopniowe do konfirmatów 4,5/7 mm", "", [30, 50]],
   ["Dokupić", "Wiertło ⌀5 mm z ogranicznikiem głębokości", "otwory pod kołki półek i prowadnice koszy w szafie", [20, 40]],
   ["Dokupić", "Wiertło do betonu i cegły ⌀8 mm (zwykłe, widiowe, z chwytem walcowym)", "pod kołki w cegle dziurawce; pasuje do wiertarko-wkrętarki, SDS niepotrzebne. Wiercisz <b>bez udaru</b>, żeby nie rozbić ścianek komór", [10, 20]],
-  ["Dokupić", "Szablon do otworów systemowych 32 mm", "te same otwory co w ramie PAX", [60, 150]],
+  ["Dokupić", "Szablon do otworów pod podpórki półek ⌀5 (rząd 37 mm, rozstaw 32 mm)", "pojedyncze otwory pod półki i prowadnice koszy – w tym samym rzędzie 37 mm co w ramie PAX. Szukaj: <b>metalowe tuleje</b> (otwór w plastiku czy aluminium się wyrabia), listwa-ogranicznik do krawędzi płyty z rzędem 37 mm, wyraźny znacznik (trójkąt, strzałka) do ustawienia na kresce ołówka. Wysokości szablon nie wyznacza – tę daje kreska trasowana w pakiecie", [60, 150]],
+  ["Dokupić", "Szablon do konfirmatów ⌀5 na płytę 18 mm", "trzyma wiertło w pionie i trafia w środek czoła wieńca, 9 mm od każdego lica. Szukaj: <b>hartowane tuleje stalowe</b>, listwy obejmujące płytę 18 mm z obu stron, możliwość przyłożenia na licu boku z ogranicznikiem o koniec płyty (otwór 9 mm od końca = oś wieńca). Od tyłu otwór musi wypaść przed felcem", [50, 150]],
+  ["Dokupić", "Wiertło ⌀5 mm długie (100–130 mm)", "pod szablon do konfirmatów: przez szablon, bok i ok. 35 mm w czoło wieńca; potem wiertło stopniowe idzie po tym otworze", [10, 25]],
   ["Dokupić", "Przystawka kątowa do wkrętarki", "kątowniki listew górnych tuż pod sufitem", [30, 80]],
   ["Dokupić", "Wyrzynarka + brzeszczoty do laminatu z odwróconym zębem (np. Bosch T101BR)", "wcięcia na rury, krzywe linie przy ścianie", [250, 500]],
   ["Dokupić", "Otwornica ⌀60 mm", "kratki wentylacyjne w drzwiach przy liczniku", [20, 40]],
@@ -2150,20 +2152,20 @@ var WHERE = [
   ["Ta sama drobnica przez Allegro", "Jeden sprzedawca z działu „okucia meblowe”, który ma większość listy", "Szukaj po konkretnych nazwach („GTV H45 300”, „nóżka cokolowa płytka montażowa”, „konfirmat 7x50 100 szt”), a potem przejdź do sklepu sprzedawcy i dobierz resztę tam. Wysyłka liczy się osobno u każdego sprzedawcy, więc pięć paczek po 12 zł zjada całą oszczędność."],
   ["Kołki, wkręty, wiertło ⌀8, klej, taśma, filc, kliny, BHP, pas sklejki na płozy", "Market budowlany (Castorama, Leroy Merlin, OBI)", "Tu opłaca się kupować na żywo: towar oglądasz w ręku, a sklejkę przytną na miejscu. Bierz większe opakowania – małe blistry są najdroższe za sztukę."],
   ["Elektronarzędzia: wkrętarka, wyrzynarka", "Porównywarka (Ceneo) → sklep internetowy lub market w promocji z gazetki", "Ceny regularne w marketach bywają wyższe niż w sieci, ale promocje gazetkowe często je biją. Sprawdź, czy zestaw ma 2 akumulatory."],
-  ["Szablon 32 mm, wiertło stopniowe, otwornica, cyrkiel traserski", "Allegro albo sklep z narzędziami stolarskimi", "W marketach rzadkość albo słaby wybór."],
+  ["Szablony (podpórki, konfirmaty), wiertło stopniowe, otwornica, cyrkiel traserski", "Allegro albo sklep z narzędziami stolarskimi", "W marketach rzadkość albo słaby wybór."],
   ["Kosze KOMPLEMENT", "IKEA (sklep albo online)", "Tylko tam; łatwo dorzucić do jednej wizyty."]
 ];
 var WHERE_NOTE = "W marketach płacisz głównie marżą na drobnicy w małych opakowaniach, a nie za samą „lokalizację”. W sklepie wysyłkowym kompletowanie i pakowanie prawie nic cię nie kosztuje – drogie robi się dopiero zamawianie u wielu sprzedawców naraz. Najrozsądniej wychodzą trzy–cztery zakupy: jedno zamówienie okuć (albo QUEST), jedna wizyta w markecie po drobnicę budowlaną, narzędzia po porównaniu cen i IKEA.";
 var WEEKEND = (T2) => [
   ["piątek wieczór", "Rozpakowanie. Zmierz <b>każdą</b> formatkę i porównaj z listą, zanim cokolwiek skręcisz — reklamacja działa tylko przed montażem. Opisz ołówkiem na licu B kod z wydruku „dla mnie” i strzałkę „dół”.", "1 h"],
-  ["sobota rano", "Wiercenie: otwory ⌀5 pod półki i prowadnice koszy (szablon 32 mm), piloty pod prowadniki zawiasów – dopiero po sprawdzeniu, gdzie zakład wywiercił puszki. Skręcenie 5 skrzynek szuflad i dna HDF.", "2 h"],
+  ["sobota rano", "Wiercenie: otwory ⌀5 pod półki i prowadnice koszy (szablon pod podpórki, wysokości trasowane w pakiecie – patrz krok „Wywierć to, czego zakład nie robi”), piloty pod prowadniki zawiasów – dopiero po sprawdzeniu, gdzie zakład wywiercił puszki. Skręcenie 5 skrzynek szuflad i dna HDF.", "2 h"],
   ["sobota", `Skręcanie ${T2.korpusow} korpusów na leżąco, ${T2.konfirmaty} konfirmatów. Pierwsze złącze zajmie 20 minut, dziesiąte pięć. Plecy wsuwasz w felc, zanim założysz wieniec górny.`, "4–5 h"],
   ["niedziela", "Stawianie z leżenia w dwie osoby, <b>bez nóżek</b>, przed wnęką. Unosisz na zmianę lewy i prawy bok (ręką lub deską jako dźwignią), podkładasz klocki aż do ok. 100 mm, wpinasz nóżki w przykręcone wcześniej płytki, stawiasz korpus na płozach i wsuwasz do wnęki. Poziomowanie laserem po górnych krawędziach, kotwienie. Szafkę przy liczniku przykręcasz do ściany wnęki od razu.", "3–4 h"],
   ["niedziela, koniec", "Pomiar niszy na trzech wysokościach i docięcie półek z listwy. Kosze i listwy dystansowe montujesz dopiero po zawiasach – wtedy widać, czy drzwi, zawias i szuflada się mijają.", "1 h"]
 ];
 var BOX_STEPS = [
-  "Połóż <b>bok</b> licem A do góry. Przyłóż <b>wieniec dolny</b> czołem do jego krawędzi, felcami w jedną stronę, wyrównaj kątownikiem, ściśnij.",
-  "Wkręć 3 konfirmaty. Wierć <b>przez bok w czoło wieńca za jednym razem</b>, wiertłem stopniowym, przy ściśniętych elementach.",
+  "Skręcaj na <b>równym podkładzie</b>: kozły z płytą albo podłoga sprawdzona poziomicą 120 cm. Korpus skręcony na nierównym podłożu wychodzi skręcony jak śmigło, a przekątne tego nie pokażą. Połóż <b>bok</b> licem A do góry. Przyłóż <b>wieniec dolny</b> czołem do jego krawędzi, felcami w jedną stronę, wyrównaj kątownikiem, ściśnij.",
+  "Wkręć 3 konfirmaty. Wierć w dwóch krokach, przy ściśniętych elementach: najpierw <b>długie wiertło ⌀5 przez szablon do konfirmatów</b>, przez bok w czoło wieńca (szablon trzyma pion i środek czoła), potem <b>wiertło stopniowe</b> – jego pilot idzie po gotowym otworze. Krzywy otwór pod konfirmat to później krzywy korpus. Wkrętarka na niskim sprzęgle, ostatni obrót ręcznie.",
   "To samo ze <b>stałą półką</b> na 1900 mm (w dużej szafie kończy się 15 mm przed tylną krawędzią, żeby przepuścić plecy).",
   "Nałóż drugi bok, ściśnij, wkręć konfirmaty. Masz literę „U” z poprzeczką.",
   "<b>Wsuń plecy HDF</b> od góry w felce boków, aż wejdą w felc wieńca dolnego. Przy 2,3 m pomóż sobie drugą osobą.",
@@ -2181,11 +2183,12 @@ var RISKS = (felcLp, cupLp) => [
   ["Grubość frontów", "W1000 ST38 bywa w 18,6 mm, H3840 ST9 w 18 mm. Projekt to znosi (białe są tylko fronty), ale zapytaj w QUEST, jaką grubość mają na stanie, i czy dobiorą do niej okleinę."],
   ["Wymiary docelowe", "Na wydruku jest napisane, że wymiary są z okleiną. Upewnij się przy oddaniu, że zakład to przeczytał – inaczej każdy element wyjdzie 2–4 mm za szeroki."],
   ["Jedna partia dekoru", "Fronty mieszczą się na jednym arkuszu bieli. Klon idzie z czterech arkuszy – poproś o jedną partię, bo boki maskujące i listwy stoją obok siebie."],
+  ["Przekątne to nie wszystko", "Równe przekątne wykluczają romb, ale nie trapez ani skręt. Najpierw porównaj szerokość u góry i u dołu. Skręt sprawdzasz dwoma sznurkami napiętymi po przekątnych frontu: w miejscu skrzyżowania mają się ledwo dotykać. Taśmę przy obu przekątnych zaczepiaj tak samo (np. od znacznika 100 mm), korektę rób przed dokręceniem ostatnich konfirmatów. Po postawieniu ważniejszy od przekątnych jest pion – linia lasera wzdłuż przedniej krawędzi boku."],
   ["Kotwienie", "Przed każdym otworem w ścianie wykrywacz przewodów. Przy liczniku kotwy z dala od rur."],
   ["Krzywe ściany", "Boki maskujące i blendy są zamówione z zapasem. Pierwsze cięcie po cyrklu przećwicz na odpadzie."]
 ];
 var WEEKEND_YT = [
-  ["Konfirmat od zera", ["montaż na konfirmaty krok po kroku", "wiertło stopniowe do konfirmatów jak wiercić", "confirmat screw how to"]],
+  ["Konfirmat od zera", ["montaż na konfirmaty krok po kroku", "wiertło stopniowe do konfirmatów jak wiercić", "szablon do konfirmatów jak używać", "confirmat screw how to"]],
   ["Lamele", ["lamelownica płyta meblowa łączenie", "biscuit joiner melamine panel", "lamelownica ustawienie na środek grubości"]],
   ["Kwadratowanie korpusu", ["sprawdzanie przekątnych korpusu mebla", "squaring a cabinet carcass diagonals"]],
   ["Plecy w felcu", ["plecy HDF w rowku montaż szafy", "cabinet back panel groove assembly"]],
@@ -2207,7 +2210,7 @@ var STEPS = [
   { t: "Potwierdź w QUEST grubość bieli i zostaw wydruk", d: "Lista formatek obejmuje trzy meble: klon H3840 ST9 na korpusy i wykończenie, biel W1000 ST38 na fronty, HDF na plecy i dna szuflad. Wymiary są docelowe, felc i puszki opisane na wydruku." },
   { t: "Kup okucia i kosze", d: "Kosze KOMPLEMENT 50×58 w IKEA, zawiasy i prowadnice kulkowe 300 i 250 mm w sklepie z okuciami (albo w QUEST, jeśli mają). Przed zamówieniem zmierz, jak daleko od ściany wystaje rura przy liczniku – szuflady zakładają do ok. 70 mm." },
   { t: "Rozpakuj i sprawdź dostawę", d: "Zmierz każdą formatkę zanim cokolwiek skręcisz. Opisz ołówkiem kod i stronę „dół”. Ustaw formatki pionowo, oparte, nie na płask na stosie." },
-  { t: "Wywierć to, czego zakład nie robi", d: "Konfirmaty, otwory ⌀5 pod półki i prowadnice koszy, piloty pod prowadniki zawiasów – te ostatnie dopiero po sprawdzeniu rozstawu puszek." },
+  { t: "Wywierć to, czego zakład nie robi", d: "Konfirmaty, otwory ⌀5 pod półki i prowadnice koszy, piloty pod prowadniki zawiasów – te ostatnie dopiero po sprawdzeniu rozstawu puszek. Wszystko na płasko, przed skręceniem. Wysokości z zakładki Model są od podłogi – przelicz je raz na odległość od dolnej krawędzi boku i zapisz. Potem <b>trasuj w pakiecie</b>: oba boki przedziału obok siebie, licem z otworami do góry, dolne krawędzie o wspólny ogranicznik, każda kreska jednym pociągnięciem przez oba boki. Szablon przykładasz znacznikiem do kreski, raz od frontu, raz od tyłu. Głębokość ok. 10–12 mm (ogranicznik na wiertle); na boku, który ma otwory z obu stron na tej samej wysokości, najwyżej 8 mm z każdej. Przesunięcie kołka względem spodu półki sprawdź najpierw na odpadzie. Prowadnice koszy i prowadniki zawiasów przykładaj jako własny szablon i znacz otwory szydłem." },
   { t: "Skręć korpusy na leżąco", d: "Boki, wieniec dolny, stała półka, plecy w felc, wieniec górny, przekątne. Płytki montażowe nóżek przykręcasz do spodu wieńca jeszcze na leżąco. W szafce przy liczniku bez pleców – listewka po skosie z tyłu, tylko do stawiania." },
   { t: "Postaw korpusy bez nóżek", d: "Z leżenia, w dwie osoby, przed wnęką. Na zmianę lewy i prawy bok (ręką lub deską jako dźwignią), klocki 18 mm aż do ok. 100 mm, różnica między bokami najwyżej jeden klocek; nóżki wpinasz w płytki 45 mm od frontu. Przechylasz tylko na bok: przy przechyle do przodu lub do tyłu góra korpusu przesuwa się ok. 4 cm na każdy centymetr uniesienia i trafia w ścianę." },
   { t: "Wsuń korpusy do wnęki", d: "Nóżki na płozach ze sklejki podklejonych filcem, pchanie nisko, przy wieńcu dolnym. Tylne nóżki ustaw przed wsunięciem według pomiaru podłogi, przednie poprawiasz na miejscu. Poziomuj <b>górną krawędź korpusu</b>, a nie podłogę." },
