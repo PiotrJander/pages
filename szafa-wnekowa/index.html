@@ -242,6 +242,50 @@ section h3{font-size:.98rem}
 .sheet figcaption{font-size:.76rem;color:var(--dim);margin-top:3px}
 h4.shop{color:var(--ink)}
 
+/* ---------- rysunek nawierceń ---------- */
+.dbtn{display:inline-block;margin-top:5px;font-family:inherit;font-size:.78rem;font-weight:600;color:var(--acc);border-color:var(--acc);padding:.25em .6em;border-radius:7px;cursor:pointer}
+.dbtn:hover{background:var(--acc-soft)}
+table.selft td{vertical-align:top}
+dialog.draw{max-width:min(96vw,900px);max-height:94vh;overflow:visible}
+dialog.draw .dlg{display:flex;flex-direction:column;max-height:94vh;overflow-y:auto}
+.dhead{display:flex;align-items:flex-start;gap:10px}
+.dhead h2{flex:1}
+.dx{border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:9px;width:34px;height:34px;font-size:1rem;cursor:pointer;flex:none}
+.dzoom{display:flex;gap:6px;margin:.2em 0 .5em}
+.dzoom button{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;min-width:40px;padding:.3em .6em;font:inherit;font-size:.86rem;cursor:pointer}
+.dscroll{overflow:auto;border:1px solid var(--line);border-radius:10px;background:var(--bg);min-height:220px;flex:1 0 auto;max-height:62vh;-webkit-overflow-scrolling:touch}
+.dsvg{display:block;height:auto;margin:0 auto;--kc:var(--warn);--kh:var(--ok);--kp:#c06500;--kl:#56616b}
+.dsvg text{font-family:var(--mono);font-weight:600;fill:var(--ink)}
+.dsvg .dpan{fill:var(--panel);stroke:var(--ink);stroke-width:1.4;vector-effect:non-scaling-stroke}
+.dsvg .dband{stroke:var(--acc);stroke-width:4.5;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.dsvg .dgroove{fill:var(--todo);opacity:.45}
+.dsvg .drun{fill:none;stroke:var(--dim);stroke-width:1.2;stroke-dasharray:7 5;vector-effect:non-scaling-stroke}
+.dsvg .dc{--k:var(--kc)} .dsvg .dh{--k:var(--kh)} .dsvg .dp{--k:var(--kp)} .dsvg .dl{--k:var(--kl)}
+.dsvg .ln{stroke:var(--k);stroke-width:1.2;fill:none;vector-effect:non-scaling-stroke}
+.dsvg .ld{stroke-dasharray:3 4;opacity:.6}
+.dsvg .fl{fill:var(--k);stroke:none}
+.dsvg .rg{fill:var(--panel);stroke:var(--k);stroke-width:2;vector-effect:non-scaling-stroke}
+.dsvg text.tk{fill:var(--k)}
+.dsvg text.de{fill:var(--dim);font-family:inherit;letter-spacing:.03em}
+.dsvg text.cap{fill:var(--dim);font-family:inherit;font-weight:500}
+.dkey{font-size:.82rem;color:var(--dim);margin:.6em 0 .2em;display:grid;gap:.25em}
+.dkey b{color:var(--ink);font-weight:600}
+.dkey i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:.45em;vertical-align:-1px;background:var(--k,var(--todo))}
+.dkey .dc{--k:var(--warn)} .dkey .dh{--k:var(--ok)} .dkey .dp{--k:#c06500} .dkey .dl{--k:#56616b}
+.dkey i.gr{border-radius:2px;background:var(--todo);opacity:.6}
+.dkey i.bd{border-radius:2px;height:4px;width:16px;background:var(--acc);vertical-align:3px}
+@media (prefers-color-scheme:dark){
+  .dsvg{--kp:#f0a040;--kl:#aab4bd}
+  .dkey .dp{--k:#f0a040} .dkey .dl{--k:#aab4bd}
+}
+@media (max-width:640px){
+  dialog.draw{max-width:100vw;width:100vw;height:100dvh;max-height:100dvh;margin:0}
+  dialog.draw .dlg{border-radius:0;height:100dvh;max-height:100dvh;padding:12px 12px calc(12px + env(safe-area-inset-bottom,0px));padding-top:calc(12px + env(safe-area-inset-top,0px))}
+  .dscroll{max-height:none;flex:0 0 auto;height:60dvh}
+  dialog.draw .note{font-size:.8rem;margin:.2em 0 .4em}
+  dialog.draw ul.bul{display:none}
+}
+
 </style>
 <script type="importmap">
 { "imports": {
@@ -292,7 +336,7 @@ var Pad = ({ on }) => html`
     <button onClick=${() => on(1, 0)} aria-label="w prawo">→</button>
     <button onClick=${() => on(0, -1)} aria-label="w dół">↓</button>
   </div>`;
-function Dialog({ open, onClose, children, wide }) {
+function Dialog({ open, onClose, children, wide, cls }) {
   const ref = useRef(null);
   useEffect(() => {
     const d = ref.current;
@@ -300,7 +344,7 @@ function Dialog({ open, onClose, children, wide }) {
     if (open && !d.open) d.showModal();
     if (!open && d.open) d.close();
   }, [open]);
-  return html`<dialog ref=${ref} class=${wide ? "wide" : ""} onClose=${onClose}
+  return html`<dialog ref=${ref} class=${cls ?? (wide ? "wide" : "")} onClose=${onClose}
     onClick=${(e) => {
     if (e.target === ref.current) onClose();
   }}>
@@ -503,12 +547,67 @@ var HOLE = {
   conf7: { d: 7, depth: 0, color: "#b03a2e", label: "⌀7 przelotowy – konfirmat" },
   conf45: { d: 4.5, depth: 40, color: "#b03a2e", label: "⌀4,5×40 w czole – konfirmat" },
   cup35: { d: 35, depth: 13, color: "#1f5fd6", label: "⌀35×13 – puszka zawiasu (robi zakład)" },
-  plate: { d: 3, depth: 10, color: "#e07b00", label: "⌀3×10 – pilot pod wkręt prowadnika zawiasu" }
+  plate: { d: 3, depth: 10, color: "#e07b00", label: "⌀3×10 – pilot pod wkręt prowadnika zawiasu" },
+  leg: { d: 60, depth: 0, color: "#56616b", label: "oś nóżki – płytka montażowa pod wieńcem dolnym" }
 };
 var BISCUIT = {
   20: { L: 56, W: 23, label: "lamela nr 20" },
   0: { L: 47, W: 15, label: "lamela nr 0" }
 };
+// nóżki: osie liczone od czoła wieńca dolnego (side) i od jego przedniej krawędzi (front);
+// rozstaw przód–tył dobrany do płozy 500 mm – po 40 mm zapasu za osiami
+var LEG = { side: 100, front: 45, span: 420, runner: 500, runnerW: 100, runnerT: 8, runnerFront: 5 };
+function legPlan(wIn, W, n) {
+  const yF = W - LEG.front, yB = Math.max(80, yF - LEG.span);
+  const xs = n === 3 ? [LEG.side, wIn / 2, wIn - LEG.side] : [LEG.side, wIn - LEG.side];
+  const runner = Math.min(LEG.runner, Math.round((yF - yB + 80) / 10) * 10);
+  return { xs, ys: [yB, yF], runner, fromFront: [LEG.front, W - yB] };
+}
+// kątownik: pionowe ramię przy płaszczyźnie y, poziome leży na płycie o wierzchu z; sz < 0 – ramię poziome biegnie do tyłu
+function angle(fittings, x, y, z, sz = 40, w = 20) {
+  const a = Math.abs(sz), th = 2.5, back = sz < 0;
+  fittings.push({ kind: "bracket", x0: x - w / 2, x1: x + w / 2, d0: back ? y - th : y, d1: back ? y : y + th, z0: z, z1: z + a });
+  fittings.push({ kind: "bracket", x0: x - w / 2, x1: x + w / 2, d0: back ? y - a : y, d1: back ? y : y + a, z0: z, z1: z + th });
+}
+var ctrAt = (pn, o) => [0, 1, 2].map((i) => o[i] + pn.ex[i] * pn.Lg / 2 + pn.ey[i] * pn.Wd / 2 + pn.ez[i] * pn.t / 2);
+var boxHs = (bh) => [Math.round(bh * 0.25), Math.round(bh * 0.75)];
+// nawierty skrzynki szuflady: bok – 2 × ⌀7 przelotowe przy każdym końcu, czoło/tył – 2 × ⌀4,5 w każdym czole
+function boxFeats(szb, szc, L, bh, t) {
+  const hs = boxHs(bh);
+  [t / 2, L - t / 2].forEach((x) => hs.forEach((y) => szb.feats.push({ t: "conf7", x, y, face: "B" })));
+  [0, szc.Lg].forEach((x) => hs.forEach((y) => szc.feats.push({ t: "conf45", x, y, face: "edge" })));
+}
+// połączenia jednej skrzynki: konfirmaty przez boki w czoło i tył, dno HDF przybite i przyklejone od spodu,
+// opcjonalnie front przykręcony od środka
+function boxJoints(ctx, o) {
+  const { joints } = ctx, { szb, szc, szd, front, yFront, i, xb, bw, y0, L, zb, bh, t } = o;
+  const oS = [szb.inst[2 * i], szb.inst[2 * i + 1]], oC = [szc.inst[2 * i], szc.inst[2 * i + 1]];
+  [0, 1].forEach((si) => {
+    const xa = si ? xb + bw : xb, dir = si ? -1 : 1;
+    [0, 1].forEach((ci) => {
+      const yc = ci ? y0 + L - t / 2 : y0 + t / 2;
+      boxHs(bh).forEach((h) => joints.push({ kind: "conf", box: true, a: [xa, yc, zb + h], b: [xa + dir * (t + 42), yc, zb + h], pa: szb.id, pb: szc.id, ca: ctrAt(szb, oS[si]), cb: ctrAt(szc, oC[ci]) }));
+    });
+  });
+  const cD = ctrAt(szd, szd.inst[i]);
+  const nail = (x, y, pn, org) => joints.push({ kind: "nail", a: [x, y, zb - 5], b: [x, y, zb + 22], pa: szd.id, pb: pn.id, ca: cD, cb: ctrAt(pn, org) });
+  const along = (len) => {
+    const n = Math.max(2, Math.round((len - 30) / 90) + 1);
+    return Array.from({ length: n }, (_, k) => 15 + (len - 30) * k / (n - 1));
+  };
+  along(L).forEach((d) => {
+    nail(xb + t / 2, y0 + d, szb, oS[0]);
+    nail(xb + bw - t / 2, y0 + d, szb, oS[1]);
+  });
+  along(bw - 2 * t).forEach((d) => {
+    nail(xb + t + d, y0 + t / 2, szc, oC[0]);
+    nail(xb + t + d, y0 + L - t / 2, szc, oC[1]);
+  });
+  if (front) {
+    const cF = ctrAt(front, front.inst[i]);
+    [xb + t + 45, xb + bw - t - 45].forEach((x) => boxHs(bh).forEach((h) => joints.push({ kind: "screw", a: [x, y0 + L - t - 2, zb + h], b: [x, yFront + 12, zb + h], pa: szc.id, pb: front.id, ca: ctrAt(szc, oC[1]), cb: cF })));
+  }
+}
 var num = (m, k) => typeof m[k] === "number" ? m[k] : null;
 var list = (m, ks) => ks.map((k) => num(m, k)).filter((v) => v !== null);
 var mn = (a) => a.length ? Math.min(...a) : null;
@@ -725,6 +824,12 @@ function addCarcass(ctx, s) {
     });
   };
   const wD = top("dolny", z0, 1), wG = top("górny", z1, -1);
+  // nóżki pod wieńcem dolnym: po parze przy każdym boku, w szerokiej skrzyni dodatkowa para pośrodku
+  const lp = legPlan(wIn, W, s.legs ?? 2);
+  lp.xs.forEach((x) => lp.ys.forEach((y) => wD.feats.push({ t: "leg", x, y, face: "B" })));
+  wD.runners = lp.xs.map((x) => ({ a0: x - LEG.runnerW / 2, a1: x + LEG.runnerW / 2, c0: W - LEG.runnerFront - lp.runner, c1: W - LEG.runnerFront }));
+  wD.faceNote += `; od spodu ${lp.xs.length * 2} płytek nóżek`;
+  layout.legs[tag] = lp;
   const sta = add({
     grp: "korpus",
     code: `${tag}-STA`,
@@ -789,7 +894,25 @@ function addCarcass(ctx, s) {
       ey: [1, 0, 0],
       ez: [0, 1, 0]
     });
-  fittings.push({ kind: "plinth", x0, x1, d0: dB + W - 45 - t, d1: dB + W - 45, z0: 0, z1: p2.plinth });
+  lp.xs.forEach((x) => {
+    const X = x0 + t + x;
+    fittings.push({ kind: "runner", x0: X - LEG.runnerW / 2, x1: X + LEG.runnerW / 2, d0: dB + W - LEG.runnerFront - lp.runner, d1: dB + W - LEG.runnerFront, z0: 0, z1: LEG.runnerT });
+    lp.ys.forEach((y) => fittings.push({ kind: "leg", x: X, d: dB + y, z0: LEG.runnerT, z1: z0 }));
+  });
+  // kątowniki do ściany tylnej: dwa na wierzchu wieńca górnego, dwa na stałej półce.
+  // Za plecami HDF jest pustka do ściany, więc pod kątownik na półce idzie klocek dystansowy.
+  const ax = [x0 + 100, x1 - 100];
+  ax.forEach((x) => {
+    angle(fittings, x, 0, z1);
+    if (groove) {
+      fittings.push({ kind: "spacer", x0: x - 20, x1: x + 20, d0: 0, d1: dB + 10, z0: zS, z1: zS + 40 });
+      angle(fittings, x, dB + 13, zS);
+    } else angle(fittings, x, 0, zS);
+  });
+  // małe kątowniki listwy górnej, przy przedniej krawędzi wieńca górnego
+  const sx = wIn > 600 ? [x0 + 80, (x0 + x1) / 2, x1 - 80] : [x0 + 80, x1 - 80];
+  sx.forEach((x) => angle(fittings, x, dB + W + 2, z1, -25, 16));
+  layout.anchors[tag] = { x: 100, zTop: z1, zS, viaBack: groove, void: dB + 10, strip: sx.length };
   return { sides: sides[tag], lo, wIn };
 }
 var keepOutOf = (bays, t) => bays.flatMap((b) => [
@@ -805,7 +928,7 @@ function hingeBays(layout, tags) {
   ]).filter(Boolean);
 }
 function mkCtx(alc, p2) {
-  const panels = [], joints = [], fittings = [], sides = {}, biscuits = [], layout = { rail: null, bays: {}, fixed: {}, hinges: {} };
+  const panels = [], joints = [], fittings = [], sides = {}, biscuits = [], layout = { rail: null, bays: {}, fixed: {}, hinges: {}, legs: {}, anchors: {} };
   let uid = 0;
   const add = (o) => {
     o.id = "abc"[alc - 1] + ++uid;
@@ -889,6 +1012,7 @@ function buildPanels(p2, opts = DEFAULT_OPTS) {
       plan,
       rail,
       baskets,
+      legs: k === "L" ? 3 : 2,
       backs: opts.backs
     });
   }
@@ -1015,6 +1139,7 @@ function buildPanels(p2, opts = DEFAULT_OPTS) {
     grp: "blenda",
     scribe: true,
       code: "COK",
+    plinth: true,
     name: "Cokół",
     Lg: g2.X_right - g2.X_left,
     Wd: p2.plinth,
@@ -1110,15 +1235,26 @@ function buildPanelsB(p2) {
     [xs0 + sT, xs1 - sT - 12.7].forEach((x) => fittings.push({ kind: "rail2", x0: x, x1: x + 12.7, d0: yBk, d1: yF, z0: z + off - 22.5, z1: z + off + 22.5 }));
   });
   add({ grp: "szuflada", code: "N-LDS", name: "Listwa dystansowa pod prowadnicę – szafka przy liczniku", Lg: L, Wd: sH, qty: 2 * nD, edges: { D1: 0, D2: 0, S1: 0, S2: 0 }, inst: instL, origin: instL[0], faceNote: `przykręcana do boku korpusu 3 wkrętami 4×30 (z wnętrza listwy w bok); przód ${r0(g2.dF - yF)} mm za krawędzią korpusu; na niej prowadnica kulkowa ${L} mm. Odsuwa szufladę o ${sT} mm od boku, żeby minęła zawiasy`, ex: [0, 1, 0], ey: [0, 0, 1], ez: [1, 0, 0] });
-  add({ grp: "szuflada", code: "N-SZB", name: "Bok skrzynki szuflady – szafka przy liczniku", Lg: L, Wd: bh, qty: 2 * nD, edges: { D1: 0, D2: 2, S1: 0, S2: 2 }, inst: instS, origin: instS[0], faceNote: `D2 = krawędź górna, S2 = przód; prowadnica kulkowa ${L} mm przykręcana ${off} mm nad spodem skrzynki (oś). Gdyby rura wystawała więcej, skracasz bok od tyłu`, ex: [0, 1, 0], ey: [0, 0, 1], ez: [1, 0, 0] });
-  add({ grp: "szuflada", code: "N-SZC", name: "Czoło / tył skrzynki szuflady – szafka przy liczniku", Lg: bw - 2 * t, Wd: bh, qty: 2 * nD, edges: { D1: 0, D2: 2, S1: 0, S2: 0 }, inst: instC, origin: instC[0], faceNote: "między bokami skrzynki; 2 konfirmaty przez bok na każdym końcu", ex: [1, 0, 0], ey: [0, 0, 1], ez: [0, 1, 0] });
-  add({ grp: "plecy", code: "N-SZD", name: "Dno skrzynki szuflady – szafka przy liczniku", Lg: L, Wd: bw, qty: nD, t: 3, mat: "HDF 3 mm biała", edges: { D1: 0, D2: 0, S1: 0, S2: 0 }, inst: instD, origin: instD[0], faceNote: "nabijane i klejone od spodu skrzynki; trzyma ją w kącie prostym", ex: [0, 1, 0], ey: [1, 0, 0], ez: [0, 0, 1] });
+  const szbN = add({ grp: "szuflada", code: "N-SZB", name: "Bok skrzynki szuflady – szafka przy liczniku", Lg: L, Wd: bh, qty: 2 * nD, edges: { D1: 0, D2: 2, S1: 0, S2: 2 }, inst: instS, origin: instS[0], faceNote: `D2 = krawędź górna, S2 = przód; prowadnica kulkowa ${L} mm przykręcana ${off} mm nad spodem skrzynki (oś). Gdyby rura wystawała więcej, skracasz bok od tyłu`, ex: [0, 1, 0], ey: [0, 0, 1], ez: [1, 0, 0] });
+  const szcN = add({ grp: "szuflada", code: "N-SZC", name: "Czoło / tył skrzynki szuflady – szafka przy liczniku", Lg: bw - 2 * t, Wd: bh, qty: 2 * nD, edges: { D1: 0, D2: 2, S1: 0, S2: 0 }, inst: instC, origin: instC[0], faceNote: "między bokami skrzynki; 2 konfirmaty przez bok na każdym końcu", ex: [1, 0, 0], ey: [0, 0, 1], ez: [0, 1, 0] });
+  const szdN = add({ grp: "plecy", code: "N-SZD", name: "Dno skrzynki szuflady – szafka przy liczniku", Lg: L, Wd: bw, qty: nD, t: 3, mat: "HDF 3 mm biała", edges: { D1: 0, D2: 0, S1: 0, S2: 0 }, inst: instD, origin: instD[0], faceNote: "klejone i przybijane od spodu skrzynki (gwoździki lub zszywki co ok. 9 cm), bez rowków; trzyma ją w kącie prostym", ex: [0, 1, 0], ey: [1, 0, 0], ez: [0, 0, 1] });
+  boxFeats(szbN, szcN, L, bh, t);
+  zb.forEach((z, i) => boxJoints(ctx, { szb: szbN, szc: szcN, szd: szdN, i, xb: xs0 + sT + 12.7, bw, y0: yBk, L, zb: z, bh, t }));
+  // prawy bok do ściany wnęki: 4 wkręty przez podkładki dystansowe
+  const sideZ = [330, 1000, 1650, 2200];
+  sideZ.forEach((z, i) => {
+    const y = i % 2 ? g2.dB + g2.depth - 90 : g2.dB + 90;
+    fittings.push({ kind: "spacer", x0: g2.x1, x1: p2.xWall, d0: y - 15, d1: y + 15, z0: z - 15, z1: z + 15 });
+    fittings.push({ kind: "bracket", x0: g2.x1 - t - 2, x1: p2.xWall + 60, d0: y - 3, d1: y + 3, z0: z - 3, z1: z + 3 });
+  });
+  layout.anchors.N.side = sideZ;
   layout.N = { bw, L, yF, yBk, off, zb, strips, bh, backGap: yBk };
   const ts = Math.max(60, r0(g2.topStrip - p2.fg + 25));
   add({
     grp: "blenda",
     scribe: true,
       code: "N-COK",
+    plinth: true,
     name: "Cokół – szafka przy liczniku",
     Lg: g2.x1 - g2.x0,
     Wd: p2.plinth,
@@ -1275,7 +1411,7 @@ function buildPanelsC(pc) {
   const fd0 = yB + Ds + 2, fz0 = zIn0 + p2.fg, fz1 = zIn1 - p2.fg, gapD = 4;
   const fh = Math.floor((fz1 - fz0 - (p2.drawers - 1) * gapD) / p2.drawers);
   const drawerZ = Array.from({ length: p2.drawers }, (_, i) => fz0 + i * (fh + gapD));
-  addFront(ctx, {
+  const frs = addFront(ctx, {
     a: p2.fg / 2,
     b: xdc - p2.fg / 2,
     z0: drawerZ[0],
@@ -1305,9 +1441,11 @@ function buildPanelsC(pc) {
     fittings.push({ kind: "knob", x0: xdc / 2 - 15, x1: xdc / 2 + 15, d0: fd0 + p2.tF, d1: fd0 + p2.tF + 25, z0: z + fh / 2 - 15, z1: z + fh / 2 + 15 });
   });
   fittings.push({ kind: "knob", x0: xdc + 40, x1: xdc + 70, d0: fd0 + p2.tF, d1: fd0 + p2.tF + 25, z0: (dz0 + dz1) / 2 - 15, z1: (dz0 + dz1) / 2 + 15 });
-  add({ grp: "szuflada", code: "S-SZB", name: "Bok skrzynki szuflady", Lg: L, Wd: bh, qty: 2 * p2.drawers, edges: { D1: 0, D2: 2, S1: 0, S2: 0 }, inst: instS, origin: instS[0], faceNote: "D2 = krawędź górna; prowadnica kulkowa przykręcana do boku", ex: [0, 1, 0], ey: [0, 0, 1], ez: [1, 0, 0] });
-  add({ grp: "szuflada", code: "S-SZC", name: "Czoło / tył skrzynki szuflady", Lg: bw - 2 * t, Wd: bh, qty: 2 * p2.drawers, edges: { D1: 0, D2: 2, S1: 0, S2: 0 }, inst: instC, origin: instC[0], faceNote: "między bokami skrzynki; 2 konfirmaty przez bok na każdym końcu", ex: [1, 0, 0], ey: [0, 0, 1], ez: [0, 1, 0] });
-  add({ grp: "plecy", code: "S-SZD", name: "Dno skrzynki szuflady", Lg: L, Wd: bw, qty: p2.drawers, t: 3, mat: "HDF 3 mm biała", edges: { D1: 0, D2: 0, S1: 0, S2: 0 }, inst: instD, origin: instD[0], faceNote: "nabijane od spodu skrzynki", ex: [0, 1, 0], ey: [1, 0, 0], ez: [0, 0, 1] });
+  const szbC = add({ grp: "szuflada", code: "S-SZB", name: "Bok skrzynki szuflady", Lg: L, Wd: bh, qty: 2 * p2.drawers, edges: { D1: 0, D2: 2, S1: 0, S2: 0 }, inst: instS, origin: instS[0], faceNote: "D2 = krawędź górna; prowadnica kulkowa przykręcana do boku", ex: [0, 1, 0], ey: [0, 0, 1], ez: [1, 0, 0] });
+  const szcC = add({ grp: "szuflada", code: "S-SZC", name: "Czoło / tył skrzynki szuflady", Lg: bw - 2 * t, Wd: bh, qty: 2 * p2.drawers, edges: { D1: 0, D2: 2, S1: 0, S2: 0 }, inst: instC, origin: instC[0], faceNote: "między bokami skrzynki; 2 konfirmaty przez bok na każdym końcu", ex: [1, 0, 0], ey: [0, 0, 1], ez: [0, 1, 0] });
+  const szdC = add({ grp: "plecy", code: "S-SZD", name: "Dno skrzynki szuflady", Lg: L, Wd: bw, qty: p2.drawers, t: 3, mat: "HDF 3 mm biała", edges: { D1: 0, D2: 0, S1: 0, S2: 0 }, inst: instD, origin: instD[0], faceNote: "klejone i przybijane od spodu skrzynki (gwoździki lub zszywki co ok. 9 cm), bez rowków", ex: [0, 1, 0], ey: [1, 0, 0], ez: [0, 0, 1] });
+  boxFeats(szbC, szcC, L, bh, t);
+  drawerZ.forEach((z, i) => boxJoints(ctx, { szb: szbC, szc: szcC, szd: szdC, front: frs, yFront: fd0, i, xb, bw, y0: boxY, L, zb: z + 12, bh, t }));
   layout.C = { W, xd, wl, wr, Dt, Ds, hIn, fh, drawerZ, bw, shelfZc, depthTotal: yB + Dt };
   return { panels, joints, fittings, biscuits, g: { X_left: 0, X_right: W, zF: p2.H, depth: Dt, W }, p: p2, layout, opts: { backs: "nail" }, alc: 3 };
 }
@@ -1338,7 +1476,10 @@ function totals(model) {
     szt,
     holes,
     grooveMb,
-    konfirmaty: joints.length,
+    konfirmaty: joints.filter((j) => (j.kind ?? "conf") === "conf").length,
+    konfSzuflad: joints.filter((j) => j.kind === "conf" && j.box).length,
+    nogi: panels.reduce((a, q) => a + q.feats.filter((f) => f.t === "leg").length * q.qty, 0),
+    plozy: panels.reduce((a, q) => a + (q.runners?.length ?? 0), 0),
     lamele: bisc,
     korpusow: panels.filter((q) => /-WD$/.test(q.code)).length,
     zawiasy: panels.filter((q) => q.grp === "front").reduce((a, q) => a + q.feats.filter((f) => f.t === "cup35").length * q.qty, 0),
@@ -1512,13 +1653,15 @@ function drillText(pn) {
   if (cu.length) out.push(`${cu.length} × puszka ⌀35×13 mm na licu B, oś 22,5 mm od dłuższej krawędzi, na ${uniq(cu.map((q) => q.x)).join(" / ")} mm od S1 (robi zakład)`);
   const pl = grp("plate");
   if (pl.length) out.push(`${pl.length} × ⌀3×10 mm pilot pod prowadniki zawiasów (po 2 na prowadnik, co 32 mm): w osi 37 mm od D2, na ${uniq(pl.map((q) => q.x)).join(" / ")} mm od S1 – dopasuj do rozstawu puszek z zakładu`);
+  const lg = grp("leg");
+  if (lg.length) out.push(`${lg.length} × płytka nóżki na licu B (od spodu): osie ${uniq(lg.map((q) => q.x)).join(" / ")} mm od S1 oraz ${uniq(lg.map((q) => pn.Wd - q.y)).join(" i ")} mm od przedniej krawędzi D2 – wkręty 3,5×16, bez nawiertów`);
   if (grp("groove").length) out.push("felc (rowek) 4×10 mm w licu A, 10 mm od tylnej krawędzi D1, na całej długości (robi zakład)");
   return out;
 }
 function featBadge(pn) {
   const c = {};
   (pn.feats || []).forEach((q) => c[q.t] = (c[q.t] || 0) + 1);
-  const m = { hole5: "⌀5", conf7: "⌀7", conf45: "⌀4,5", cup35: "⌀35", plate: "⌀3", groove: "felc" };
+  const m = { hole5: "⌀5", conf7: "⌀7", conf45: "⌀4,5", cup35: "⌀35", plate: "⌀3", groove: "felc", leg: "nóżka" };
   return Object.entries(c).map(([k, v]) => k === "groove" ? "felc" : `${v}×${m[k] || k}`).join(" · ") || "—";
 }
 var P = derive(SHEET, SETTINGS);
@@ -1661,7 +1804,9 @@ var MAT = {
   basket: new THREE.MeshLambertMaterial({ color: 0xc9d0d6, transparent: true, opacity: 0.55, depthWrite: false }),
   knob: new THREE.MeshLambertMaterial({ color: 0x6f6a62 }),
   mirror: new THREE.MeshLambertMaterial({ color: 0xbcd0d8 }),
-  biscuit: new THREE.MeshLambertMaterial({ color: 0xc8955a })
+  biscuit: new THREE.MeshLambertMaterial({ color: 0xc8955a }),
+  ply: new THREE.MeshLambertMaterial({ color: 0xc9ad7f }),
+  anchor: new THREE.MeshLambertMaterial({ color: 0x1f6fd6, emissive: 0x0b2a55 })
 };
 // surowa krawędź płyty wiórowej: drobne wióry na beżowym tle
 var CHIP = (() => {
@@ -1750,7 +1895,19 @@ function biscuitMesh(b) {
   m.renderOrder = 6;
   return m;
 }
-function wardrobeGroup(model, { fronts = true, open = 0 } = {}) {
+// nóżka: płytka pod wieńcem, kolumna i stopka na płozie
+function legMesh(f) {
+  const g2 = new THREE.Group(), h2 = f.z1 - f.z0;
+  const cyl = (r, h, z) => {
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, 18), MAT.plinth);
+    m.rotation.x = Math.PI / 2;
+    m.position.set(f.x, f.d, z);
+    return m;
+  };
+  g2.add(cyl(15, h2, f.z0 + h2 / 2), cyl(30, 8, f.z0 + 4), box(f.x - 35, f.x + 35, f.d - 35, f.d + 35, f.z1 - 4, f.z1, MAT.plinth, false));
+  return g2;
+}
+function wardrobeGroup(model, { fronts = true, open = 0, plinth = true } = {}) {
   const grp = new THREE.Group();
   grp.name = "ward";
   const ang = open * Math.PI / 2;
@@ -1760,6 +1917,7 @@ function wardrobeGroup(model, { fronts = true, open = 0 } = {}) {
       holder.matrixAutoUpdate = false;
       holder.matrix.copy(panelMatrix(pn, org));
       holder.add(panelMesh(pn, false));
+      if (pn.plinth) holder.visible = plinth;
       if (pn.grp === "front") {
         holder.userData.isFront = true;
         holder.visible = fronts;
@@ -1781,7 +1939,11 @@ function wardrobeGroup(model, { fronts = true, open = 0 } = {}) {
     }
   }
   for (const f of model.fittings) {
-    const mat = { rail: MAT.rail, rail2: MAT.rail, basket: MAT.basket, knob: MAT.knob }[f.kind] || MAT.plinth;
+    if (f.kind === "leg") {
+      grp.add(legMesh(f));
+      continue;
+    }
+    const mat = { rail: MAT.rail, rail2: MAT.rail, basket: MAT.basket, knob: MAT.knob, runner: MAT.ply, spacer: MAT.ply, bracket: MAT.anchor }[f.kind] || MAT.plinth;
     const m = box(f.x0, f.x1, f.d0, f.d1, f.z0, f.z1, mat, f.kind !== "basket");
     if (f.kind === "knob") {
       m.userData.isFront = true;
@@ -2118,9 +2280,9 @@ var TOOLS = [
   ["Przydatne", "Kozły lub stół roboczy + płyta ofiarna", "", [100, 250]]
 ];
 var hardware = (T2, LC) => {
-  const nK = Math.ceil((T2.konfirmaty + 40) * 1.15 / 50) * 50, k = T2.korpusow, nP = (T2.polekKorpus + 6) * 4, nD = LC ? 3 : 0, nU = T2.frontow - 4, nA = k * 4 + 4;
+  const nK = Math.ceil(T2.konfirmaty * 1.15 / 50) * 50, nLeg = T2.nogi, nRun = T2.plozy, nClip = nRun + 2, k = T2.korpusow, nP = (T2.polekKorpus + 6) * 4, nD = LC ? 3 : 0, nU = T2.frontow - 4, nA = k * 4 + 4;
   return [
-  ["Konfirmat 7×50 mm", `${T2.konfirmaty + 40} szt. (kup ${nK})`, `${T2.konfirmaty} z listy formatek + 40 w skrzynkach szuflad (5 skrzynek, po 2 na róg)`, [nK * 0.15, nK * 0.25]],
+  ["Konfirmat 7×50 mm", `${T2.konfirmaty} szt. (kup ${nK})`, `${T2.konfirmaty - T2.konfSzuflad} w korpusach + ${T2.konfSzuflad} w skrzynkach szuflad (5 skrzynek, po 2 na róg)`, [nK * 0.15, nK * 0.25]],
   ["Lamele nr 20", `${T2.lamele[20] ?? 0} szt. (paczka)`, "bok zamykający + listewka (7), blat szafki pod lustrem (6)", [20, 40]],
   ["Lamele nr 0", `${T2.lamele[0] ?? 0} szt. (z tej samej paczki mieszanej)`, "listwa górna ↔ bok maskujący, w obu szafach", null],
   ["KOMPLEMENT kosz siatkowy z prowadnicą 50×58, biały", "2 szt.", "IKEA; prawy korpus szafy, na dole za drzwiami", [140, 200]],
@@ -2129,12 +2291,12 @@ var hardware = (T2, LC) => {
   ["Zawias puszkowy 110° z cichym domykiem + prowadnik", `${T2.zawiasy} kpl.`, "5 na każde wysokie drzwi, 2 na drzwi szafki pod lustrem; puszki wierci zakład. Dolna granica GTV, górna Blum", [T2.zawiasy * 10, T2.zawiasy * 25]],
   ["Gałki meblowe", "4 szt.", "szafka pod lustrem: 3 szuflady + drzwi", [20, 80]],
   ["Uchwyty albo zatrzaski push-to-open", `${nU} kpl.`, "wysokie drzwi; przy liczniku drzwi bez zamka", [nU * 8, nU * 30]],
-  ["Nóżki regulowane z odpinaną płytką montażową (na bagnet lub wkręcane, np. GTV, Hettich) + klipsy cokołu", `${k * 4} szt. + ${k * 3} klipsów`, "po 4 na korpus; płytki przykręcasz do wieńca na leżąco, nóżki wpinasz/wkręcasz ręką po postawieniu – pod uniesionym korpusem wkrętarka się nie zmieści. Cokół 80 mm = nóżka + płoza, więc nóżka musi dać się skręcić do ok. 70 mm – sprawdź zakres regulacji przed zakupem", [k * 4 * 3 + k * 3 * 0.5, k * 4 * 6 + k * 3 * 1]],
-  ["Płozy pod nóżki: pasy sklejki 6–10 mm × 100 mm", `${k * 2} szt.`, "dwa na korpus (lewa i prawa para nóżek), długość = głębokość korpusu − 40 mm; po nich wsuwasz korpus do wnęki i zostają pod nim na wykładzinie. Z odpadu sklejki – za darmo", [0, 40]],
+  ["Nóżki regulowane z odpinaną płytką montażową (na bagnet lub wkręcane, np. GTV, Hettich) + klipsy cokołu", `${nLeg} szt. + ${nClip} klipsów`, `lewa skrzynia szafy 6 (dodatkowa para pośrodku, bo wieniec ma 854 mm rozpiętości), pozostałe korpusy po 4; klipsy: ${nRun} na przednie nóżki + 2 zapasowe. Osie nóżek ${LEG.side} mm od czoła wieńca, przednie ${LEG.front} mm, tylne ${LEG.front + LEG.span} mm od przedniej krawędzi (rysunek: „Do wywiercenia samemu” → L-WD). Cokół stoi w licu frontów, ok. ${LEG.front + 1} mm przed osią przednich nóżek, a klips sięga zwykle ok. 30 mm – pod klipsy podklej na cokole klocek z odpadu (grubość dobierz na sucho). Płytki przykręcasz do wieńca na leżąco, nóżki wpinasz/wkręcasz ręką po postawieniu – pod uniesionym korpusem wkrętarka się nie zmieści. Cokół 80 mm = nóżka + płoza, więc nóżka musi dać się skręcić do ok. 70 mm – sprawdź zakres regulacji przed zakupem`, [nLeg * 3 + nClip * 0.5, nLeg * 6 + nClip * 1]],
+  ["Płozy pod nóżki: pasy sklejki 6–10 mm × 100 mm × 500 mm", `${nRun} szt.`, `po jednej pod każdą parę nóżek przód–tył: lewa skrzynia 3, prawa 2, szafka przy liczniku 2. W szafie płoza ${LEG.runner} mm zaczyna się ${LEG.runnerFront} mm za przednią krawędzią wieńca i wystaje po 40 mm za osie nóżek (rozstaw osi ${LEG.span} mm). Do szafki przy liczniku dwie płozy skróć do 330 mm. Po płozach wsuwasz korpus do wnęki i zostają pod nim na wykładzinie`, [0, 40]],
   ["Filc samoprzylepny", "arkusz", "pod płozy, żeby łatwo jechały po wykładzinie; ślizgacze pod cokół szafki pod lustrem", [10, 25]],
   ["Podpórki półek ⌀5 mm, metalowe", `${nP} szt.`, `${T2.polekKorpus} półek w korpusach + 6 w niszy, po 4`, [nP * 0.2, nP * 0.5]],
   ["Drążek owalny stalowy + 2 uchwyty", "1 kpl.", "lewa skrzynia, oś na 1600 mm", [40, 80]],
-  ["Kątowniki meblowe", `${k * 4} szt.`, "kotwienie: przy wieńcu górnym i stałej półce; przy liczniku z dala od rur", [k * 4 * 1, k * 4 * 3]],
+  ["Kątowniki meblowe", `${k * 4} szt.`, "kotwienie do ściany tylnej: 2 na wierzchu wieńca górnego i 2 na stałej półce każdego korpusu (w modelu 3D niebieskie); przy liczniku z dala od rur", [k * 4 * 1, k * 4 * 3]],
   ["Kołki do cegły dziurawki z wkrętami, np. Fischer DuoPower 8×65 S", `${nA} szt. (opakowanie 25 szt.)`, "kątowniki do ściany + prawy bok szafki przy liczniku. Ok. 1–1,5 zł/szt.; dłuższy kołek przechodzi przez tynk i łapie więcej ścianek komór niż 8×40 (ok. 0,5–0,7 zł/szt.). Otwór ⌀8, zwykłe wiertło widiowe, <b>bez udaru</b>. Długość wkrętu ≥ kołek + grubość mocowanego elementu + ok. 5 mm", [25, 40]],
   ["Wkręty ⌀6 × 90–100 mm + podkładki dystansowe 5 mm", "4 kpl.", "prawy bok szafki przy liczniku do ściany wnęki, w kołki z pozycji wyżej (przez bok 18 mm + podkładkę 5 mm)", [10, 20]],
   ["Małe kątowniki 25×25 + wkręty 3,5×16", "8 szt.", "listwy górne do wieńców górnych", [5, 15]],
@@ -2211,7 +2373,7 @@ var STEPS = [
   { t: "Kup okucia i kosze", d: "Kosze KOMPLEMENT 50×58 w IKEA, zawiasy i prowadnice kulkowe 300 i 250 mm w sklepie z okuciami (albo w QUEST, jeśli mają). Przed zamówieniem zmierz, jak daleko od ściany wystaje rura przy liczniku – szuflady zakładają do ok. 70 mm." },
   { t: "Rozpakuj i sprawdź dostawę", d: "Zmierz każdą formatkę zanim cokolwiek skręcisz. Opisz ołówkiem kod i stronę „dół”. Ustaw formatki pionowo, oparte, nie na płask na stosie." },
   { t: "Wywierć to, czego zakład nie robi", d: "Konfirmaty, otwory ⌀5 pod półki i prowadnice koszy, piloty pod prowadniki zawiasów – te ostatnie dopiero po sprawdzeniu rozstawu puszek. Wszystko na płasko, przed skręceniem. Wysokości z zakładki Model są od podłogi – przelicz je raz na odległość od dolnej krawędzi boku i zapisz. Potem <b>trasuj w pakiecie</b>: oba boki przedziału obok siebie, licem z otworami do góry, dolne krawędzie o wspólny ogranicznik, każda kreska jednym pociągnięciem przez oba boki. Szablon przykładasz znacznikiem do kreski, raz od frontu, raz od tyłu. Głębokość ok. 10–12 mm (ogranicznik na wiertle); na boku, który ma otwory z obu stron na tej samej wysokości, najwyżej 8 mm z każdej. Przesunięcie kołka względem spodu półki sprawdź najpierw na odpadzie. Prowadnice koszy i prowadniki zawiasów przykładaj jako własny szablon i znacz otwory szydłem." },
-  { t: "Skręć korpusy na leżąco", d: "Boki, wieniec dolny, stała półka, plecy w felc, wieniec górny, przekątne. Płytki montażowe nóżek przykręcasz do spodu wieńca jeszcze na leżąco. W szafce przy liczniku bez pleców – listewka po skosie z tyłu, tylko do stawiania." },
+  { t: "Skręć korpusy na leżąco", d: "Boki, wieniec dolny, stała półka, plecy w felc, wieniec górny, przekątne. Płytki montażowe nóżek przykręcasz do spodu wieńca jeszcze na leżąco – w lewej skrzyni sześć, z parą pośrodku. W szafce przy liczniku bez pleców – listewka po skosie z tyłu, tylko do stawiania." },
   { t: "Postaw korpusy bez nóżek", d: "Z leżenia, w dwie osoby, przed wnęką. Na zmianę lewy i prawy bok (ręką lub deską jako dźwignią), klocki 18 mm aż do ok. 100 mm, różnica między bokami najwyżej jeden klocek; nóżki wpinasz w płytki 45 mm od frontu. Przechylasz tylko na bok: przy przechyle do przodu lub do tyłu góra korpusu przesuwa się ok. 4 cm na każdy centymetr uniesienia i trafia w ścianę." },
   { t: "Wsuń korpusy do wnęki", d: "Nóżki na płozach ze sklejki podklejonych filcem, pchanie nisko, przy wieńcu dolnym. Tylne nóżki ustaw przed wsunięciem według pomiaru podłogi, przednie poprawiasz na miejscu. Poziomuj <b>górną krawędź korpusu</b>, a nie podłogę." },
   { t: "Zakotw korpusy", d: "Kątowniki przy wieńcu górnym i stałej półce. Szafkę przy liczniku dodatkowo przykręć prawym bokiem do ściany wnęki przez podkładki 5 mm. Przed wierceniem wykrywacz przewodów." },
@@ -2543,7 +2705,7 @@ function Nesting({ T: T2, nest: nest2 }) {
         <${Table} head=${["Pozycja", "Koszt"]} rows=${q.lines.map((l) => [l[0], zl(l[1], l[2])])} />`;
   })()}`;
 }
-function PlanTab({ all, A, B, C, onPanel }) {
+function PlanTab({ all, A, B, C, onPanel, onDraw }) {
   const { model, T: T2, nest: nest2, rows: R, pieces } = all;
   const a = A.model, ga = a.g, pa = a.p, la = a.layout, gb = B.model.g, pb = B.model.p, lb = B.model.layout, pc = C.model.p, lc = C.model.layout.C;
   const zl = (x, y) => `${PLN2(x)}–${PLN2(y)} zł`;
@@ -2551,7 +2713,7 @@ function PlanTab({ all, A, B, C, onPanel }) {
   const sum = (rows) => rows.reduce((s, r) => r[3] ? [s[0] + r[3][0], s[1] + r[3][1]] : s, [0, 0]).map((v) => Math.round(v / 10) * 10);
   const HW = hardware(T2, lc), hw = sum(HW), tl = sum(TOOLS.filter((r) => r[0] === "Dokupić")), tot = [q0.lo + hw[0], q0.hi + hw[1]];
   const cost = (r) => r[3] ? zl(...r[3].map(Math.round)) : "—";
-  const selfRows = model.panels.filter((q) => q.grp === "korpus" || q.grp === "szuflada").map((q) => [`${q.code}<br><span class="dim">${q.name}</span>`, drillText({ ...q, feats: q.feats.filter((f) => !SHOP_FEATS.includes(f.t)) }).join("<br>"), String(q.qty)]).filter((r) => r[1]);
+  const selfRows = model.panels.filter((q) => q.grp === "korpus" || q.grp === "szuflada").map((q) => ({ q, lines: drillText({ ...q, feats: q.feats.filter((f) => !SHOP_FEATS.includes(f.t)) }) })).filter((r) => r.lines.length);
   const qty = (rows) => rows.reduce((x, r) => x + r.qty, 0);
   const felcLp = lpList(R.klon.filter((r) => r.felc)), cupLp = lpList(R.bial.filter((r) => r.cups));
   const RD = la.bays.RD;
@@ -2606,8 +2768,16 @@ function PlanTab({ all, A, B, C, onPanel }) {
       <${OrderTable} rows=${R.hdf} onPanel=${onPanel} />
       <h3>Do wywiercenia samemu</h3>
       <p class="note">${T2.konfirmaty} par konfirmatowych i ${T2.holes.hole5} otworów pod kołki – tylko tam, gdzie stoi półka. Otwory pod prowadnice koszy odrysujesz z samych prowadnic, w tym samym rzędzie 37 mm od frontu. Listwy dystansowe i prowadnice szuflad przykręcasz bez otworów systemowych, wkrętami.
-        ${T2.holes.plate} pilotów ⌀3 pod prowadniki zawiasów – wysokości to propozycja, ostatecznie dopasuj je do puszek z zakładu.</p>
-      <${Table} head=${["Formatka", "Otwory", "Szt."]} rows=${selfRows} />
+        ${" "}${T2.holes.plate} pilotów ⌀3 pod prowadniki zawiasów – wysokości to propozycja, ostatecznie dopasuj je do puszek z zakładu.
+        Przy formatkach z otworami na licu jest przycisk <b>Rysunek nawierceń</b> – wymiarowany widok lica z odległościami od krawędzi; w wieńcach dolnych pokazuje też osie nóżek i płozy.</p>
+      <table class="selft">
+        <tr><th>Formatka</th><th>Otwory</th><th>Szt.</th></tr>
+        ${selfRows.map(({ q, lines }) => html`<tr>
+          <td class="a">${q.code}<br/><span class="dim">${q.name}</span>${faceFeats(q).length ? html`<br/><button class="pbtn dbtn" onClick=${() => onDraw(q.code)}>Rysunek nawierceń</button>` : null}</td>
+          <td>${lines.map((l, i) => html`${i ? html`<br/>` : null}${l}`)}</td>
+          <td class="n">${q.qty}</td>
+        </tr>`)}
+      </table>
     </details>
 
     <details open><summary>2a · Rozkrój i koszt</summary>
@@ -2627,7 +2797,7 @@ function PlanTab({ all, A, B, C, onPanel }) {
       <h4>Gdzie kupić</h4>
       <${Table} head=${["Co", "Gdzie", "Dlaczego"]} rows=${WHERE} />
       <p class="note">${WHERE_NOTE}</p>
-      <p class="note"><b>Nóżki nie wymagają nawiertów w zakładzie.</b> Płytkę montażową nóżki przykręcasz wkrętami do spodu wieńca na leżąco, min. 60 mm od czoła; nóżkę wpinasz lub wkręcasz w nią po postawieniu korpusu. Przy liczniku omiń miejsce, gdzie rura wychodzi z podłogi.</p>
+      <p class="note"><b>Nóżki nie wymagają nawiertów w zakładzie.</b> Płytkę montażową nóżki przykręcasz wkrętami do spodu wieńca na leżąco: oś ${LEG.side} mm od czoła wieńca (płytka kończy się wtedy ok. 60 mm od czoła, poza zasięgiem konfirmatów), przednie ${LEG.front} mm i tylne ${LEG.front + LEG.span} mm od przedniej krawędzi; w lewej skrzyni dodatkowa para pośrodku. Nóżkę wpinasz lub wkręcasz po postawieniu korpusu. Przy liczniku tylne nóżki wypadają ${lb.legs.N.fromFront[1]} mm od przedniej krawędzi – omiń miejsce, gdzie rura wychodzi z podłogi.</p>
     </details>
 
     <details><summary>5 · Narzędzia</summary>
@@ -2667,6 +2837,200 @@ function PlanTab({ all, A, B, C, onPanel }) {
     <details><summary>10 · Czego się nauczyć</summary>
       <${Table} head=${["Technika", "Frazy"]} rows=${YT.map(([t, q]) => [t, q.map((x) => `<span class="kw">${x}</span>`).join(" ")])} /></details>
   </section>`;
+}
+
+// drill.js – rysunek techniczny nawierceń na licu formatki
+var DRAW = {
+  conf7: { cls: "dc", name: "⌀7 przelotowy – konfirmat", hint: "przelotowy; przy ściśniętych płytach wiercisz od lica zewnętrznego, wiertłem stopniowym" },
+  hole5: { cls: "dh", name: "⌀5 × 10 mm – kołek półki", hint: "nieprzelotowy, od lica wewnętrznego, z ogranicznikiem głębokości" },
+  plate: { cls: "dp", name: "⌀3 × 10 mm – pilot prowadnika zawiasu", hint: "po 2 na prowadnik, co 32 mm; wysokości dopasuj do puszek z zakładu" },
+  leg: { cls: "dl", from: "D2", name: "oś nóżki – płytka montażowa", hint: "płytkę przykręcasz wkrętami 3,5 × 16, bez nawiertów; przerywany prostokąt to płoza" }
+};
+var fmtMm = (v) => String(Math.round(v * 10) / 10).replace(".", ",");
+var cross3 = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+var dot3 = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+var EDGE_NAME = [["LEWO", "PRAWO"], ["TYŁ", "PRZÓD"], ["DÓŁ", "GÓRA"]];
+var dirName = (v) => {
+  const i = v.findIndex((c) => Math.abs(c) > 0.5);
+  return EDGE_NAME[i][v[i] > 0 ? 1 : 0];
+};
+var faceFeats = (pn) => (pn.feats || []).filter((f) => DRAW[f.t] && (f.face === "A" || f.face === "B"));
+var drillFace = (pn) => faceFeats(pn).some((f) => f.face === "A") ? "A" : "B";
+function DrillSvg({ pn, zoom = 1 }) {
+  const L = pn.Lg, W = pn.Wd, feats = faceFeats(pn), face = drillFace(pn);
+  const fwd = face === "A" ? pn.ez.map((v) => -v) : pn.ez;
+  // formatka stojąca w meblu pionowo jest rysowana pionowo, pozostałe poziomo
+  const vert = Math.abs(pn.ex[2]) > 0.5;
+  // poziomo: jeśli przy długości w prawo góra formatki wypadłaby na dole, odbij oś długości
+  const wantUp = Math.abs(pn.ey[2]) > 0.5 ? [0, 0, 1] : [0, -1, 0];
+  const flip = !vert && dot3(cross3(pn.ex, fwd), wantUp) < 0;
+  const sgn = vert ? dot3(cross3(fwd, pn.ex), pn.ey) : dot3(cross3(pn.ex, fwd), pn.ey) * (flip ? -1 : 1);
+  const pw = vert ? W : L, ph = vert ? L : W;
+  const f = Math.min(26, Math.max(9, pw / 22)), fs = 0.8 * f, cw = 0.62;
+  const U = (a, c) => vert ? sgn > 0 ? c : W - c : flip ? L - a : a;
+  const V = (a, c) => vert ? L - a : sgn > 0 ? W - c : c;
+  const r1 = (v) => Math.round(v * 10) / 10;
+  const uq = (arr) => [...new Set(arr.map(r1))].sort((x, y) => x - y);
+  const types = Object.keys(DRAW).filter((t) => feats.some((q) => q.t === t));
+  const en = { S1: dirName(pn.ex.map((v) => -v)), S2: dirName(pn.ex), D1: dirName(pn.ey.map((v) => -v)), D2: dirName(pn.ey) };
+  const lab = (k) => `${en[k]} · ${k}${pn.edges?.[k] ? " okl." : ""}`;
+  const pos = vert ? { top: "S2", bottom: "S1", left: sgn > 0 ? "D1" : "D2", right: sgn > 0 ? "D2" : "D1" } : { left: flip ? "S2" : "S1", right: flip ? "S1" : "S2", top: sgn > 0 ? "D2" : "D1", bottom: sgn > 0 ? "D1" : "D2" };
+  const cap = `mm od S1 (${en.S1.toLowerCase()}) ${vert ? "↑" : flip ? "←" : "→"}`;
+  // tory wymiarów wzdłuż długości – wspólna baza S1, osobny tor na każdy rodzaj otworu
+  let off = vert ? 1.6 * f : 1 * f;
+  const lanes = types.map((t) => {
+    const as = uq(feats.filter((q) => q.t === t).map((q) => q.x));
+    const ln = { t, as, off };
+    off += vert ? (Math.max(...as.map((v) => fmtMm(v).length)) * cw + 1.7) * f : 2.7 * f;
+    return ln;
+  });
+  const lanePos = (ln) => vert ? pw + ln.off : ph + 2.9 * f + ln.off;
+  const mL = 1.2 * f, mT = 3.1 * f, capW = cap.length * cw * fs;
+  const vbW = vert ? mL + pw + Math.max(off + 0.3 * f, 1 * f + capW + 0.5 * f) : mL + Math.max(pw + 3.2 * f, capW + f);
+  const vbH = vert ? mT + ph + 2.4 * f : mT + ph + 2.9 * f + off + 0.6 * f;
+  const lines = [], marks = [], texts = [];
+  const tip = (u, v, du, dv, cls) => {
+    const h = 0.7 * f, w = 0.22 * f;
+    return html`<polygon class=${"fl " + cls} points=${`${u},${v} ${u - du * h - dv * w},${v - dv * h + du * w} ${u - du * h + dv * w},${v - dv * h - du * w}`} />`;
+  };
+  // wymiary w poprzek (od D1 lub D2): raz na każdą rodzinę rzędów o tych samych osiach
+  const rowsAll = uq(feats.map((q) => q.x)), taken = [];
+  types.forEach((t) => {
+    const cls = DRAW[t].cls, from = DRAW[t].from, rows = new Map();
+    feats.filter((q) => q.t === t).forEach((q) => {
+      const k = r1(q.x);
+      if (!rows.has(k)) rows.set(k, []);
+      rows.get(k).push(q.y);
+    });
+    const fams = new Map();
+    [...rows.keys()].sort((x, y) => x - y).forEach((a) => {
+      const cs = uq(rows.get(a)), sig = cs.join("|");
+      if (!fams.has(sig)) fams.set(sig, { cs, as: [] });
+      fams.get(sig).as.push(a);
+    });
+    fams.forEach((fam) => {
+      let best = null;
+      fam.as.forEach((a) => [1, -1].forEach((dir) => {
+        const ad = a + dir * (t === "leg" ? 30 + 2.6 * f : 2 * f);
+        if (ad < 0.9 * f || ad > L - 0.9 * f) return;
+        const clr = Math.min(3 * f, ...rowsAll.filter((x) => x !== a).map((x) => Math.abs(x - ad)), ...taken.map((x) => Math.abs(x - ad)));
+        const sc = clr + (dir === (a < L / 2 ? 1 : -1) ? 0.01 : 0);
+        if (!best || sc > best.sc + 1e-6) best = { a, dir, ad, sc };
+      }));
+      if (!best) best = { a: fam.as[0], dir: 1, ad: Math.min(L, fam.as[0] + 2 * f) };
+      taken.push(best.ad);
+      const { a, dir, ad } = best;
+      if (fam.as.length > 1) fam.cs.forEach((c) => lines.push(html`<line class=${"ln ld " + cls} x1=${U(fam.as[0], c)} y1=${V(fam.as[0], c)} x2=${U(fam.as.at(-1), c)} y2=${V(fam.as.at(-1), c)} />`));
+      const byO = /* @__PURE__ */ new Map([[0, []], [W, []]]);
+      fam.cs.forEach((c) => byO.get(from === "D2" ? W : from === "D1" ? 0 : c <= 0.6 * W ? 0 : W).push(c));
+      byO.forEach((cs, c0) => {
+        if (!cs.length) return;
+        const far = c0 === 0 ? Math.max(...cs) : Math.min(...cs);
+        lines.push(html`<line class=${"ln " + cls} x1=${U(ad, c0)} y1=${V(ad, c0)} x2=${U(ad, far)} y2=${V(ad, far)} />`);
+        cs.forEach((c) => {
+          const u = U(ad, c), v = V(ad, c), du = Math.sign(u - U(ad, c0)), dv = Math.sign(v - V(ad, c0));
+          lines.push(html`<line class=${"ln ld " + cls} x1=${U(a, c)} y1=${V(a, c)} x2=${u} y2=${v} />`);
+          marks.push(tip(u, v, du, dv, cls));
+          let tx, ty, anchor;
+          if (vert) {
+            tx = u - du * 0.15 * f;
+            anchor = du > 0 ? "end" : "start";
+            ty = dir > 0 ? v + 1 * f : v - 0.3 * f;
+          } else {
+            const sd = dir * (flip ? -1 : 1);
+            tx = u + sd * 0.3 * f;
+            anchor = sd > 0 ? "start" : "end";
+            ty = dv > 0 ? v - 0.25 * f : v + 0.95 * f;
+          }
+          texts.push(html`<text class=${"tk " + cls} x=${tx} y=${ty} text-anchor=${anchor} font-size=${f}>${fmtMm(Math.abs(c - c0))}</text>`);
+        });
+      });
+    });
+  });
+  // tory wzdłuż długości
+  lanes.forEach((ln) => {
+    const cls = DRAW[ln.t].cls, p = lanePos(ln), amax = ln.as.at(-1);
+    const rowOf = (a) => feats.filter((q) => q.t === ln.t && r1(q.x) === a);
+    if (vert) {
+      lines.push(html`<line class=${"ln " + cls} x1=${p} y1=${V(0, 0)} x2=${p} y2=${V(amax, 0)} />`);
+      marks.push(html`<circle class=${"rg " + cls} cx=${p} cy=${V(0, 0)} r=${0.2 * f} />`);
+      ln.as.forEach((a) => {
+        lines.push(html`<line class=${"ln ld " + cls} x1=${Math.min(...rowOf(a).map((q) => U(a, q.y)))} y1=${V(a, 0)} x2=${p} y2=${V(a, 0)} />`);
+        marks.push(tip(p, V(a, 0), 0, -1, cls));
+        texts.push(html`<text class=${"tk " + cls} x=${p + 0.45 * f} y=${V(a, 0) + 0.36 * f} font-size=${f}>${fmtMm(a)}</text>`);
+      });
+    } else {
+      lines.push(html`<line class=${"ln " + cls} x1=${U(0, 0)} y1=${p} x2=${U(amax, 0)} y2=${p} />`);
+      marks.push(html`<circle class=${"rg " + cls} cx=${U(0, 0)} cy=${p} r=${0.2 * f} />`);
+      ln.as.forEach((a) => {
+        lines.push(html`<line class=${"ln ld " + cls} x1=${U(a, 0)} y1=${Math.min(...rowOf(a).map((q) => V(a, q.y)))} x2=${U(a, 0)} y2=${p} />`);
+        marks.push(tip(U(a, 0), p, flip ? -1 : 1, 0, cls));
+        texts.push(html`<text class=${"tk " + cls} x=${U(a, 0)} y=${p + 1.25 * f} text-anchor="middle" font-size=${f}>${fmtMm(a)}</text>`);
+      });
+    }
+  });
+  // otwory
+  feats.forEach((q) => {
+    const cls = DRAW[q.t].cls, u = U(q.x, q.y), v = V(q.x, q.y), rm = Math.max(0.3 * f, (HOLE[q.t]?.d ?? 5) / 2);
+    if (q.t === "leg") {
+      const k = rm + 0.4 * f;
+      marks.push(html`<circle class=${"rg " + cls} cx=${u} cy=${v} r=${rm} /><line class=${"ln " + cls} x1=${u - k} y1=${v} x2=${u + k} y2=${v} /><line class=${"ln " + cls} x1=${u} y1=${v - k} x2=${u} y2=${v + k} />`);
+    } else if (q.t === "conf7") marks.push(html`<circle class=${"rg " + cls} cx=${u} cy=${v} r=${rm} /><circle class=${"fl " + cls} cx=${u} cy=${v} r=${rm * 0.35} />`);
+    else marks.push(html`<circle class=${"fl " + cls} cx=${u} cy=${v} r=${q.t === "plate" ? rm * 0.75 : rm} />`);
+  });
+  const rect = (a0, a1, c0, c1, cls) => {
+    const u0 = U(a0, c0), u1 = U(a1, c1), v0 = V(a0, c0), v1 = V(a1, c1);
+    return html`<rect class=${cls} x=${Math.min(u0, u1)} y=${Math.min(v0, v1)} width=${Math.abs(u1 - u0)} height=${Math.abs(v1 - v0)} />`;
+  };
+  const edgeSeg = { S1: [0, 0, 0, W], S2: [L, 0, L, W], D1: [0, 0, L, 0], D2: [0, W, L, W] };
+  const base = Math.round(vbW / f * 15);
+  return html`<svg class="dsvg" viewBox=${`0 0 ${r1(vbW)} ${r1(vbH)}`} style=${{ width: Math.round(base * zoom) + "px" }} role="img"
+      aria-label=${`Rysunek nawierceń ${pn.code}`}>
+    <g transform=${`translate(${r1(mL)} ${r1(mT)})`}>
+      <rect class="dpan" x="0" y="0" width=${pw} height=${ph} />
+      ${(pn.feats || []).filter((q) => q.t === "groove" && q.face === face).map((q) => rect(q.x0, q.x1, q.y0, q.y1, "dgroove"))}
+      ${(pn.runners || []).map((q) => rect(q.a0, q.a1, q.c0, q.c1, "drun"))}
+      ${Object.entries(edgeSeg).filter(([k]) => pn.edges?.[k]).map(([, s]) => html`<line class="dband" x1=${U(s[0], s[1])} y1=${V(s[0], s[1])} x2=${U(s[2], s[3])} y2=${V(s[2], s[3])} />`)}
+      ${lines}${marks}${texts}
+      <text class="de" x=${pw / 2} y=${-1.9 * f} text-anchor="middle" font-size=${fs}>${lab(pos.top)}</text>
+      <text class="de" x="0" y=${-0.7 * f} font-size=${fs}>${"← " + lab(pos.left)}</text>
+      <text class="de" x=${pw} y=${-0.7 * f} text-anchor="end" font-size=${fs}>${lab(pos.right) + " →"}</text>
+      <text class="de" x=${pw / 2} y=${ph + 1.3 * f} text-anchor="middle" font-size=${fs}>${lab(pos.bottom)}</text>
+      ${vert ? html`<text class="cap" x=${pw + 1 * f} y=${-0.7 * f} font-size=${fs}>${cap}</text>` : html`<text class="cap" x=${flip ? pw : 0} y=${ph + 2.6 * f} text-anchor=${flip ? "end" : "start"} font-size=${fs}>${cap}</text>`}
+    </g>
+  </svg>`;
+}
+function DrillDialog({ code, model, onClose }) {
+  const pn = code ? model.panels.find((q) => q.code === code) : null;
+  const [z, setZ] = useState3(1);
+  useEffect2(() => {
+    setZ(1);
+  }, [code]);
+  if (!pn) return null;
+  const face = drillFace(pn), ff = faceFeats(pn), types = Object.keys(DRAW).filter((t) => ff.some((q) => q.t === t));
+  const txt = drillText({ ...pn, feats: pn.feats.filter((q) => !SHOP_FEATS.includes(q.t) && q.face !== "edge") });
+  const hasEdge = pn.feats.some((q) => q.face === "edge");
+  const zoomBy = (k) => setZ((v) => Math.min(3, Math.max(0.5, Math.round(v * k * 100) / 100)));
+  return html`<${Dialog} open=${true} onClose=${onClose} cls="draw">
+    <div class="dhead"><h2>${pn.code} · ${pn.name}</h2>
+      <button class="dx" aria-label="Zamknij" onClick=${onClose}>✕</button></div>
+    <p class="note"><b>${r0(pn.Lg)} × ${r0(pn.Wd)} mm</b>${pn.qty > 1 ? ` · ${pn.qty} szt. takie same` : ""} · widok od ${face === "A" ? "lica A (wewnętrznego)" : "lica B (zewnętrznego)"}.
+      Liczby to odległości osi otworów od krawędzi w mm: w torach z boku od krawędzi S1, na formatce od bliższej krawędzi długiej.
+      ${face === "A" && types.includes("conf7") ? " Od strony lica B obraz jest lustrzany, a odległości od krawędzi te same." : ""}</p>
+    <div class="dzoom" role="group" aria-label="Powiększenie">
+      <button onClick=${() => zoomBy(1 / 1.25)} aria-label="Pomniejsz">−</button>
+      <button onClick=${() => setZ(1)}>${Math.round(z * 100)}%</button>
+      <button onClick=${() => zoomBy(1.25)} aria-label="Powiększ">+</button>
+    </div>
+    <div class="dscroll"><${DrillSvg} pn=${pn} zoom=${z} /></div>
+    <div class="dkey">
+      ${types.map((t) => html`<div class=${DRAW[t].cls}><i></i><b>${DRAW[t].name}</b> · ${ff.filter((q) => q.t === t).length} szt. – ${DRAW[t].hint}${t === "leg" && pn.runners?.length ? ` ${r0(pn.runners[0].c1 - pn.runners[0].c0)} × ${r0(pn.runners[0].a1 - pn.runners[0].a0)} mm, ${r0(pn.Wd - pn.runners[0].c1)} mm za przednią krawędzią` : ""}</div>`)}
+      ${pn.feats.some((q) => q.t === "groove" && q.face === face) ? html`<div><i class="gr"></i>szary pas przy tylnej krawędzi – miejsce na plecy HDF</div>` : null}
+      <div><i class="bd"></i>gruba linia – krawędź oklejona${hasEdge ? "; nawiertów w czołach rysunek nie pokazuje" : ""}</div>
+    </div>
+    ${txt.length ? html`<ul class="bul dim">${txt.map((x) => html`<li>${x}</li>`)}</ul>` : null}
+    <div class="dlgbar"><button class="pri" onClick=${onClose}>Zamknij</button></div>
+  <//>`;
 }
 
 // ui.js
@@ -2740,6 +3104,7 @@ var ViewControls = ({ view, setView, compact, noMeas }) => {
   return html`<div class=${compact ? "" : "toggles"}>
     <${Check} label="ściany"  checked=${view.walls}  onInput=${(v) => t("walls", v)} />
     <${Check} label="fronty"  checked=${view.fronts} onInput=${(v) => t("fronts", v)} />
+    ${!noMeas && html`<${Check} label="cokół" checked=${view.plinth} onInput=${(v) => t("plinth", v)} />`}
     ${!noMeas && html`<${Check} label="wymiary" checked=${view.measOn} onInput=${(v) => t("measOn", v)} />`}
     <${Sl} label=${html`otwarcie drzwi <b>${Math.round(view.open * 90)}°</b>`}
       value=${view.open * 100} onInput=${(v) => t("open", v / 100)} />
@@ -2749,7 +3114,7 @@ var ExplodeControls = ({ view, setView, compact }) => {
   const t = (k, v) => setView((s) => ({ ...s, [k]: v }));
   return html`<div class=${compact ? "" : "toggles"}>
     <${Check} label="nawierty" checked=${view.feats} onInput=${(v) => t("feats", v)} />
-    <${Check} label="osie konfirmatów" checked=${view.joints} onInput=${(v) => t("joints", v)} />
+    <${Check} label="osie łączników" checked=${view.joints} onInput=${(v) => t("joints", v)} />
     <${Check} label="lamele" checked=${view.bisc} onInput=${(v) => t("bisc", v)} />
     <${Sl} label=${html`rozsunięcie <b>${view.explode}%</b>`}
       value=${view.explode} onInput=${(v) => t("explode", v)} />
@@ -2765,11 +3130,11 @@ function ModelTab({ view, setView, model, room, defs, measv, groups }) {
     root.matrix.copy(SWAP);
     root.matrixAutoUpdate = false;
     root.add(room());
-    root.add(wardrobeGroup(model, { fronts: view.fronts, open: view.open }));
+    root.add(wardrobeGroup(model, { fronts: view.fronts, open: view.open, plinth: view.plinth }));
     if (defs.length) root.add(measureGroup(defs, measv, groups, { showTodo: false, shown: view.shown }).group);
     v.scene.add(root);
     v.frame(root, v.camera.aspect > 1.3 ? 1.1 : 1.32);
-  }, [view.fronts, view.open, view.shown, model]);
+  }, [view.fronts, view.open, view.plinth, view.shown, model]);
   useEffect2(() => {
     const v = viewer.current;
     if (!v) return;
@@ -2777,7 +3142,7 @@ function ModelTab({ view, setView, model, room, defs, measv, groups }) {
       if (o.userData?.isWall) o.visible = view.walls;
       if (o.name === "meas") o.visible = view.measOn;
     });
-  }, [view.walls, view.measOn, view.fronts, view.open, view.shown, model]);
+  }, [view.walls, view.measOn, view.fronts, view.open, view.plinth, view.shown, model]);
   const chips = view.measOn && defs.length > 0 && html`<div class="chips">${Object.entries(groups).map(([k, gr]) => {
     const on = view.shown[k] !== false;
     return html`<button style=${{ color: on ? gr.color : "var(--todo)", opacity: on ? 1 : 0.55 }}
@@ -2789,6 +3154,7 @@ function ModelTab({ view, setView, model, room, defs, measv, groups }) {
     <//>`;
 }
 var EXP_TITLE = { 1: "szafa wnękowa", 2: "szafka przy liczniku", 3: "szafka pod lustrem" };
+var JOINT_COL = { nail: 0x5d7fa3, screw: 0xe07b00 };
 function ExplodeTab({ view, setView, model, top }) {
   const viewer = useRef2(null);
   const items = useRef2([]);
@@ -2827,14 +3193,14 @@ function ExplodeTab({ view, setView, model, top }) {
       const cs = (b.parts ?? []).map((code) => model.panels.find((q) => q.code === code)).filter(Boolean).map((q) => panelCenter(q));
       return { g: m, base: m.matrix.clone(), c: cs.length === 2 ? [0, 1, 2].map((i) => (cs[0][i] + cs[1][i]) / 2) : b.pos };
     });
-    const jm = new THREE.LineBasicMaterial({ color: 11549230 });
+    const jm = { conf: new THREE.LineBasicMaterial({ color: 11549230 }), nail: new THREE.LineBasicMaterial({ color: JOINT_COL.nail }), screw: new THREE.LineBasicMaterial({ color: JOINT_COL.screw }) };
     jointRefs.current = model.joints.map((j) => {
       const geo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]);
-      const ln = new THREE.Line(geo, jm);
+      const ln = new THREE.Line(geo, jm[j.kind ?? "conf"]);
       ln.renderOrder = 5;
       root.add(ln);
       const pa = model.panels.find((q) => q.id === j.pa), pb = model.panels.find((q) => q.id === j.pb);
-      return { ln, a: j.a, b: j.b, ca: panelCenter(pa), cb: panelCenter(pb) };
+      return { ln, a: j.a, b: j.b, ca: j.ca ?? panelCenter(pa), cb: j.cb ?? panelCenter(pb) };
     });
     v.scene.add(root);
     v.frame(root, model.alc === 3 ? 1.35 : 1.12);
@@ -2873,6 +3239,9 @@ function ExplodeTab({ view, setView, model, top }) {
     <h2>Widok rozstrzelony · ${EXP_TITLE[model.alc]}</h2>
     <p class="note">Elementy odsuwają się od środka bryły. Czerwone osie pokazują konfirmaty, brązowe owale – lamele (${nb} szt.).
       Krawędź w kolorze płyty jest oklejona, krawędź w drobne wióry zostaje surowa.</p>
+    ${model.alc !== 1 && html`<p class="note"><b>Skrzynka szuflady.</b> Boki idą na całą głębokość, czoło i tył siedzą między nimi – po 2 konfirmaty 7×50 na róg, wiercone przez bok w czoło formatki (czerwone osie, ${boxHs(model.p.boxH).join(" i ")} mm od spodu).
+      Dno HDF 3 mm leży pod skrzynką, bez rowków: klej na dolne krawędzie i gwoździki 1,4×25 albo zszywki co ok. 9 cm (niebieskoszare kreski). Przed przybiciem zrównaj przekątne – dno ustala kąt prosty.${" "}
+      ${model.alc === 3 ? "Front szuflady przykręcasz od środka skrzynki 4 wkrętami 4×30 (pomarańczowe osie), po ustawieniu szczelin; między skrzynką a frontem zostają 2 mm – daj podkładki albo wysuń skrzynkę o 2 mm przed korpus." : "Tu szuflady nie mają osobnych frontów – chwytasz za górną krawędź czoła."}</p>`}
     <${ViewerFrame} cls="expwrap" viewerRef=${viewer} views=${VIEWS}
       overlay=${html`<${ExplodeControls} view=${view} setView=${setView} compact />`} />
     <${ExplodeControls} view=${view} setView=${setView} />
@@ -2881,6 +3250,8 @@ function ExplodeTab({ view, setView, model, top }) {
       <span><i style=${{ background: "#f4f2ee", outline: "1px solid var(--line)" }}></i>biały W1000 – fronty</span>
       <span><i class="chip"></i>krawędź surowa (bez okleiny)</span>
       <span><i style=${{ background: "#c8955a", borderRadius: "50%" }}></i>lamela</span>
+      ${model.joints.some((j) => j.kind === "nail") && html`<span><i style=${{ background: "#5d7fa3" }}></i>gwoździk / zszywka dna szuflady</span>`}
+      ${model.joints.some((j) => j.kind === "screw") && html`<span><i style=${{ background: "#e07b00" }}></i>wkręt 4×30 frontu szuflady</span>`}
       ${Object.values(HOLE).map((hl) => html`<span><i style=${{ background: hl.color }}></i>${hl.label}</span>`)}
     </div>
   </section>`;
@@ -3006,6 +3377,19 @@ function Interior({ model }) {
     <p class="note">Osie zawiasów od podłogi – lewa skrzynia: ${mmList(H.L)}; prawa: ${mmList(H.R)}. Każda oś jest co najmniej 40 mm od półki i 50 mm od prowadnicy kosza, więc prowadnik zawiasu nie trafi ani w półkę, ani w prowadnicę.</p>
   </details>`;
 }
+var CARC_NAME = { L: "Lewa skrzynia", R: "Prawa skrzynia", N: "Szafka przy liczniku" };
+function Mounting({ model }) {
+  const L = model.layout, tags = Object.keys(L.legs);
+  return html`<details open><summary>Nóżki i kotwienie</summary>
+    <${Table} head=${["Korpus", "Nóżki – osie płytek pod wieńcem dolnym", "Płozy", "Kątowniki do ściany tylnej"]} rows=${tags.map((k) => {
+    const lp = L.legs[k], an = L.anchors[k];
+    return [CARC_NAME[k], `${lp.xs.length * 2} szt.: ${lp.xs.map((x) => r02(x)).join(" / ")} mm od czoła wieńca, ${lp.fromFront.join(" i ")} mm od przedniej krawędzi`, `${lp.xs.length} × ${lp.runner} mm`, `2 na wierzchu wieńca górnego, 2 na stałej półce; ok. ${an.x} mm od boków`];
+  })} />
+    <p class="note">Odznacz <b>cokół</b> nad modelem, żeby zobaczyć nóżki i płozy. Płoza zaczyna się ${LEG.runnerFront} mm za przednią krawędzią wieńca i wystaje po 40 mm za osie nóżek. Wymiarowany rysunek spodu wieńca: Plan i materiały → Do wywiercenia samemu.</p>
+    <p class="note"><b>Kątowniki są w modelu niebieskie</b> – najlepiej widać je po odznaczeniu frontów albo w widoku z góry. Górne leżą na wierzchu wieńca górnego i zakryje je listwa górna; ${tags.some((k) => L.anchors[k].viaBack) ? `dolne leżą na stałej półce i łapią ścianę przez plecy HDF – za plecami jest ${L.anchors[tags[0]].void} mm pustki, więc pod wkręt idzie klocek dystansowy (w modelu jasny).` : "dolne leżą na stałej półce."}${" "}
+      Małe kątowniki przy przedniej krawędzi wieńca górnego trzymają listwę górną.${L.anchors.N?.side ? " Cztery niebieskie wkręty w prawym boku z jasnymi podkładkami to mocowanie do ściany wnęki." : ""}</p>
+  </details>`;
+}
 function InteriorB({ model }) {
   const { layout: L, g: g2, p: pp } = model, N = L.bays.ND, up = L.bays.NG, H = L.hinges, D = L.N;
   return html`<details open><summary>Wnętrze</summary>
@@ -3048,8 +3432,9 @@ function InteriorC({ model }) {
 function App() {
   const [tab, setTab] = useState3("model");
   const [alc, setAlc] = useState3("1");
-  const [view, setView] = useState3({ walls: true, fronts: true, measOn: false, open: 0, explode: 30, feats: true, joints: true, bisc: true, shown: {} });
+  const [view, setView] = useState3({ walls: true, fronts: true, plinth: true, measOn: false, open: 0, explode: 30, feats: true, joints: true, bisc: true, shown: {} });
   const [dlgPanel, setDlgPanel] = useState3(null);
+  const [dlgDraw, setDlgDraw] = useState3(null);
   const A = makeModel(), B = makeModelB(), C = makeModelC(), ALL = makeAll();
   const cur = alc === "2" ? B : alc === "3" ? C : A;
   useEffect2(() => {
@@ -3080,6 +3465,7 @@ function App() {
           <${Table} head=${["Element", "Szer.", "Wys.", "Głęb."]} rows=${partRows(A.model)} />
         </details>
         <${Interior} model=${A.model} />
+        <${Mounting} model=${A.model} />
         <details><summary>Pomiary — protokół</summary>
           <p class="note">Odczyty z lasera, ${MEAS_ROWS.length} pozycji. Projekt jest na nich zamrożony.</p>
           <${Table} head=${["Kod", "Co mierzone", "Odczyt"]} rows=${MEAS_ROWS} />
@@ -3099,6 +3485,7 @@ function App() {
         </details>
         <${GasNotes} />
         <${InteriorB} model=${B.model} />
+        <${Mounting} model=${B.model} />
         <details><summary>Pomiary — protokół</summary>
           <p class="note">Odczyty z 21 października, ${MEAS_ROWS_B.length} pozycji. Szerokość i głębokość mierzone raz, wysokość w pięciu punktach.</p>
           <${Table} head=${["Kod", "Co mierzone", "Odczyt"]} rows=${MEAS_ROWS_B} />
@@ -3118,10 +3505,11 @@ function App() {
       </section>`}
 
       ${tab === "exp" && html`<${ExplodeTab} view=${view} setView=${setView} model=${cur.model} top=${sw} />`}
-      ${tab === "plan" && html`<${PlanTab} all=${ALL} A=${A} B=${B} C=${C} onPanel=${setDlgPanel} />`}
+      ${tab === "plan" && html`<${PlanTab} all=${ALL} A=${A} B=${B} C=${C} onPanel=${setDlgPanel} onDraw=${setDlgDraw} />`}
     </main>
 
-    <${PanelDialog} code=${dlgPanel} model=${ALL.model} onClose=${() => setDlgPanel(null)} />`;
+    <${PanelDialog} code=${dlgPanel} model=${ALL.model} onClose=${() => setDlgPanel(null)} />
+    <${DrillDialog} code=${dlgDraw} model=${ALL.model} onClose=${() => setDlgDraw(null)} />`;
 }
 
 // entry.js
