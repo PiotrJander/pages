@@ -693,7 +693,7 @@ function geometryB(p2) {
   return { x0, x1, w: x1 - x0, dB, dF, depth, zF, topStrip, X_left: x0, X_right: x1, xWall: p2.xWall, t: p2.t, hc: p2.H_C };
 }
 var DEFAULT_OPTS = Object.freeze({
-  backs: "groove"
+  backs: "nail"
 });
 var GRID0 = 41;
 var STEP = 32;
@@ -771,7 +771,8 @@ function addCarcass(ctx, s) {
   const { add, joints, fittings, layout, sides, p2, biscuits } = ctx;
   const t = p2.t, { tag, nm, x0, x1, z0, z1, dB, W, zS } = s;
   const wIn = x1 - x0 - 2 * t, h2 = z1 - z0;
-  const groove = s.backs === "groove", bo = groove ? 15 : 0;
+  // "nail": plecy przybijane od tyłu; formatki były docinane pod felc, więc półki zostają 15 mm krótsze od tyłu
+  const groove = s.backs === "groove", nail = s.backs === "nail", bo = groove || nail ? 15 : 0;
   const lo = s.plan;
   const staD = s.staDepth ?? W - bo, staY = s.staFront ? W - staD : bo;
   const shD = s.shelfDepth ?? W - 25 - bo, shY = s.shelfFront ? W - 20 - shD : bo;
@@ -781,11 +782,13 @@ function addCarcass(ctx, s) {
   if (s.rail) layout.rail = s.rail;
   const xS = zS - t / 2 - z0;
   const ySta = [staY + 50, staY + staD / 2, staY + staD - 50];
+  const fx = s.fixedShelves ?? [], yFx = [shY + 50, shY + shD / 2, shY + shD - 50];
   const side = (which, xFace, dir) => {
     const feats = [];
     [9, h2 - 9].forEach((xc) => [50, W / 2, W - 50].forEach((y) => feats.push({ t: "conf7", x: xc, y, face: "B" })));
     ySta.forEach((y) => feats.push({ t: "conf7", x: xS, y, face: "B" }));
-    [shY + 37, shY + shD - 37].forEach((y) => lo.holeX.forEach((x) => feats.push({ t: "hole5", x, y, face: "A" })));
+    [shY + 37, shY + shD - 37].forEach((y) => lo.holeX.forEach((x, i) => fx.includes(i) || feats.push({ t: "hole5", x, y, face: "A" })));
+    fx.forEach((i) => yFx.forEach((y) => feats.push({ t: "conf7", x: lo.shelfZ[i] + t / 2 - z0, y, face: "B" })));
     if (groove) feats.push({ t: "groove", x0: 0, x1: h2, y0: 10, y1: 14, face: "A", depth: 10 });
     return add({
       grp: "korpus",
@@ -838,7 +841,7 @@ function addCarcass(ctx, s) {
     Wd: staD,
     edges: { D1: 0, D2: 2, S1: 0, S2: 0 },
     feats: [0, wIn].flatMap((xe) => ySta.map((y) => ({ t: "conf45", x: xe, y: y - staY, face: "edge" }))),
-    faceNote: `wierzch na ${r0(zS)} mm od podłogi; usztywnia boki` + (groove ? "; kończy się przed plecami (felc)" : "") + (s.staFront ? "; cofnięta od ściany – za nią przechodzi rura" : "") + (s.pipe ? "; " + s.pipe : ""),
+    faceNote: `wierzch na ${r0(zS)} mm od podłogi; usztywnia boki` + (groove ? "; kończy się przed plecami (felc)" : nail ? "; docinana pod felc, więc kończy się 15 mm przed plecami" : "") + (s.staFront ? "; cofnięta od ściany – za nią przechodzi rura" : "") + (s.pipe ? "; " + s.pipe : ""),
     origin: [x0 + t, dB + staY, zS - t],
     ex: [1, 0, 0],
     ey: [0, 1, 0],
@@ -861,7 +864,7 @@ function addCarcass(ctx, s) {
     });
   }
   if (lo.shelfZ.length) {
-    const inst = lo.shelfZ.map((z) => [x0 + t, dB + shY, z]);
+    const inst = lo.shelfZ.filter((_, i) => !fx.includes(i)).map((z) => [x0 + t, dB + shY, z]);
     add({
       grp: "korpus",
       code: `${tag}-POL`,
@@ -869,7 +872,7 @@ function addCarcass(ctx, s) {
       Lg: wIn - 1,
       Wd: shD,
       edges: { D1: 0, D2: 2, S1: 0, S2: 0 },
-      qty: lo.shelfZ.length,
+      qty: inst.length,
       inst,
       origin: inst[0],
       faceNote: "bez nawiertów – leży na kołkach" + (s.shelfFront ? "; cofnięta od ściany – za nią biegnie rura" : "") + (s.pipe ? "; " + s.pipe : ""),
@@ -878,7 +881,26 @@ function addCarcass(ctx, s) {
       ez: [0, 0, 1]
     });
   }
-  if (groove)
+  fx.forEach((i) => {
+    const z = lo.shelfZ[i], xc = z + t / 2 - z0;
+    const pf = add({
+      grp: "korpus",
+      code: `${tag}-PST`,
+      name: `Półka na stałe (konfirmaty), z formatki ${tag}-POL – ${nm}`,
+      Lg: wIn - 1,
+      Wd: shD,
+      edges: { D1: 0, D2: 2, S1: 0, S2: 0 },
+      feats: [0, wIn - 1].flatMap((xe) => yFx.map((y) => ({ t: "conf45", x: xe, y: y - shY, face: "edge" }))),
+      faceNote: `spód na ${r0(z)} mm od podłogi; ta sama formatka co półki przestawne, ale przykręcona 3 konfirmatami z każdej strony – usztywnia boki w połowie wysokości`,
+      origin: [x0 + t, dB + shY, z],
+      ex: [1, 0, 0],
+      ey: [0, 1, 0],
+      ez: [0, 0, 1]
+    });
+    [bL, bP].forEach((sd) => yFx.forEach((y) => joints.push({ a: world(sd, xc, y, 0), b: world(sd, xc, y, t + 42), pa: sd.id, pb: pf.id })));
+  });
+  layout.bays[tag + "D"].fixedIdx = fx;
+  if (groove || nail)
     add({
       grp: "plecy",
       code: `${tag}-PLE`,
@@ -888,8 +910,8 @@ function addCarcass(ctx, s) {
       t: 3,
       mat: "HDF 3 mm biała",
       edges: { D1: 0, D2: 0, S1: 0, S2: 0 },
-      faceNote: "wsuwane w felc 4×10 mm w bokach i wieńcach, zanim założysz wieniec górny; 1 mm luzu z każdej strony",
-      origin: [x0 + t - 9, dB + 10, z0 + t - 9],
+      faceNote: groove ? "wsuwane w felc 4×10 mm w bokach i wieńcach, zanim założysz wieniec górny; 1 mm luzu z każdej strony" : "przybijane od tyłu na krawędzie boków i wieńców, na które zachodzą po 9 mm – na końcu, po zrównaniu przekątnych; klej do drewna + zszywki albo gwoździki 1,4×25 co 10–15 cm, 4–5 mm od krawędzi HDF, lekko skosem na zewnątrz",
+      origin: groove ? [x0 + t - 9, dB + 10, z0 + t - 9] : [x0 + 9, dB - 3, z0 + 9],
       ex: [0, 0, 1],
       ey: [1, 0, 0],
       ez: [0, 1, 0]
@@ -904,15 +926,16 @@ function addCarcass(ctx, s) {
   const ax = [x0 + 100, x1 - 100];
   ax.forEach((x) => {
     angle(fittings, x, 0, z1);
-    if (groove) {
-      fittings.push({ kind: "spacer", x0: x - 20, x1: x + 20, d0: 0, d1: dB + 10, z0: zS, z1: zS + 40 });
-      angle(fittings, x, dB + 13, zS);
+    if (groove || nail) {
+      const yb = groove ? dB + 10 : dB - 3;
+      fittings.push({ kind: "spacer", x0: x - 20, x1: x + 20, d0: 0, d1: yb, z0: zS, z1: zS + 40 });
+      angle(fittings, x, yb + 3, zS);
     } else angle(fittings, x, 0, zS);
   });
   // małe kątowniki listwy górnej, przy przedniej krawędzi wieńca górnego
   const sx = wIn > 600 ? [x0 + 80, (x0 + x1) / 2, x1 - 80] : [x0 + 80, x1 - 80];
   sx.forEach((x) => angle(fittings, x, dB + W + 2, z1, -25, 16));
-  layout.anchors[tag] = { x: 100, zTop: z1, zS, viaBack: groove, void: dB + 10, strip: sx.length };
+  layout.anchors[tag] = { x: 100, zTop: z1, zS, viaBack: groove || nail, void: groove ? dB + 10 : dB - 3, strip: sx.length };
   return { sides: sides[tag], lo, wIn };
 }
 var keepOutOf = (bays, t) => bays.flatMap((b) => [
@@ -1013,6 +1036,7 @@ function buildPanels(p2, opts = DEFAULT_OPTS) {
       rail,
       baskets,
       legs: k === "L" ? 3 : 2,
+      fixedShelves: k === "R" ? [1] : [],
       backs: opts.backs
     });
   }
@@ -1535,6 +1559,7 @@ function warningsB(model, m) {
 }
 function warningsC(model) {
   const { layout: L, p: p2 } = model, w = [], r = r0;
+  if (L.C.wl - L.C.bw < 25.4) w.push(`⚠️ Skrzynki szuflad mają ${L.C.bw} mm, a światło między lewym bokiem a przegrodą wychodzi z rysunku ${r(L.C.wl)} mm – na prowadnice zostaje ${String(r((L.C.wl - L.C.bw) * 10) / 10).replace(".", ",")} mm zamiast 25,4 mm i szuflady będą chodzić ciasno. Ustaw przegrodę 0,5–1 mm dalej od lewego boku (światło 382,5–383 mm) – otwory w dnie i lamele w blacie trasuj już z tą poprawką. Półkę za drzwiami w razie potrzeby skróć o 1 mm.`);
   w.push(`Szerokość ${r(L.C.W)} mm dobrana tak, żeby szafka zmieściła się w resztkach arkuszy zamówionych na szafy.`);
   w.push(`Głębokość całkowita ${r(L.C.depthTotal)} mm: korpus ${p2.Ds} mm pod prowadnice kulkowe ${p2.slide} mm, blat i dno wysunięte ${p2.over} mm, żeby zrównać się z frontami, plus plecy 3 mm.`);
   w.push(`Skrzynki szuflad ${L.C.bw} mm szerokości = światło ${r(L.C.wl)} mm minus 2 × 12,7 mm na prowadnice. Prowadnice kulkowe nie wybaczają błędu: zmierz światło po skręceniu korpusu i jeśli wyjdzie inne, podłóż prowadnicę albo zeszlifuj bok skrzynki.`);
@@ -2260,14 +2285,14 @@ var TOOLS = [
   ["Dokupić", "Wiertło ⌀5 mm z ogranicznikiem głębokości", "otwory pod kołki półek i prowadnice koszy w szafie", [20, 40]],
   ["Dokupić", "Wiertło do betonu i cegły ⌀8 mm (zwykłe, widiowe, z chwytem walcowym)", "pod kołki w cegle dziurawce; pasuje do wiertarko-wkrętarki, SDS niepotrzebne. Wiercisz <b>bez udaru</b>, żeby nie rozbić ścianek komór", [10, 20]],
   ["Dokupić", "Szablon do otworów pod podpórki półek ⌀5 (rząd 37 mm, rozstaw 32 mm)", "pojedyncze otwory pod półki i prowadnice koszy – w tym samym rzędzie 37 mm co w ramie PAX. Szukaj: <b>metalowe tuleje</b> (otwór w plastiku czy aluminium się wyrabia), listwa-ogranicznik do krawędzi płyty z rzędem 37 mm, wyraźny znacznik (trójkąt, strzałka) do ustawienia na kresce ołówka. Wysokości szablon nie wyznacza – tę daje kreska trasowana w pakiecie", [60, 150]],
-  ["Dokupić", "Szablon do konfirmatów ⌀5 na płytę 18 mm", "trzyma wiertło w pionie i trafia w środek czoła wieńca, 9 mm od każdego lica. Szukaj: <b>hartowane tuleje stalowe</b>, listwy obejmujące płytę 18 mm z obu stron, możliwość przyłożenia na licu boku z ogranicznikiem o koniec płyty (otwór 9 mm od końca = oś wieńca). Od tyłu otwór musi wypaść przed felcem", [50, 150]],
+  ["Dokupić", "Szablon do konfirmatów ⌀5 na płytę 18 mm", "trzyma wiertło w pionie i trafia w środek czoła wieńca, 9 mm od każdego lica. Szukaj: <b>hartowane tuleje stalowe</b>, listwy obejmujące płytę 18 mm z obu stron, możliwość przyłożenia na licu boku z ogranicznikiem o koniec płyty (otwór 9 mm od końca = oś wieńca)", [50, 150]],
   ["Dokupić", "Wiertło ⌀5 mm długie (100–130 mm)", "pod szablon do konfirmatów: przez szablon, bok i ok. 35 mm w czoło wieńca; potem wiertło stopniowe idzie po tym otworze", [10, 25]],
   ["Dokupić", "Przystawka kątowa do wkrętarki", "kątowniki listew górnych tuż pod sufitem", [30, 80]],
   ["Dokupić", "Wyrzynarka + brzeszczoty do laminatu z odwróconym zębem (np. Bosch T101BR)", "wcięcia na rury, krzywe linie przy ścianie", [250, 500]],
   ["Dokupić", "Otwornica ⌀60 mm", "kratki wentylacyjne w drzwiach przy liczniku", [20, 40]],
   ["Dokupić", "Kątownik montażowy / ścisk kątowy (2 szt.)", "trzyma korpus pod 90° przy skręcaniu", [40, 80]],
   ["Dokupić", "Ściski stolarskie 4 × 300 mm", "klejenie lamel: bok zamykający, blat szafki", [80, 160]],
-  ["Dokupić", "Klej do drewna D3 + pędzelek", "lamele", [20, 30]],
+  ["Dokupić", "Klej do drewna D3 + pędzelek", "lamele, plecy HDF, dna szuflad", [20, 30]],
   ["Dokupić", "Cyrkiel traserski (scribe)", "dopasowanie boków maskujących i blend do ścian", [20, 60]],
   ["Dokupić", "Taśma malarska, nóż do tapet", "na taśmie widać ołówek; nacięcie laminatu przed cięciem", [15, 30]],
   ["Dokupić", "Strug zdzierak / tarnik + papier na klocku", "ostatnie milimetry przy ścianie", [30, 60]],
@@ -2295,15 +2320,15 @@ var hardware = (T2, LC) => {
   ["Płozy pod nóżki: pasy sklejki 6–10 mm × 100 mm × 500 mm", `${nRun} szt.`, `po jednej pod każdą parę nóżek przód–tył: lewa skrzynia 3, prawa 2, szafka przy liczniku 2. W szafie płoza ${LEG.runner} mm zaczyna się ${LEG.runnerFront} mm za przednią krawędzią wieńca i wystaje po 40 mm za osie nóżek (rozstaw osi ${LEG.span} mm). Do szafki przy liczniku dwie płozy skróć do 330 mm. Po płozach wsuwasz korpus do wnęki i zostają pod nim na wykładzinie`, [0, 40]],
   ["Filc samoprzylepny", "arkusz", "pod płozy, żeby łatwo jechały po wykładzinie; ślizgacze pod cokół szafki pod lustrem", [10, 25]],
   ["Podpórki półek ⌀5 mm, metalowe", `${nP} szt.`, `${T2.polekKorpus} półek w korpusach + 6 w niszy, po 4`, [nP * 0.2, nP * 0.5]],
-  ["Drążek owalny stalowy + 2 uchwyty", "1 kpl.", "lewa skrzynia, oś na 1600 mm", [40, 80]],
+  ["Drążek owalny stalowy + 2 uchwyty", "1 kpl.", `lewa skrzynia: długość ${r0(MODEL.g.wL - 2 * MODEL.g.t)} mm, czyli światło między bokami (kupujesz dłuższy i docinasz piłką do metalu, odejmując tyle, ile zabierają uchwyty); oś zawieszona ${r0(MODEL.layout.rail.z)} mm nad podłogą`, [40, 80]],
   ["Kątowniki meblowe", `${k * 4} szt.`, "kotwienie do ściany tylnej: 2 na wierzchu wieńca górnego i 2 na stałej półce każdego korpusu (w modelu 3D niebieskie); przy liczniku z dala od rur", [k * 4 * 1, k * 4 * 3]],
   ["Kołki do cegły dziurawki z wkrętami, np. Fischer DuoPower 8×65 S", `${nA} szt. (opakowanie 25 szt.)`, "kątowniki do ściany + prawy bok szafki przy liczniku. Ok. 1–1,5 zł/szt.; dłuższy kołek przechodzi przez tynk i łapie więcej ścianek komór niż 8×40 (ok. 0,5–0,7 zł/szt.). Otwór ⌀8, zwykłe wiertło widiowe, <b>bez udaru</b>. Długość wkrętu ≥ kołek + grubość mocowanego elementu + ok. 5 mm", [25, 40]],
   ["Wkręty ⌀6 × 90–100 mm + podkładki dystansowe 5 mm", "4 kpl.", "prawy bok szafki przy liczniku do ściany wnęki, w kołki z pozycji wyżej (przez bok 18 mm + podkładkę 5 mm)", [10, 20]],
   ["Małe kątowniki 25×25 + wkręty 3,5×16", "8 szt.", "listwy górne do wieńców górnych", [5, 15]],
   ["Wkręty 4×30", "ok. 55 szt.", "boki maskujące (co ok. 40 cm), listewka boku zamykającego, cokół szafki pod lustrem, listwy dystansowe (po 3)", [8, 15]],
-  ["Gwoździki 1,4×25 albo zszywki", "paczka", "plecy szafki pod lustrem i dna szuflad", [5, 10]],
+  ["Gwoździki 1,4×25 albo zszywki", "paczka", "plecy obu skrzyń szafy i szafki pod lustrem, dna szuflad – zawsze razem z klejem", [5, 10]],
   ["Kratki wentylacyjne meblowe ⌀60 mm", "4 szt.", "drzwi przy liczniku: dwie u góry, dwie u dołu", [8, 20]],
-  ["Zaślepki konfirmatów w kolorze klonu", "10 szt.", "lewy bok szafy wnękowej – wystaje 169 mm przed ścianę", [3, 8]],
+  ["Zaślepki konfirmatów w kolorze klonu", "13 szt.", "lewy bok szafy wnękowej – wystaje 169 mm przed ścianę; 3 w niszy, gdzie widać łby półki na stałe prawej skrzyni", [3, 8]],
   ["Zderzaki silikonowe", "20 szt.", "", [5, 10]],
   ["Obrzeże ABS 2 mm H3840 (klon) do żelazka", "zapas 3 m", "poprawki po docięciu blend, listew i półek niszy", [15, 35]]
   ];
@@ -2321,26 +2346,27 @@ var WHERE_NOTE = "W marketach płacisz głównie marżą na drobnicy w małych o
 var WEEKEND = (T2) => [
   ["piątek wieczór", "Rozpakowanie. Zmierz <b>każdą</b> formatkę i porównaj z listą, zanim cokolwiek skręcisz — reklamacja działa tylko przed montażem. Opisz ołówkiem na licu B kod z wydruku „dla mnie” i strzałkę „dół”.", "1 h"],
   ["sobota rano", "Wiercenie: otwory ⌀5 pod półki i prowadnice koszy (szablon pod podpórki, wysokości trasowane w pakiecie – patrz krok „Wywierć to, czego zakład nie robi”), piloty pod prowadniki zawiasów – dopiero po sprawdzeniu, gdzie zakład wywiercił puszki. Skręcenie 5 skrzynek szuflad i dna HDF.", "2 h"],
-  ["sobota", `Skręcanie ${T2.korpusow} korpusów na leżąco, ${T2.konfirmaty} konfirmatów. Pierwsze złącze zajmie 20 minut, dziesiąte pięć. Plecy wsuwasz w felc, zanim założysz wieniec górny.`, "4–5 h"],
+  ["sobota", `Skręcanie ${T2.korpusow} korpusów na leżąco, ${T2.konfirmaty} konfirmatów. Pierwsze złącze zajmie 20 minut, dziesiąte pięć. Plecy przybijasz na końcu, po zrównaniu przekątnych.`, "4–5 h"],
   ["niedziela", "Stawianie z leżenia w dwie osoby, <b>bez nóżek</b>, przed wnęką. Unosisz na zmianę lewy i prawy bok (ręką lub deską jako dźwignią), podkładasz klocki aż do ok. 100 mm, wpinasz nóżki w przykręcone wcześniej płytki, stawiasz korpus na płozach i wsuwasz do wnęki. Poziomowanie laserem po górnych krawędziach, kotwienie. Szafkę przy liczniku przykręcasz do ściany wnęki od razu.", "3–4 h"],
   ["niedziela, koniec", "Pomiar niszy na trzech wysokościach i docięcie półek z listwy. Kosze i listwy dystansowe montujesz dopiero po zawiasach – wtedy widać, czy drzwi, zawias i szuflada się mijają.", "1 h"]
 ];
 var BOX_STEPS = [
-  "Skręcaj na <b>równym podkładzie</b>: kozły z płytą albo podłoga sprawdzona poziomicą 120 cm. Korpus skręcony na nierównym podłożu wychodzi skręcony jak śmigło, a przekątne tego nie pokażą. Połóż <b>bok</b> licem A do góry. Przyłóż <b>wieniec dolny</b> czołem do jego krawędzi, felcami w jedną stronę, wyrównaj kątownikiem, ściśnij.",
+  "Skręcaj na <b>równym podkładzie</b>: kozły z płytą albo podłoga sprawdzona poziomicą 120 cm. Korpus skręcony na nierównym podłożu wychodzi skręcony jak śmigło, a przekątne tego nie pokażą. Połóż <b>bok</b> licem A do góry. Przyłóż <b>wieniec dolny</b> czołem do jego krawędzi, wyrównaj kątownikiem, ściśnij.",
   "Wkręć 3 konfirmaty. Wierć w dwóch krokach, przy ściśniętych elementach: najpierw <b>długie wiertło ⌀5 przez szablon do konfirmatów</b>, przez bok w czoło wieńca (szablon trzyma pion i środek czoła), potem <b>wiertło stopniowe</b> – jego pilot idzie po gotowym otworze. Krzywy otwór pod konfirmat to później krzywy korpus. Wkrętarka na niskim sprzęgle, ostatni obrót ręcznie.",
-  "To samo ze <b>stałą półką</b> na 1900 mm (w dużej szafie kończy się 15 mm przed tylną krawędzią, żeby przepuścić plecy).",
+  "To samo ze <b>stałą półką</b> na 1900 mm (w dużej szafie jest o 15 mm płytsza od boków – wyrównaj ją do przedniej krawędzi). W prawej skrzyni przykręć od razu także <b>półkę na stałe</b> w połowie wysokości.",
   "Nałóż drugi bok, ściśnij, wkręć konfirmaty. Masz literę „U” z poprzeczką.",
-  "<b>Wsuń plecy HDF</b> od góry w felce boków, aż wejdą w felc wieńca dolnego. Przy 2,3 m pomóż sobie drugą osobą.",
-  "Załóż <b>wieniec górny</b> (felc na plecy). <b>Zmierz obie przekątne.</b> Różnica ponad 2 mm — popchnij skrzynię za róg, aż się zrównają. W szafce przy liczniku pleców nie ma: na czas stawiania przykręć z tyłu, do surowych tylnych krawędzi boków, listewkę po skosie. Zdejmujesz ją przed wsunięciem do wnęki – za korpusem jest tylko 10 mm i rura."
+  "Załóż <b>wieniec górny</b> i połóż skrzynię <b>frontem w dół</b> na czystych listwach z odpadu. Przednie krawędzie mają okleinę – skrzynię podnoś, nie przesuwaj.",
+  "<b>Zmierz obie przekątne</b> tyłu. Różnica ponad 2 mm — popchnij skrzynię za róg, aż się zrównają. Dopiero wtedy <b>przybij plecy HDF</b>: klej na tylne krawędzie, plecy zachodzą po 9 mm na boki i wieńce, zszywki albo gwoździki 1,4×25 co 10–15 cm, 4–5 mm od krawędzi HDF i lekko skosem na zewnątrz. Zacznij od narożnika i jednego długiego boku, zmierz przekątne jeszcze raz i przybij resztę. W szafce przy liczniku pleców nie ma: na czas stawiania przykręć z tyłu, do surowych tylnych krawędzi boków, listewkę po skosie. Zdejmujesz ją przed wsunięciem do wnęki – za korpusem jest tylko 10 mm i rura."
 ];
 var RISKS = (felcLp, cupLp) => [
-  ["Lista formatek", `Jedyna rzecz, której nie da się poprawić. Sprawdź ją dwa razy, zanim zostawisz w zakładzie: wymiary docelowe, kreski oklejania, felc tylko w poz. ${felcLp}, puszki tylko w poz. ${cupLp}.`],
+  ["Lista formatek", `Jedyna rzecz, której nie da się poprawić. Sprawdź ją dwa razy, zanim zostawisz w zakładzie: wymiary docelowe, kreski oklejania, puszki tylko w poz. ${cupLp}.`],
   ["4 mm do linii drzwi", "Prawy korpus 500 mm z bokiem maskującym kończy się 4 mm przed linią drzwi w najwęższym pomiarze (B6 = 527). Zmierz jeszcze raz przy opasce na trzech wysokościach. Jeśli wyjdzie mniej, zmniejsz luz przy występie z 5 do 3 mm."],
   ["Stawianie korpusów", "Zapas pod sufitem to 50 mm i tylko bez nóżek. Korpus obraca się wokół dolnej krawędzi, którą jedna osoba blokuje stopą – nikt go nie podrywa do góry. Lewy korpus waży ok. 58 kg. Po postawieniu przechylasz go tylko na bok, nigdy do przodu ani do tyłu."],
   ["Wsuwanie do wnęki", "Między ścianami nie ma jak chwycić korpusu z boku, więc się go nie wnosi, tylko wsuwa na płozach z filcem. Pchaj nisko, przy wieńcu dolnym, żeby nie łamać nóżek. Tylne nóżki ustaw wcześniej według pomiaru podłogi laserem – po wsunięciu sięgniesz do nich tylko długim narzędziem."],
   ["Rura za szufladami", "Szuflady na prowadnicach 300 mm kończą się ok. 80 mm od ściany, więc rura z obejmą może wystawać do ok. 70 mm. Jeśli wystaje więcej, skracasz boki i dna skrzynek od tyłu i bierzesz prowadnice 250 mm. W półkach wcięcia od tyłu, nie otwory."],
   ["Szafka bez pleców", "Listewka po skosie z tyłu trzyma kąt tylko przy skręcaniu i stawianiu – przed wsunięciem do wnęki ją zdejmujesz, bo za korpusem jest 10 mm i rura. Od tej chwili przekątne frontu sprawdzasz miarą i od razu przykręcasz prawy bok do ściany wnęki i wieniec górny do ściany tylnej. Drzwi i szuflady dopiero potem."],
   ["Zawiasy, kosze i szuflady", "Szuflady KOMPLEMENT nie mieszczą się obok zawiasów, kosze siatkowe tak – dlatego kosze w szafie. Przy liczniku szuflady są własne i stoją na listwach dystansowych 18 mm. Listwy i prowadnice trzymaj z dala od osi zawiasów (wysokości w zakładce Model). Przed przykręceniem listew otwórz drzwi na 90° i zmierz, ile zawias wchodzi w światło – musi być mniej niż 18 mm."],
+  ["⚠️ Szuflady pod lustrem", "Skrzynki mają 357 mm przy świetle 382 mm, czyli 25,0 mm zamiast 25,4 mm na prowadnice. Ustaw przegrodę tak, żeby światło po stronie szuflad wyszło 382,5–383 mm; zmierz je po skręceniu, zanim przykręcisz prowadnice."],
   ["Prowadnice kulkowe", "Skrzynka szuflady musi być dokładnie 25,4 mm węższa od światła (przy liczniku: od odstępu między listwami dystansowymi). Skrzynki są zamówione z zaokrągleniem w dół, a luz do 1 mm wyrównasz podkładką pod prowadnicę."],
   ["Grubość frontów", "W1000 ST38 bywa w 18,6 mm, H3840 ST9 w 18 mm. Projekt to znosi (białe są tylko fronty), ale zapytaj w QUEST, jaką grubość mają na stanie, i czy dobiorą do niej okleinę."],
   ["Wymiary docelowe", "Na wydruku jest napisane, że wymiary są z okleiną. Upewnij się przy oddaniu, że zakład to przeczytał – inaczej każdy element wyjdzie 2–4 mm za szeroki."],
@@ -2353,7 +2379,7 @@ var WEEKEND_YT = [
   ["Konfirmat od zera", ["montaż na konfirmaty krok po kroku", "wiertło stopniowe do konfirmatów jak wiercić", "szablon do konfirmatów jak używać", "confirmat screw how to"]],
   ["Lamele", ["lamelownica płyta meblowa łączenie", "biscuit joiner melamine panel", "lamelownica ustawienie na środek grubości"]],
   ["Kwadratowanie korpusu", ["sprawdzanie przekątnych korpusu mebla", "squaring a cabinet carcass diagonals"]],
-  ["Plecy w felcu", ["plecy HDF w rowku montaż szafy", "cabinet back panel groove assembly"]],
+  ["Plecy nabijane", ["plecy HDF nabijane montaż szafy przekątne", "nailing cabinet back panel squaring"]],
   ["Stawianie wysokiej szafy", ["jak postawić wysoką szafę pod sufit", "tilt up tall wardrobe ceiling clearance", "foot lifter cabinet install shims"]],
   ["Kotwienie do ściany", ["mocowanie szafy do ściany kątowniki kołki", "anti tip anchoring tall cabinet"]]
 ];
@@ -2373,7 +2399,7 @@ var STEPS = [
   { t: "Kup okucia i kosze", d: "Kosze KOMPLEMENT 50×58 w IKEA, zawiasy i prowadnice kulkowe 300 i 250 mm w sklepie z okuciami (albo w QUEST, jeśli mają). Przed zamówieniem zmierz, jak daleko od ściany wystaje rura przy liczniku – szuflady zakładają do ok. 70 mm." },
   { t: "Rozpakuj i sprawdź dostawę", d: "Zmierz każdą formatkę zanim cokolwiek skręcisz. Opisz ołówkiem kod i stronę „dół”. Ustaw formatki pionowo, oparte, nie na płask na stosie." },
   { t: "Wywierć to, czego zakład nie robi", d: "Konfirmaty, otwory ⌀5 pod półki i prowadnice koszy, piloty pod prowadniki zawiasów – te ostatnie dopiero po sprawdzeniu rozstawu puszek. Wszystko na płasko, przed skręceniem. Wysokości z zakładki Model są od podłogi – przelicz je raz na odległość od dolnej krawędzi boku i zapisz. Potem <b>trasuj w pakiecie</b>: oba boki przedziału obok siebie, licem z otworami do góry, dolne krawędzie o wspólny ogranicznik, każda kreska jednym pociągnięciem przez oba boki. Szablon przykładasz znacznikiem do kreski, raz od frontu, raz od tyłu. Głębokość ok. 10–12 mm (ogranicznik na wiertle); na boku, który ma otwory z obu stron na tej samej wysokości, najwyżej 8 mm z każdej. Przesunięcie kołka względem spodu półki sprawdź najpierw na odpadzie. Prowadnice koszy i prowadniki zawiasów przykładaj jako własny szablon i znacz otwory szydłem." },
-  { t: "Skręć korpusy na leżąco", d: "Boki, wieniec dolny, stała półka, plecy w felc, wieniec górny, przekątne. Płytki montażowe nóżek przykręcasz do spodu wieńca jeszcze na leżąco – w lewej skrzyni sześć, z parą pośrodku. W szafce przy liczniku bez pleców – listewka po skosie z tyłu, tylko do stawiania." },
+  { t: "Skręć korpusy na leżąco", d: "Boki, wieniec dolny, stała półka (w prawej skrzyni także półka na stałe w połowie wysokości), wieniec górny, przekątne, plecy HDF przybite od tyłu. Płytki montażowe nóżek przykręcasz do spodu wieńca jeszcze na leżąco – w lewej skrzyni sześć, z parą pośrodku. W szafce przy liczniku bez pleców – listewka po skosie z tyłu, tylko do stawiania." },
   { t: "Postaw korpusy bez nóżek", d: "Z leżenia, w dwie osoby, przed wnęką. Na zmianę lewy i prawy bok (ręką lub deską jako dźwignią), klocki 18 mm aż do ok. 100 mm, różnica między bokami najwyżej jeden klocek; nóżki wpinasz w płytki 45 mm od frontu. Przechylasz tylko na bok: przy przechyle do przodu lub do tyłu góra korpusu przesuwa się ok. 4 cm na każdy centymetr uniesienia i trafia w ścianę." },
   { t: "Wsuń korpusy do wnęki", d: "Nóżki na płozach ze sklejki podklejonych filcem, pchanie nisko, przy wieńcu dolnym. Tylne nóżki ustaw przed wsunięciem według pomiaru podłogi, przednie poprawiasz na miejscu. Poziomuj <b>górną krawędź korpusu</b>, a nie podłogę." },
   { t: "Zakotw korpusy", d: "Kątowniki przy wieńcu górnym i stałej półce. Szafkę przy liczniku dodatkowo przykręć prawym bokiem do ściany wnęki przez podkładki 5 mm. Przed wierceniem wykrywacz przewodów." },
@@ -2385,7 +2411,7 @@ var STEPS = [
   { t: "Szafka pod lustrem", d: "Dno z bokami i przegrodą na konfirmaty od spodu, blat na lamele i klej, plecy HDF nabijane, cokół przykręcony od środka. Skrzynki szuflad na konfirmatach, prowadnice, fronty, gałki." }
 ];
 var SUPPLIERS = [
-  { n: "Quest – Płyty meblowe Egger", a: "Obywatelska 102/104", why: "Wybrany. Tnie, okleja, wierci puszki i frezuje felc. Konfirmatów i otworów systemowych nie robi." },
+  { n: "Quest – Płyty meblowe Egger", a: "Obywatelska 102/104", why: "Wybrany. Tnie, okleja i wierci puszki. Felcu ostatecznie nie wyfrezował; konfirmatów i otworów systemowych nie robi." },
 ];
 function optimizerCSV(pieces) {
   const rows = [["Length", "Width", "Qty", "Label", "Material", "Grain"]];
@@ -2409,7 +2435,7 @@ function quote(T2, nest2) {
     [`Cięcie · ${sh} ark. × ${rr("cut")} zł`, sh * R2.cut[0], sh * R2.cut[1]],
     [`Obrzeże 2 mm · ${Math.ceil(T2.mb)} mb × ${rr("edge2")} zł`, T2.mb * R2.edge2[0], T2.mb * R2.edge2[1]],
     [`Puszki zawiasów · ${T2.holes.cup35} × ${rr("cup")} zł`, T2.holes.cup35 * R2.cup[0], T2.holes.cup35 * R2.cup[1]],
-    [`Felc · ok. ${Math.ceil(T2.grooveMb)} mb × ${rr("felc")} zł (założenie)`, T2.grooveMb * R2.felc[0], T2.grooveMb * R2.felc[1]]
+    ...(T2.grooveMb > 0 ? [[`Felc · ok. ${Math.ceil(T2.grooveMb)} mb × ${rr("felc")} zł (założenie)`, T2.grooveMb * R2.felc[0], T2.grooveMb * R2.felc[1]]] : [])
   ];
   return { lines, lo: lines.reduce((a, l) => a + l[1], 0), hi: lines.reduce((a, l) => a + l[2], 0) };
 }
@@ -2726,7 +2752,7 @@ function PlanTab({ all, A, B, C, onPanel, onDraw }) {
       <ul class="bul">
         <li><b>Dwie skrzynie na pełną wysokość</b>, ${r0(ga.depth)} mm głębokie jak rama PAX 58: lewa ${r0(ga.carc.L[1] - ga.carc.L[0])} mm, prawa ${r0(pa.wR)} mm (jak PAX 50, w środku 464 mm). Stała półka na konfirmatach na ${pa.H_LOW} mm usztywnia boki.</li>
         <li><b>Lewa skrzynia:</b> drążek na ${r0(la.rail.z)} mm, nad nim półka; pod drążkiem ${r0(la.rail.clearBelow)} mm do dna – na płaszcze i buty na dnie.</li>
-        <li><b>Prawa skrzynia:</b> dwa kosze KOMPLEMENT 50×58 na dole, ${RD.n} ${polki(RD.n)} nad nimi, wszystko za drzwiami z zawiasami po prawej.</li>
+        <li><b>Prawa skrzynia:</b> dwa kosze KOMPLEMENT 50×58 na dole, ${RD.n} ${polki(RD.n)} nad nimi (druga od dołu przykręcona na stałe konfirmatami – usztywnia boki), wszystko za drzwiami z zawiasami po prawej.</li>
         <li><b>Nad stałymi półkami</b> ${la.bays.LG.inner} mm na walizki i pościel.</li>
         <li><b>Fronty</b> ${r0(ga.zF - pa.plinth - pa.fg)} mm wysokie, po 5 zawiasów. Nad nimi listwa docinana do sufitu, pod nimi cokół, po prawej bok maskujący – wszystko w klonie.</li>
         <li><b>Nisza</b> ${r0(ga.nW)} mm szeroka: półki ${r0(ga.dF - ga.nD0 - 18)} mm głębokie, przodem równo z krawędziami korpusów, wycinane na miejscu z jednej listwy ${NICHE_STRIP.L} mm.</li>
@@ -2752,7 +2778,7 @@ function PlanTab({ all, A, B, C, onPanel, onDraw }) {
         <div><span>Biały W1000</span><b>≈ ${T2.mBial.toFixed(1)} m²</b></div>
       </div>
       <p class="btns"><a class="btnlink" href="formatki.html">Wydruk dla QUEST →</a> <a class="btnlink alt" href="formatki-moje.html">Wydruk dla mnie, z opisami →</a></p>
-      <p class="note">Wydruk dla QUEST ma układ ich formularza: lewa tabelka klon, prawa biel i HDF, pod spodem uwagi o wymiarach docelowych, felcu, puszkach i zapasach. Wydruk „dla mnie” ma tabelki jedna pod drugą i przy każdej pozycji kody z pełnymi nazwami. Obie strony otwierają się w tym samym oknie; wydrukujesz je z PDF-ów z czatu.</p>
+      <p class="note">Wydruk dla QUEST ma układ ich formularza: lewa tabelka klon, prawa biel i HDF, pod spodem uwagi o wymiarach docelowych, felcu, puszkach i zapasach. Wydruk „dla mnie” ma tabelki jedna pod drugą i przy każdej pozycji kody z pełnymi nazwami. Obie strony otwierają się w tym samym oknie; wydrukujesz je z PDF-ów z czatu. Wydruki pokazują pierwotne zamówienie z felcem; zakład go nie wyfrezował, więc plecy przybijasz od tyłu.</p>
       <h4>Konwencje</h4>
       <ul class="bul">
         <li><b>Wymiary docelowe</b>, razem z okleiną – zakład sam odejmuje jej grubość.</li>
@@ -3323,7 +3349,7 @@ var FINDINGS = [
   if (typeof meas[id] === "number")
     FINDINGS.push(`Wysokość z przekątnej ${id}: ${r02(Math.sqrt(Math.max(0, meas[id] ** 2 - p.W_L ** 2)))} mm (kontrola pomiaru E)`);
 });
-FINDINGS.push(`Korpusy ${r02(g.depth)} mm głębokie (jak rama PAX 58), ${p.gapBack} mm od ściany; wnętrze do pleców ${r02(g.depth - 13)} mm, lico frontów ${r02(g.dF + 2 + p.tF)} mm od ściany`);
+FINDINGS.push(`Korpusy ${r02(g.depth)} mm głębokie (jak rama PAX 58), ${p.gapBack} mm od ściany; wnętrze do pleców ${r02(MODEL.opts.backs === "groove" ? g.depth - 13 : g.depth)} mm, lico frontów ${r02(g.dF + 2 + p.tF)} mm od ściany`);
 FINDINGS.push(`Spód zwisu (najniższy punkt): ${r02(p.BZ)} mm od podłogi`);
 FINDINGS.push(`Nisza: ${r02(g.nW)} × ${r02(g.nDep)} mm, do wysokości ${r02(g.nTop)} mm`);
 var partRows = (model) => {
@@ -3367,7 +3393,7 @@ function Interior({ model }) {
   return html`<details open><summary>Wnętrze</summary>
     <${Table} head=${["Komora", "Układ", "Prześwit"]} rows=${[
     ["Lewa, pod stałą półką", `drążek na ${r02(L.rail.z)} mm (oś), nad nim półka; pod drążkiem pusto aż do dna`, `${r02(L.rail.clearBelow)} mm pod drążkiem, ${r02(L.bays.LD.gaps[1])} mm nad półką`],
-    ["Prawa, pod stałą półką", `2 kosze ${BASKET[58].name.replace("KOMPLEMENT ", "")} na dole, ${R.n} ${polki2(R.n)} nad nimi`, `${R.gaps.slice(1).map((v) => r02(v)).join(" / ")} mm między półkami`],
+    ["Prawa, pod stałą półką", `2 kosze ${BASKET[58].name.replace("KOMPLEMENT ", "")} na dole, ${R.n} ${polki2(R.n)} nad nimi${R.fixedIdx?.length ? `; półka ze spodem na ${r02(R.shelfZ[R.fixedIdx[0]])} mm przykręcona na stałe` : ""}`, `${R.gaps.slice(1).map((v) => r02(v)).join(" / ")} mm między półkami`],
     ["Obie, nad stałą półką", "bez półek – walizki, pościel, sezonowe", `${up.inner} mm`]
   ]} />
     <p class="note">Drążek w lewej skrzyni wisi na ${r02(L.rail.z)} mm – osoba 155 cm zawiesza wieszak bez wspinania się, a pod nim mieści się długi płaszcz (${r02(L.rail.clearBelow)} mm do dna).
