@@ -923,7 +923,7 @@ function addCarcass(ctx, s) {
   });
   // kątowniki do ściany tylnej: dwa na wierzchu wieńca górnego, dwa na stałej półce.
   // Za plecami HDF jest pustka do ściany, więc pod kątownik na półce idzie klocek dystansowy.
-  const ax = [x0 + 100, x1 - 100];
+  const ax = s.drawBrackets ? [x0 + 100, x1 - 100] : [];
   ax.forEach((x) => {
     angle(fittings, x, 0, z1);
     if (groove || nail) {
@@ -934,8 +934,8 @@ function addCarcass(ctx, s) {
   });
   // małe kątowniki listwy górnej, przy przedniej krawędzi wieńca górnego
   const sx = wIn > 600 ? [x0 + 80, (x0 + x1) / 2, x1 - 80] : [x0 + 80, x1 - 80];
-  sx.forEach((x) => angle(fittings, x, dB + W + 2, z1, -25, 16));
-  layout.anchors[tag] = { x: 100, zTop: z1, zS, viaBack: groove || nail, void: groove ? dB + 10 : dB - 3, strip: sx.length };
+  if (s.drawBrackets) sx.forEach((x) => angle(fittings, x, dB + W + 2, z1, -25, 16));
+  layout.anchors[tag] = { x: 100, zTop: z1, zS, viaBack: groove || nail, backWall: !(groove || nail), void: groove ? dB + 10 : dB - 3, strip: sx.length };
   return { sides: sides[tag], lo, wIn };
 }
 var keepOutOf = (bays, t) => bays.flatMap((b) => [
@@ -1152,7 +1152,7 @@ function buildPanels(p2, opts = DEFAULT_OPTS) {
       Lg: g2.X_right - g2.X_left,
       Wd: Math.max(60, r0(g2.topStrip - p2.fg + 25)),
       edges: { D1: 2, D2: 0, S1: 2, S2: p2.endPanel ? 0 : 2 },
-      faceNote: "+25 mm zapasu – krawędź D2 docinasz do sufitu; D1 (oklejona) nad drzwiami. Prawy koniec łączysz z bokiem maskującym lamelą nr 0, mocujesz małymi kątownikami do wieńców górnych",
+      faceNote: "+25 mm zapasu – krawędź D2 docinasz do sufitu; D1 (oklejona) nad drzwiami. Prawy koniec łączysz z bokiem maskującym lamelą nr 0. Do tylnego lica przyklej listewki z odpadu, które położą się na wieńcach górnych, i przykręć je od środka szafy wkrętami 4×30 w górę przez wieniec",
       origin: [g2.X_left, fd0, g2.zF + p2.fg],
       ex: [1, 0, 0],
       ey: [0, 0, 1],
@@ -2287,7 +2287,7 @@ var TOOLS = [
   ["Dokupić", "Szablon do otworów pod podpórki półek ⌀5 (rząd 37 mm, rozstaw 32 mm)", "pojedyncze otwory pod półki i prowadnice koszy – w tym samym rzędzie 37 mm co w ramie PAX. Szukaj: <b>metalowe tuleje</b> (otwór w plastiku czy aluminium się wyrabia), listwa-ogranicznik do krawędzi płyty z rzędem 37 mm, wyraźny znacznik (trójkąt, strzałka) do ustawienia na kresce ołówka. Wysokości szablon nie wyznacza – tę daje kreska trasowana w pakiecie", [60, 150]],
   ["Dokupić", "Szablon do konfirmatów ⌀5 na płytę 18 mm", "trzyma wiertło w pionie i trafia w środek czoła wieńca, 9 mm od każdego lica. Szukaj: <b>hartowane tuleje stalowe</b>, listwy obejmujące płytę 18 mm z obu stron, możliwość przyłożenia na licu boku z ogranicznikiem o koniec płyty (otwór 9 mm od końca = oś wieńca)", [50, 150]],
   ["Dokupić", "Wiertło ⌀5 mm długie (100–130 mm)", "pod szablon do konfirmatów: przez szablon, bok i ok. 35 mm w czoło wieńca; potem wiertło stopniowe idzie po tym otworze", [10, 25]],
-  ["Dokupić", "Przystawka kątowa do wkrętarki", "kątowniki listew górnych tuż pod sufitem", [30, 80]],
+  ["Przydatne", "Przystawka kątowa do wkrętarki", "ciasne miejsca; listwy górne przykręcasz teraz od środka szafy, więc nie jest konieczna", [30, 80]],
   ["Dokupić", "Wyrzynarka + brzeszczoty do laminatu z odwróconym zębem (np. Bosch T101BR)", "wcięcia na rury, krzywe linie przy ścianie", [250, 500]],
   ["Dokupić", "Otwornica ⌀60 mm", "kratki wentylacyjne w drzwiach przy liczniku", [20, 40]],
   ["Dokupić", "Kątownik montażowy / ścisk kątowy (2 szt.)", "trzyma korpus pod 90° przy skręcaniu", [40, 80]],
@@ -2305,7 +2305,7 @@ var TOOLS = [
   ["Przydatne", "Kozły lub stół roboczy + płyta ofiarna", "", [100, 250]]
 ];
 var hardware = (T2, LC) => {
-  const nK = Math.ceil(T2.konfirmaty * 1.15 / 50) * 50, nLeg = T2.nogi, nRun = T2.plozy, nClip = nRun + 2, k = T2.korpusow, nP = (T2.polekKorpus + 6) * 4, nD = LC ? 3 : 0, nU = T2.frontow - 4, nA = k * 4 + 4;
+  const nK = Math.ceil(T2.konfirmaty * 1.15 / 50) * 50, nLeg = T2.nogi, nRun = T2.plozy, nClip = nRun + 2, k = T2.korpusow, nP = (T2.polekKorpus + 6) * 4, nD = LC ? 3 : 0, nU = T2.frontow - 4, nA = 8;
   return [
   ["Konfirmat 7×50 mm", `${T2.konfirmaty} szt. (kup ${nK})`, `${T2.konfirmaty - T2.konfSzuflad} w korpusach + ${T2.konfSzuflad} w skrzynkach szuflad (5 skrzynek, po 2 na róg)`, [nK * 0.15, nK * 0.25]],
   ["Lamele nr 20", `${T2.lamele[20] ?? 0} szt. (paczka)`, "bok zamykający + listewka (7), blat szafki pod lustrem (6)", [20, 40]],
@@ -2321,10 +2321,11 @@ var hardware = (T2, LC) => {
   ["Filc samoprzylepny", "arkusz", "pod płozy, żeby łatwo jechały po wykładzinie; ślizgacze pod cokół szafki pod lustrem", [10, 25]],
   ["Podpórki półek ⌀5 mm, metalowe", `${nP} szt.`, `${T2.polekKorpus} półek w korpusach + 6 w niszy, po 4`, [nP * 0.2, nP * 0.5]],
   ["Drążek owalny stalowy + 2 uchwyty", "1 kpl.", `lewa skrzynia: długość ${r0(MODEL.g.wL - 2 * MODEL.g.t)} mm, czyli światło między bokami (kupujesz dłuższy i docinasz piłką do metalu, odejmując tyle, ile zabierają uchwyty); oś zawieszona ${r0(MODEL.layout.rail.z)} mm nad podłogą`, [40, 80]],
-  ["Kątowniki meblowe", `${k * 4} szt.`, "kotwienie do ściany tylnej: 2 na wierzchu wieńca górnego i 2 na stałej półce każdego korpusu (w modelu 3D niebieskie); przy liczniku z dala od rur", [k * 4 * 1, k * 4 * 3]],
-  ["Kołki do cegły dziurawki z wkrętami, np. Fischer DuoPower 8×65 S", `${nA} szt. (opakowanie 25 szt.)`, "kątowniki do ściany + prawy bok szafki przy liczniku. Ok. 1–1,5 zł/szt.; dłuższy kołek przechodzi przez tynk i łapie więcej ścianek komór niż 8×40 (ok. 0,5–0,7 zł/szt.). Otwór ⌀8, zwykłe wiertło widiowe, <b>bez udaru</b>. Długość wkrętu ≥ kołek + grubość mocowanego elementu + ok. 5 mm", [25, 40]],
+  ["Kołki ramowe (przelotowe) 8 × 100–120 mm, np. Fischer SXRL 8", "4 szt.", "szafa wnękowa: po 2 na korpus, wysoko (ok. 1,8–2,2 m), przez bok w występ między skrzyniami – luz 8 mm przy lewej i 5 mm przy prawej skrzyni wypełnij podkładką. Wiercisz ⌀8 przez bok wiertłem do drewna, potem przez ten sam otwór w ścianę wiertłem widiowym; kołek wsuwasz przez płytę i dokręcasz. Dobierz kołek do materiału występu", [8, 20]],
+  ["Kątowniki meblowe", "4 szt.", "tylko szafka przy liczniku (bez pleców): 2 na wierzchu wieńca górnego i 2 na stałej półce do ściany tylnej, z dala od rur", [4, 12]],
+  ["Kołki do cegły dziurawki z wkrętami, np. Fischer DuoPower 8×65 S", `${nA} szt. (opakowanie 25 szt.)`, "szafka przy liczniku: 4 kątowniki do ściany tylnej + 4 przez prawy bok. Ok. 1–1,5 zł/szt.; dłuższy kołek przechodzi przez tynk i łapie więcej ścianek komór niż 8×40 (ok. 0,5–0,7 zł/szt.). Otwór ⌀8, zwykłe wiertło widiowe, <b>bez udaru</b>. Długość wkrętu ≥ kołek + grubość mocowanego elementu + ok. 5 mm", [25, 40]],
   ["Wkręty ⌀6 × 90–100 mm + podkładki dystansowe 5 mm", "4 kpl.", "prawy bok szafki przy liczniku do ściany wnęki, w kołki z pozycji wyżej (przez bok 18 mm + podkładkę 5 mm)", [10, 20]],
-  ["Małe kątowniki 25×25 + wkręty 3,5×16", "8 szt.", "listwy górne do wieńców górnych", [5, 15]],
+  ["Listewki z odpadu płyty, ok. 18 × 40 × 150 mm", "7 szt.", "listwy górne: przyklejone do tylnego lica listwy, leżą na wieńcu górnym; przykręcasz je od środka szafy wkrętami 4×30 przez wieniec. Lewa skrzynia 3, prawa 2, szafka przy liczniku 2", null],
   ["Wkręty 4×30", "ok. 55 szt.", "boki maskujące (co ok. 40 cm), listewka boku zamykającego, cokół szafki pod lustrem, listwy dystansowe (po 3)", [8, 15]],
   ["Gwoździki 1,4×25 albo zszywki", "paczka", "plecy obu skrzyń szafy i szafki pod lustrem, dna szuflad – zawsze razem z klejem", [5, 10]],
   ["Kratki wentylacyjne meblowe ⌀60 mm", "4 szt.", "drzwi przy liczniku: dwie u góry, dwie u dołu", [8, 20]],
@@ -2402,12 +2403,12 @@ var STEPS = [
   { t: "Skręć korpusy na leżąco", d: "Boki, wieniec dolny, stała półka (w prawej skrzyni także półka na stałe w połowie wysokości), wieniec górny, przekątne, plecy HDF przybite od tyłu. Płytki montażowe nóżek przykręcasz do spodu wieńca jeszcze na leżąco – w lewej skrzyni sześć, z parą pośrodku. W szafce przy liczniku bez pleców – listewka po skosie z tyłu, tylko do stawiania." },
   { t: "Postaw korpusy bez nóżek", d: "Z leżenia, w dwie osoby, przed wnęką. Na zmianę lewy i prawy bok (ręką lub deską jako dźwignią), klocki 18 mm aż do ok. 100 mm, różnica między bokami najwyżej jeden klocek; nóżki wpinasz w płytki 45 mm od frontu. Przechylasz tylko na bok: przy przechyle do przodu lub do tyłu góra korpusu przesuwa się ok. 4 cm na każdy centymetr uniesienia i trafia w ścianę." },
   { t: "Wsuń korpusy do wnęki", d: "Nóżki na płozach ze sklejki podklejonych filcem, pchanie nisko, przy wieńcu dolnym. Tylne nóżki ustaw przed wsunięciem według pomiaru podłogi, przednie poprawiasz na miejscu. Poziomuj <b>górną krawędź korpusu</b>, a nie podłogę." },
-  { t: "Zakotw korpusy", d: "Kątowniki przy wieńcu górnym i stałej półce. Szafkę przy liczniku dodatkowo przykręć prawym bokiem do ściany wnęki przez podkładki 5 mm. Przed wierceniem wykrywacz przewodów." },
+  { t: "Zakotw korpusy", d: "Szafa: po 2 kołki ramowe na korpus, wysoko, przez bok w występ między skrzyniami – podkładka w szczelinę, otwór ⌀8 przez płytę i dalej w ścianę, kołek wsuwany przez bok. Szafka przy liczniku: kątowniki przy wieńcu górnym i stałej półce do ściany tylnej oraz prawy bok do ściany wnęki przez podkładki 5 mm. Przed wierceniem wykrywacz przewodów." },
   { t: "Boki maskujące i bok zamykający", d: "Najtrudniejszy krok. Cyrkiel, cięcie zagłębiarką z podcięciem 2–3°, poprawki strugiem. Bok zamykający przy lewej ścianie najpierw dopasuj, potem sklej na lamele z listewką i przykręć od środka." },
   { t: "Nisza", d: "Zmierz odstęp między skrzyniami na trzech wysokościach, dotnij plecy niszy, potnij listwę na 6 półek i daszek. Otwory niszy wierć w innej odległości od przodu niż wewnętrzne." },
   { t: "Powieś fronty", d: "Prowadniki, zawiasy, regulacja szczelin na 3 mm. W drzwiach przy liczniku 4 otwory ⌀60 pod kratki." },
   { t: "Kosze i szuflady", d: "Kosze w szafie: prowadnice w otwory 32 mm na wysokościach z zakładki Model. Przy liczniku: listwy dystansowe po 3 wkręty 4×30, na nich prowadnice 300 mm, potem skrzynki. Sprawdź przy otwartych drzwiach, że wszystko mija zawiasy. W półkach wytnij wcięcia na rurę od tylnej krawędzi." },
-  { t: "Listwy górne", d: "Docinasz do sufitu, łączysz z bokiem maskującym na lamelę nr 0, przykręcasz małymi kątownikami do wieńców górnych." },
+  { t: "Listwy górne", d: "Docinasz do sufitu, łączysz z bokiem maskującym na lamelę nr 0. Do tylnego lica przyklejasz listewki z odpadu, które kładą się na wieńcu górnym, i przykręcasz je od środka szafy wkrętami 4×30 przez wieniec." },
   { t: "Szafka pod lustrem", d: "Dno z bokami i przegrodą na konfirmaty od spodu, blat na lamele i klej, plecy HDF nabijane, cokół przykręcony od środka. Skrzynki szuflad na konfirmatach, prowadnice, fronty, gałki." }
 ];
 var SUPPLIERS = [
@@ -3407,13 +3408,12 @@ var CARC_NAME = { L: "Lewa skrzynia", R: "Prawa skrzynia", N: "Szafka przy liczn
 function Mounting({ model }) {
   const L = model.layout, tags = Object.keys(L.legs);
   return html`<details open><summary>Nóżki i kotwienie</summary>
-    <${Table} head=${["Korpus", "Nóżki – osie płytek pod wieńcem dolnym", "Płozy", "Kątowniki do ściany tylnej"]} rows=${tags.map((k) => {
+    <${Table} head=${["Korpus", "Nóżki – osie płytek pod wieńcem dolnym", "Płozy", "Mocowanie do ściany"]} rows=${tags.map((k) => {
     const lp = L.legs[k], an = L.anchors[k];
-    return [CARC_NAME[k], `${lp.xs.length * 2} szt.: ${lp.xs.map((x) => r02(x)).join(" / ")} mm od czoła wieńca, ${lp.fromFront.join(" i ")} mm od przedniej krawędzi`, `${lp.xs.length} × ${lp.runner} mm`, `2 na wierzchu wieńca górnego, 2 na stałej półce; ok. ${an.x} mm od boków`];
+    return [CARC_NAME[k], `${lp.xs.length * 2} szt.: ${lp.xs.map((x) => r02(x)).join(" / ")} mm od czoła wieńca, ${lp.fromFront.join(" i ")} mm od przedniej krawędzi`, `${lp.xs.length} × ${lp.runner} mm`, an.backWall ? "4 kątowniki do ściany tylnej (2 na wieńcu górnym, 2 na stałej półce) + 4 wkręty przez prawy bok w ścianę wnęki" : "2 kołki ramowe przez bok w występ między skrzyniami, na wysokości ok. 1,8–2,2 m"];
   })} />
     <p class="note">Odznacz <b>cokół</b> nad modelem, żeby zobaczyć nóżki i płozy. Płoza zaczyna się ${LEG.runnerFront} mm za przednią krawędzią wieńca i wystaje po 40 mm za osie nóżek. Wymiarowany rysunek spodu wieńca: Plan i materiały → Do wywiercenia samemu.</p>
-    <p class="note"><b>Kątowniki są w modelu niebieskie</b> – najlepiej widać je po odznaczeniu frontów albo w widoku z góry. Górne leżą na wierzchu wieńca górnego i zakryje je listwa górna; ${tags.some((k) => L.anchors[k].viaBack) ? `dolne leżą na stałej półce i łapią ścianę przez plecy HDF – za plecami jest ${L.anchors[tags[0]].void} mm pustki, więc pod wkręt idzie klocek dystansowy (w modelu jasny).` : "dolne leżą na stałej półce."}${" "}
-      Małe kątowniki przy przedniej krawędzi wieńca górnego trzymają listwę górną.${L.anchors.N?.side ? " Cztery niebieskie wkręty w prawym boku z jasnymi podkładkami to mocowanie do ściany wnęki." : ""}</p>
+    <p class="note">${L.anchors.N?.side ? "Szafka nie ma pleców, więc ściany są jej usztywnieniem. Cztery niebieskie wkręty z jasnymi podkładkami w prawym boku to mocowanie do ściany wnęki; kątowników do ściany tylnej model nie pokazuje." : "Szafę mocujesz przez boki: otwór ⌀8 przez płytę i dalej w ścianę, w szczelinie podkładka, kołek ramowy wsuwany przez bok. Kątowników do ściany tylnej nie ma. Listwę górną trzymają listewki przyklejone do jej tylnego lica i przykręcone od środka szafy przez wieniec górny."}</p>
   </details>`;
 }
 function InteriorB({ model }) {
